@@ -30,7 +30,7 @@ module.exports = class AssignedValueBehavior extends Base {
         let attr = this.getClassAttr();
         let value = null;
         if (data.Class) {
-            const expression = this.owner.spawn(data, {attr});
+            const expression = this.spawn(data, {attr});
             value = await expression.resolve(this.owner);
         } else {
             const calc = attr.spawnCalc(data);
