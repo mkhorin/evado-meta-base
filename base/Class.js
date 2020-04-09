@@ -37,7 +37,6 @@ module.exports = class Class extends Base {
         this.parentTemplateDir = MetaHelper.addClosingChar(this.data.templateRoot, '/');
         this.viewModel = `_class/${this.class.name}`;
         this.options = this.data.options || {};
-        this.translationKey = `class.${this.name}`;
         this.title = MetaHelper.createTitle(this);
         this.createModelConfig();
     }
@@ -111,9 +110,15 @@ module.exports = class Class extends Base {
     prepare () {
         this.setParent();
         this.setTable();
+        this.setTranslationKey();
         this.setChildren();
         this.setFilter();
         super.prepare();
+    }
+
+    prepareAttrs () {
+        this.attrs.forEach(attr => attr.prepare());
+        this.views.forEach(view => view.prepareAttrs());
     }
 
     setParent () {
@@ -127,9 +132,8 @@ module.exports = class Class extends Base {
         this.table = this.parent ? this.parent.table : `${this.meta.dataTablePrefix}${this.name}`;
     }
 
-    prepareAttrs () {
-        this.attrs.forEach(attr => attr.prepare());
-        this.views.forEach(view => view.prepareAttrs());
+    setTranslationKey () {
+        this.translationKey = `${this.parent ? this.parent.translationKey : 'class'}.${this.name}`;
     }
 
     setChildren () {
@@ -142,10 +146,15 @@ module.exports = class Class extends Base {
     }
 
     setFilter () {
-        const descendants = this.getDescendants();
-        this.filter = descendants.length
-            ? {[this.CLASS_ATTR]: descendants.concat(this).map(({name}) => name)}
-            : {[this.CLASS_ATTR]: this.name};
+        const names = this.getDescendants()
+            .filter(item => !item.isAbstract())
+            .map(item => item.name);
+        if (!this.isAbstract()) {
+            names.push(this.name);
+        }
+        this.filter = names.length
+            ? {[this.CLASS_ATTR]: names.length > 1 ? names : names[0]}
+            : ['FALSE'];
     }
 
     createRelations () {
@@ -435,32 +444,32 @@ module.exports = class Class extends Base {
     // DESCENDANTS
 
     getActiveDescendants () {
-        if (!this.activeDescendants) {
+        if (!this._activeDescendants) {
             const names = this.data.activeDescendants;
-            this.activeDescendants = Array.isArray(names) && names.length
+            this._activeDescendants = Array.isArray(names) && names.length
                 ? this.meta.resolveClassesByNames(names)
                 : this.getRealDescendants();
         }
-        return this.activeDescendants;
+        return this._activeDescendants;
     }
 
     getRealDescendants () {
-        if (!this.realDescendants) {
-            this.realDescendants = this.getDescendants().filter(metaClass => !metaClass.isAbstract());
+        if (!this._realDescendants) {
+            this._realDescendants = this.getDescendants().filter(metaClass => !metaClass.isAbstract());
         }
-        return this.realDescendants;
+        return this._realDescendants;
     }
 
     getDescendants () {
-        if (!this.descendants) {
-            this.descendants = [];
+        if (!this._descendants) {
+            this._descendants = [];
             for (const metaClass of this.meta.classes) {
                 if (metaClass.data.parent === this.name) {
-                    this.descendants.push(metaClass, ...metaClass.getDescendants());
+                    this._descendants.push(metaClass, ...metaClass.getDescendants());
                 }
             }
         }
-        return this.descendants;
+        return this._descendants;
     }
 };
 module.exports.init();

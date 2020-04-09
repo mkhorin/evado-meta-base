@@ -3,9 +3,8 @@
  */
 'use strict';
 
-// $key - alias for primary key name
 // ["$query", "count", "class", {order:{}, limit: 10, offset: 10}, [condition]]
-// ["$query", "count", "view.class", {}, {"$key": ".attrName"}]
+// ["$query", "count", "view.class", {}, {"$key": ".attrName"}] // $key - alias for primary key name
 // ["$query", "count", "view.class", {}, {"backReference": ".$key"}]
 // ["$query", "scalar", "class", {"key": "num", "order": {"num": 1}}] // minimum
 
@@ -18,14 +17,14 @@ module.exports = class CalcQuery extends Base {
         this.view = this.getView(this.operands[1]);
         if (this.view) {
             this.params = this.operands[2] || {};
-            this.query = this.createQuery(this.params);
             this.condition = this.createCondition(this.operands[3]);
         }
     }
     
     getMethod (name) {
-        name = typeof name === 'string' ? StringHelper.toFirstUpperCase(name) : null;
-        name = `resolve${name}`;        
+        if (typeof name === 'string') {
+            name = `resolve${StringHelper.toFirstUpperCase(name)}`;
+        }
         const method = this.constructor.prototype[name];
         return typeof method !== 'function'            
             ? this.log('error', `Solution method not found: ${name}`)
@@ -33,19 +32,21 @@ module.exports = class CalcQuery extends Base {
     }
     
     getView (id) {
-        return this.calc.getView(id) || this.calc.getClass(id) || this.log('error', `View not found: ${id}`);
+        return this.calc.getView(id)
+            || this.calc.getClass(id)
+            || this.log('error', `View not found: ${id}`);
     }
     
-    createQuery ({limit, offset, order}) {
+    createQuery () {
         const query = this.view.find();
-        if (limit) {
-            query.limit(limit);
+        if (this.params.limit) {
+            query.limit(this.params.limit);
         }
-        if (offset) {
-            query.offset(offset);
+        if (this.params.offset) {
+            query.offset(this.params.offset);
         }
-        if (order) {
-            query.order(order);
+        if (this.params.order) {
+            query.order(this.params.order);
         }
         return query;
     }
@@ -58,27 +59,26 @@ module.exports = class CalcQuery extends Base {
         if (!this.method) {
             return null;
         }
+        const query = this.createQuery();
+        query.module = model.module;
+        query.user = model.user;
         const condition = await this.condition.resolve(model);
-        this.query.prepared = false;
-        this.query.where(this.view.class.filter);
         if (condition) {
-            this.query.and(condition);
+            query.and(condition);
         }
-        this.query.module = model.module;
-        this.query.user = model.user;
-        return this.method.call(this);
+        return this.method.call(this, query);
     }
 
-    resolveCount () {
-        return this.query.count();
+    resolveCount (query) {
+        return query.count();
     }
 
-    resolveScalar () {
-        return this.query.scalar(this.params.key);
+    resolveScalar (query) {
+        return query.scalar(this.params.key);
     }
 
-    resolveColumn () {
-        return this.query.column(this.params.key);
+    resolveColumn (query) {
+        return query.column(this.params.key);
     }
 };
 

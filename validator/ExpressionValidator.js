@@ -33,7 +33,7 @@ module.exports = class ExpressionValidator extends Base {
             value = await expression.resolve(model);
         } else {
             const calc = attr.spawnCalc(config);
-            value = await calc.resolveValue(model);
+            value = await calc.resolve(model);
         }
         if (!CommonHelper.isEqual(value, model.get(name))) {
             this.addError(model, name, this.getMessage(value));

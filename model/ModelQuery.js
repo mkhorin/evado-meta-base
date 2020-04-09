@@ -12,7 +12,7 @@ module.exports = class ModelQuery extends Base {
         this._db = this.view.class.getDb();
         this._from = this.view.class.table;
         this._where = this.view.class.filter;
-        this._order = this.view.getOrder();
+        this._order = this.view.order;
         this._raw = null;
         this._relatedDepth = 0;
         this._maxRelatedDepth = 1;
@@ -24,6 +24,10 @@ module.exports = class ModelQuery extends Base {
 
     ids () {
         return this.column(this.view.getKey());
+    }
+
+    indexById () {
+        return this.index(this.view.getKey());
     }
 
     raw (value = true) {
@@ -181,27 +185,27 @@ module.exports = class ModelQuery extends Base {
 
     async resolveCalc (models) {
         for (const attr of this.view.calcAttrs) {
-            await attr.calc.resolve(models);
+            await attr.calc.resolveAll(models);
         }
     }
 
     resolveAttrTitle (models) {
         for (const attr of this.view.headerAttrs) {
-            attr.header.resolveModels(models);
+            attr.header.resolveAll(models);
         }
     }
 
     resolveReadOnlyTitle (models) {
         for (const attr of this.view.headerAttrs) {
             if (attr.isReadOnly()) {
-                attr.header.resolveModels(models);
+                attr.header.resolveAll(models);
             }
         }
     }
 
     resolveTitle (models) {
         if (this.view.header) {
-            return this.view.header.resolveModels(models);
+            return this.view.header.resolveAll(models);
         }
     }
 

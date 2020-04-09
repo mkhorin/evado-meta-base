@@ -117,6 +117,10 @@ module.exports = class ViewAttr extends Base {
         return this.type === TypeHelper.TYPES.REF || this.type === TypeHelper.TYPES.BACK_REF;
     }
 
+    isClass () {
+        return this.viewType === TypeHelper.VIEW_TYPES.CLASS;
+    }
+
     isState () {
         return this.viewType === TypeHelper.VIEW_TYPES.STATE;
     }
@@ -265,7 +269,17 @@ module.exports = class ViewAttr extends Base {
     }
 
     spawnCalc (data) {
-        return new Calc({attr: this, data});
+        if (!data || !data.Class) {
+            return new Calc({attr: this, data});
+        }
+        try {
+            const module = this.getMeta().module;
+            const config = ClassHelper.resolveSpawn(data, module);
+            return ClassHelper.spawn(config, {attr: this, module});
+        } catch (err) {
+            this.log('error', 'Invalid calc configuration', err);
+            return new Calc({attr: this});
+        }
     }
 
     createAttrs () {
@@ -284,7 +298,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     setRelationViews () {
-        if (this.relation) {
+        if (this.relation && this.relation.refClass) {
             this.listView = this.getRefView('listView', 'list');
             this.selectListView = this.relation.refClass.getView(this.data.selectListView) || this.listView;
             this.eagerView = this.getRefView('eagerView');
@@ -387,6 +401,7 @@ module.exports = class ViewAttr extends Base {
 module.exports.init();
 
 const AssignHelper = require('areto/helper/AssignHelper');
+const ClassHelper = require('areto/helper/ClassHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const NestedValueHelper = require('areto/helper/NestedValueHelper');
 const MetaHelper = require('../helper/MetaHelper');

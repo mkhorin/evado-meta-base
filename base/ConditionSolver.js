@@ -3,6 +3,11 @@
  */
 'use strict';
 
+// {"attrName": "value"}
+// {"$key": "value"} // $key - primary key name
+// [">", "dateAttrName", "$now"] // $now - current datetime
+// {"creator": "$user"} // $user - current user
+
 const Base = require('areto/base/Base');
 
 module.exports = class ConditionSolver extends Base {

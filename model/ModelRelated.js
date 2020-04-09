@@ -149,17 +149,6 @@ module.exports = class ModelRelated extends Base {
         this._resolved = false;
     }
 
-    setResolvedChanges (attr, data) {
-        attr = attr.name || attr;
-        this._changes[attr] = {
-            links: [],
-            unlinks: [],
-            deletes: [],
-            ...data
-        };
-        this._resolved = true;
-    }
-
     async resolveChanges () {
         if (this._resolved || !this._changes) {
             return null;
@@ -174,9 +163,7 @@ module.exports = class ModelRelated extends Base {
                 await this.resolveLinks(data, view);
                 await this.resolveByRelated('unlinks', data, view.class, attr);
                 await this.resolveByRelated('deletes', data, view.class, attr);
-                this.model.set(attr, attr.relation.multiple
-                    ? this.getMultipleRef(attr, data)
-                    : this.getSingleRef(attr, data));
+                this.resolveRefAttr(attr, data);
             }
         }
     }
@@ -191,6 +178,14 @@ module.exports = class ModelRelated extends Base {
         }
         if (data.deletes.length && commands.delete !== true) {
             data.deletes = [];
+        }
+    }
+
+    resolveRefAttr (attr, data) {
+        if (attr.isRef()) {
+            this.model.set(attr, attr.relation.multiple
+                ? this.getMultipleRef(attr, data)
+                : this.getSingleRef(attr, data));
         }
     }
 
@@ -229,7 +224,8 @@ module.exports = class ModelRelated extends Base {
             value = MongoHelper.exclude(data.deletes.map(model => model.get(key)), value);
         }
         if (data.links.length) {
-            const links = value.length ? MongoHelper.exclude(value, data.links) : data.links;
+            let links = data.links.map(model => model.get(key));
+            links = value.length ? MongoHelper.exclude(value, links) : links;
             if (links.length) {
                 value = value.concat(links); // concat to update value array
             }
@@ -238,7 +234,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     async changeBackRefs () {
-        for (const attr of this.model.class.backRefAttrs) {
+        for (const attr of this.model.view.backRefAttrs) {
             const data = this.getChanges(attr);
             if (data) {
                 attr.relation.refAttr && attr.relation.refAttr.relation
@@ -250,11 +246,11 @@ module.exports = class ModelRelated extends Base {
 
     async changeRelationBackRef (attr, data) {
         for (const model of data.links) {
-            model.related.setResolvedChanges(attr.relation.refAttrName, {links: [this.model]});
+            model.related.setResolvedChanges(attr.relation.refAttr, {links: [this.model]});
             await model.update();
         }
         for (const model of data.unlinks) {
-            model.related.setResolvedChanges(attr.relation.refAttrName, {unlinks: [this.model]});
+            model.related.setResolvedChanges(attr.relation.refAttr, {unlinks: [this.model]});
             await model.update();
         }
     }
@@ -268,6 +264,15 @@ module.exports = class ModelRelated extends Base {
             model.set(attr.relation.refAttrName, null);
             await model.update();
         }
+    }
+
+    setResolvedChanges (attr, data) {
+        data.links = data.links || [];
+        data.unlinks = data.unlinks || [];
+        data.deletes = data.deletes || [];
+        this._changes[attr.name] = data;
+        this.resolveRefAttr(attr, data);
+        this._resolved = true;
     }
 
     getDeletedModels () {

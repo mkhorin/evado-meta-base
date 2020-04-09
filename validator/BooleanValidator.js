@@ -24,9 +24,9 @@ module.exports = class BooleanValidator extends Base {
 
     validateAttr (name, model) {
         const value = model.get(name);
-        if (value === this.trueValue) {
+        if (value === true || value === this.trueValue) {
             model.set(name, true);
-        } else if (value === this.falseValue) {
+        } else if (value === false || value === this.falseValue) {
             model.set(name, false);
         } else {
             this.addError(model, name, this.getMessage());
@@ -34,7 +34,7 @@ module.exports = class BooleanValidator extends Base {
     }
 
     validateValue (value) {
-        if (value !== this.trueValue && value !== this.falseValue) {
+        if (value === true || value !== this.trueValue && value === false || value !== this.falseValue) {
             return this.getMessage();
         }
     }

@@ -61,7 +61,7 @@ module.exports = class EnumSet extends Base {
         if (!this._view) {
             return null;
         }
-        const query = this._view.find().and(this.data.objectFilter);
+        const query = this._view.find().and(this.data.queryFilter);
         const values = this._attr
             ? await query.distinct(this._attr.name)
             : await query.ids();

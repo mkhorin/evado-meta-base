@@ -34,7 +34,7 @@ module.exports = class AssignedValueBehavior extends Base {
             value = await expression.resolve(this.owner);
         } else {
             const calc = attr.spawnCalc(data);
-            value = await calc.resolveValue(this.owner);
+            value = await calc.resolve(this.owner);
         }
         this.owner.set(attr.name, value);
         return this.owner.findSelf().update({[attr.name]: value});

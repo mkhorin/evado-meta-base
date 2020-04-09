@@ -10,13 +10,28 @@
 // ["$map", "toUpperCase", ".towns", ...]
 // ["$method", ".attrName", "toLowerCase", ...methodArguments] // execute value method
 // ["$moment", ["$now"], "format", "MM-DD"]
-// ["$now"]
+// ["$now"] // current datetime
+// ["$round", ".attrName", precision]
 // ["$user"] // current user ID
 // ["$query", ...] // see CalcQuery
+// ["$descendants", ...] // see CalcDescendants
+// ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
 
 const Base = require('areto/base/Base');
 
 module.exports = class Calc extends Base {
+
+    static prepareConfiguration (data, view) {
+        if (!data) {
+            return null;
+        }
+        const module = view.meta.module;
+        if (data.Class) {
+            return ClassHelper.resolveSpawn(data, module, {module});
+        }
+        const solver = new ConditionSolver({data, view});
+        return {Class: this, module, solver};
+    }
 
     constructor (config) {
         super(config);
@@ -35,11 +50,21 @@ module.exports = class Calc extends Base {
         return this.attr.class.meta.getView(id);
     }
 
-    getTokenClass (operator) {
-        switch (operator) {
+    getTokenClass (data) {
+        switch (data[0]) {
             case '$query': return CalcQuery;
+            case '$descendants': return CalcDescendants;
+            case '$custom': return this.getCustomTokenClass(data[1]);
         }
         return CalcToken;
+    }
+
+    getCustomTokenClass (data) {
+        try {
+            return ClassHelper.resolveSpawn(data, this.attr.getMeta().module);
+        } catch (err) {
+            this.log('error', 'Invalid custom calc configuration', err);
+        }
     }
 
     createOperand (value) {
@@ -53,8 +78,11 @@ module.exports = class Calc extends Base {
         if (!Array.isArray(data)) {
             return null;
         }
-        const TokenClass = this.getTokenClass(data[0]);
-        const token = new TokenClass({
+        const TokenClass = this.getTokenClass(data);
+        if (!TokenClass) {
+            return null;
+        }
+        const token = ClassHelper.spawn(TokenClass, {
             calc: this,
             operator: data[0],
             operands: data.slice(1)
@@ -79,14 +107,13 @@ module.exports = class Calc extends Base {
         }
     }
 
-    async resolve (models) {
-        models = Array.isArray(models) ? models : [models];
+    async resolveAll (models) {
         for (const model of models) {
-            model.set(this.attr, await this.resolveValue(model));
+            model.set(this.attr, await this.resolve(model));
         }
     }
 
-    resolveValue (model) {
+    resolve (model) {
         return this.token ? this.token.resolve(model) : this.data;
     }
 
@@ -95,8 +122,10 @@ module.exports = class Calc extends Base {
     }
 };
 
+const ClassHelper = require('areto/helper/ClassHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const CalcToken = require('./CalcToken');
+const CalcDescendants = require('./CalcDescendants');
 const CalcQuery = require('./CalcQuery');
 const CalcRelation = require('./CalcRelation');
 const Operand = require('./Operand');

@@ -15,7 +15,7 @@ module.exports = class ModelHeader extends Base {
 
     resolve () {
         if (this.model.view.header) {
-            this.model.view.header.resolveModel(this.model);
+            this.model.view.header.resolve(this.model);
         }
         return this.toString();
     }

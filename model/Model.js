@@ -104,6 +104,10 @@ module.exports = class Model extends Base {
         delete this._valueMap[attr.name || attr];
     }
 
+    assignValues (data) {
+        Object.assign(this._valueMap, data);
+    }
+
     rel (attr) {
         return this.related.get(attr);
     }
@@ -194,9 +198,17 @@ module.exports = class Model extends Base {
 
     async setDefaultValues () {
         this.ensureBehaviors();
+        this.set(this.class.CLASS_ATTR, this.class.name);
+        this.set(this.class.CREATOR_ATTR, this.user.getId());
         await Behavior.execute('setDefaultValues', this);
         for (const attr of this.view.defaultValueAttrs) {
-            await attr.defaultValue.resolve(this);
+            this.set(attr, await attr.defaultValue.resolve(this));
+        }
+    }
+
+    async resolveCalc () {
+        for (const attr of this.view.calcAttrs) {
+            this.set(attr, await attr.calc.resolve(this));
         }
     }
 
@@ -215,6 +227,26 @@ module.exports = class Model extends Base {
             module: this.module,
             user: this.user
         });
+    }
+
+    spawnSelf (params) {
+        return this.spawn(this.view, params);
+    }
+
+    spawn (view, params) {
+        return view.spawnModel({
+            module: this.module,
+            user: this.user,
+            ...params
+        });
+    }
+
+    clone (sample) {
+        for (const attr of this.view.attrs) {
+            if (attr.canLoad()) {
+                this.set(attr,  sample.get(attr));
+            }
+        }
     }
 
     // BEHAVIORS

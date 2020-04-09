@@ -21,7 +21,7 @@ module.exports = class AttrHeader extends Base {
             : text;
     }
 
-    resolveModel (model) {
+    resolve (model) {
         model.header.data[this.owner.name] = this._token.resolve(model);
     }
 };

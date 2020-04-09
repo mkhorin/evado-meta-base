@@ -53,10 +53,6 @@ module.exports = class View extends Base {
         return NestedValueHelper.get(key, this.options, defaults);
     }
 
-    getOrder () {
-        return this.data.order || this.class.data.order;
-    }
-
     toString () {
         return this.id;
     }
@@ -90,6 +86,7 @@ module.exports = class View extends Base {
         this.createGroups();
         this.prepareGroups();
         this.prepareRules();
+        this.prepareOrder();
     }
 
     createHeader () {
@@ -248,13 +245,25 @@ module.exports = class View extends Base {
         }
     }
 
+    prepareOrder () {
+        if (!this.data.order) {
+            this.order = this.class.order;
+            return;
+        }
+        this.order = {};
+        for (const key of Object.keys(this.data.order)) {
+            const name = key === '$key' ? this.getKey() : key;
+            this.order[name] = this.data.order[key];
+        }
+    }
+
     // FILTER
 
     prepareFilter () {
         try {
             this._filter = ObjectFilter.prepareConfiguration(this.data.filter, this);
         } catch (err) {
-            this.log('error', 'Invalid filter configuration:', err);
+            this.log('error', 'Invalid filter configuration', err);
         }
     }
 

@@ -36,13 +36,13 @@ module.exports = class Header extends Base {
         return data;
     }
 
-    resolveModels (models) {
+    resolveAll (models) {
         for (const model of models) {
-            this.resolveModel(model);
+            this.resolve(model);
         }
     }
 
-    resolveModel (model) {
+    resolve (model) {
         return this._token.resolve(model);
     }
 

@@ -8,18 +8,20 @@ const Base = require('areto/base/Base');
 module.exports = class CalcToken extends Base {
 
     static getMethod (operator) {
+        const methods = this.prototype;
         switch (operator) {
-            case '$out': return this.prototype.resolveOut;
-            case '$+': return this.prototype.resolveAddition;
-            case '$-': return this.prototype.resolveSubtraction;
-            case '$*': return this.prototype.resolveMultiplication;
-            case '$/': return this.prototype.resolveDivision;
-            case '$join': return this.prototype.resolveJoin;
-            case '$map': return this.prototype.resolveMap;
-            case '$method': return this.prototype.resolveMethod;
-            case '$moment': return this.prototype.resolveMoment;
-            case '$now': return this.prototype.resolveNow;
-            case '$user': return this.prototype.resolveUser;
+            case '$out': return methods.resolveOut;
+            case '$+': return methods.resolveAddition;
+            case '$-': return methods.resolveSubtraction;
+            case '$*': return methods.resolveMultiplication;
+            case '$/': return methods.resolveDivision;
+            case '$join': return methods.resolveJoin;
+            case '$map': return methods.resolveMap;
+            case '$method': return methods.resolveMethod;
+            case '$moment': return methods.resolveMoment;
+            case '$now': return methods.resolveNow;
+            case '$round': return methods.resolveRound;
+            case '$user': return methods.resolveUser;
         }
     }
 
@@ -50,9 +52,13 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveAddition (model, ...values) {
-        let result = values[0];
+        let result = Array.isArray(values[0])
+            ? this.resolveAddition(model, ...values[0])
+            : values[0];
         for (let i = 1; i < values.length; ++i) {
-            result += values[i];
+            result += Array.isArray(values[i])
+                ? this.resolveAddition(model, ...values[i])
+                : values[i];
         }
         return result;
     }
@@ -66,9 +72,13 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveMultiplication (model, ...values) {
-        let result = values[0];
+        let result = Array.isArray(values[0])
+            ? this.resolveMultiplication(model, ...values[0])
+            : values[0];
         for (let i = 1; i < values.length; ++i) {
-            result *= values[i];
+            result *= Array.isArray(values[i])
+                ? this.resolveMultiplication(model, ...values[i])
+                : values[i];
         }
         return result;
     }
@@ -92,6 +102,10 @@ module.exports = class CalcToken extends Base {
         return [].concat(...values.map(data => Array.isArray(data) ? data.map(method) : value));
     }
 
+    executeMapMethod (name, value) {
+        return value && typeof value[name] === 'function' ? value[name]() : value;
+    }
+
     resolveMethod (model, value, method, ...args) {
         return value && typeof value[method] === 'function' ? value[method](...args) : value;
     }
@@ -104,12 +118,12 @@ module.exports = class CalcToken extends Base {
         return new Date;
     }
 
-    resolveUser (model) {
-        return model.user.getId();
+    resolveRound (model, value, precision) {
+        return MathHelper.round(value, precision);
     }
 
-    executeMapMethod (name, value) {
-        return value && typeof value[name] === 'function' ? value[name]() : value;
+    resolveUser (model) {
+        return model.user.getId();
     }
 
     log () {
@@ -119,3 +133,4 @@ module.exports = class CalcToken extends Base {
 
 const moment = require('moment');
 const CommonHelper = require('areto/helper/CommonHelper');
+const MathHelper = require('areto/helper/MathHelper');
