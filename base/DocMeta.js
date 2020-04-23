@@ -66,7 +66,6 @@ module.exports = class DocMeta extends Base {
         this.prepareClasses();
         this.createViews();
         this.createDeferredBinding();
-        this.prepareBehaviors();
         await this.createIndexes();
         /*if (this.Inspector) {
             await this.Inspector.execute(this);
@@ -101,7 +100,7 @@ module.exports = class DocMeta extends Base {
     }
 
     createDeferredBinding () {
-        this.processClassMethods([
+        return this.processClassMethods([
             'prepareViews',
             'prepareAttrs',
             'createRelations',
@@ -113,7 +112,8 @@ module.exports = class DocMeta extends Base {
             'createDefaultValues',
             'createStates',
             'createTransitions',
-            'createTreeView'
+            'createTreeView',
+            'prepareBehaviors'
         ]);
     }
 
@@ -122,12 +122,6 @@ module.exports = class DocMeta extends Base {
             for (const metaClass of this.classes) {
                 metaClass[method]();
             }
-        }
-    }
-
-    prepareBehaviors () {
-        for (const metaClass of this.classes) {
-            metaClass.prepareBehaviors();
         }
     }
 

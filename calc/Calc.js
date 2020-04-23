@@ -6,12 +6,14 @@
 // ["$out", ".attrName"]
 // ["$+", ".attrName", 45, ...]
 // ["$+", ".attrName", ["$-", 67, ".attrName"]]
+// ["$class", "._class"] // resolve class title
 // ["$join", "separator", ".towns", ... ]
 // ["$map", "toUpperCase", ".towns", ...]
 // ["$method", ".attrName", "toLowerCase", ...methodArguments] // execute value method
 // ["$moment", ["$now"], "format", "MM-DD"]
 // ["$now"] // current datetime
 // ["$round", ".attrName", precision]
+// ["$class", ".attrName"] // resolve state title
 // ["$user"] // current user ID
 // ["$query", ...] // see CalcQuery
 // ["$descendants", ...] // see CalcDescendants

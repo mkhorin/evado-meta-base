@@ -54,7 +54,6 @@ module.exports = class ModelQuery extends Base {
         this._withAttrTitle = value;
         this._withCalc = value;
         this._withRelated = value;
-        this._withUsers = value;
         return this;
     }
 
@@ -64,7 +63,6 @@ module.exports = class ModelQuery extends Base {
         this._withRelated = value;
         this._withState = value;
         this._withTitle = value;
-        this._withUsers = value;
         return this;
     }
 
@@ -98,11 +96,6 @@ module.exports = class ModelQuery extends Base {
         return this;
     }
 
-    withUsers (value = true) {
-        this._withUsers = value;
-        return this;
-    }
-
     copyParams (query) {
         this._withAttrTitle = query._withAttrTitle;
         this._withCalc = query._withCalc;
@@ -110,7 +103,6 @@ module.exports = class ModelQuery extends Base {
         this._withRelated = query._withRelated;
         this._withState = query._withState;
         this._withTitle = query._withTitle;
-        this._withUsers = query._withUsers;
         this._maxRelatedDepth = query._maxRelatedDepth;
         this._relatedFilter = query._relatedFilter;
         this.controller = query.controller;
@@ -164,11 +156,14 @@ module.exports = class ModelQuery extends Base {
         if (this._withTitle) {
             await this.resolveTitle(models);
         }
-        if (this._withUsers && this.view.userAttrs.length) {
+        if (this.view.eagerUserAttrs.length) {
             await this.resolveUsers(models);
         }
         if (this.security) {
-            await this.security.resolveReadForbiddenAttrs(models, this.view);
+            await this.security.resolveForbiddenReadAttrs(models, this.view);
+        }
+        if (this.view.afterFindBehaviors) {
+            await this.executeAfterFindBehaviors(models);
         }
         return this._index ? this.indexModels(models) : models;
     }
@@ -210,11 +205,11 @@ module.exports = class ModelQuery extends Base {
     }
 
     async resolveUsers (models) {
-        const ids = MetaHelper.getModelValueList(models, this.view.userAttrs);
+        const ids = MetaHelper.getModelValues(models, this.view.eagerUserAttrs);
         if (ids.length) {
             const user = this.view.meta.spawnUser();
             const userMap = await user.findById(ids).indexById().all();
-            MetaHelper.setModelRelated(userMap, models, this.view.userAttrs);
+            MetaHelper.setModelRelated(userMap, models, this.view.eagerUserAttrs);
         }
     }
 
@@ -228,6 +223,12 @@ module.exports = class ModelQuery extends Base {
 
     filterRelated () {
         return this._relatedFilter && this._relatedFilter(this);
+    }
+
+    async executeAfterFindBehaviors (models) {
+        for (const model of models) {
+            await Behavior.execute('afterFind', model);
+        }
     }
 
     // PREPARE
@@ -253,3 +254,4 @@ module.exports = class ModelQuery extends Base {
 
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const MetaHelper = require('../helper/MetaHelper');
+const Behavior = require('../behavior/Behavior');

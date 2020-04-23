@@ -102,9 +102,10 @@ module.exports = class Model extends Base {
 
     unset (attr) {
         delete this._valueMap[attr.name || attr];
+        this.related.unsetChanges(attr);
     }
 
-    assignValues (data) {
+    assign (data) {
         Object.assign(this._valueMap, data);
     }
 
@@ -113,8 +114,8 @@ module.exports = class Model extends Base {
     }
 
     hasRelationOrder (attr) {
-        return Array.isArray(this._valueMap[this.class.RELATION_SORT_ATTR])
-            && this._valueMap[this.class.RELATION_SORT_ATTR].includes(attr.name || attr);
+        const order = this._valueMap[this.class.RELATION_SORT_ATTR];
+        return Array.isArray(order) && order.includes(attr.name || attr);
     }
 
     getRelationOrder () {
@@ -166,7 +167,7 @@ module.exports = class Model extends Base {
             attr = this.view.getAttr(attr);
         }
         if (!attr) {
-            return;
+            return undefined;
         }
         if (this.hasDisplayValue(attr)) {
             return this._displayValueMap[attr.name];
@@ -192,18 +193,28 @@ module.exports = class Model extends Base {
         }
     }
 
+    restoreOldValue (attr) {
+        attr = attr.name || attr;
+        if (Object.prototype.hasOwnProperty.call(this._oldValueMap, attr)) {
+            this._valueMap[attr] = this._oldValueMap[attr];
+        } else {
+            delete this._valueMap[attr];
+        }
+        this.related.unsetChanges(attr);
+    }
+
     setOldValues () {
         this._oldValueMap = {...this._valueMap};
     }
 
     async setDefaultValues () {
-        this.ensureBehaviors();
         this.set(this.class.CLASS_ATTR, this.class.name);
         this.set(this.class.CREATOR_ATTR, this.user.getId());
-        await Behavior.execute('setDefaultValues', this);
         for (const attr of this.view.defaultValueAttrs) {
             this.set(attr, await attr.defaultValue.resolve(this));
         }
+        this.ensureBehaviors();
+        return Behavior.execute('afterDefaultValues', this);
     }
 
     async resolveCalc () {
@@ -230,10 +241,10 @@ module.exports = class Model extends Base {
     }
 
     spawnSelf (params) {
-        return this.spawn(this.view, params);
+        return this.spawnByView(this.view, params);
     }
 
-    spawn (view, params) {
+    spawnByView (view, params) {
         return view.spawnModel({
             module: this.module,
             user: this.user,
@@ -244,7 +255,7 @@ module.exports = class Model extends Base {
     clone (sample) {
         for (const attr of this.view.attrs) {
             if (attr.canLoad()) {
-                this.set(attr,  sample.get(attr));
+                this.set(attr, sample.get(attr));
             }
         }
     }
@@ -266,17 +277,7 @@ module.exports = class Model extends Base {
         }
     }
 
-    // VALIDATE
-
-    getValidators (attrName, type) {
-        const validators = [];
-        for (const validator of this.ensureValidators()) {
-            if ((!attrName || validator.hasAttr(attrName)) && (!type || validator.type === type)) {
-                validators.push(validator);
-            }
-        }
-        return validators;
-    }
+    // VALIDATION
 
     ensureValidators () {
         if (!this.validators) {
@@ -302,6 +303,16 @@ module.exports = class Model extends Base {
                 this.set(attr, TypeHelper.cast(this.get(attr), attr.getCastType()));
             }
         }
+    }
+
+    getValidators (attrName, type) {
+        const validators = [];
+        for (const validator of this.ensureValidators()) {
+            if ((!attrName || validator.hasAttr(attrName)) && (!type || validator.type === type)) {
+                validators.push(validator);
+            }
+        }
+        return validators;
     }
 
     // SAVE
@@ -378,8 +389,10 @@ module.exports = class Model extends Base {
 
     async delete () {
         await this.beforeDelete();
-        await this.findSelf().delete();
-        await this.afterDelete();
+        if (!this.hasError()) {
+            await this.findSelf().delete();
+            await this.afterDelete();
+        }
     }
 
     beforeDelete () {
@@ -451,7 +464,7 @@ module.exports = class Model extends Base {
     // WORKFLOW
 
     isTransiting () {
-        return !!this._valueMap[this.class.TRANSITING_ATTR];
+        return !!this.getTransitionName();
     }
 
     isReadOnlyState () {
@@ -460,11 +473,19 @@ module.exports = class Model extends Base {
     }
 
     getState () {
-        return this.class.getState(this._valueMap[this.class.STATE_ATTR]);
+        return this.class.getState(this.getStateName());
+    }
+
+    getStateName () {
+        return this._valueMap[this.class.STATE_ATTR];
     }
 
     getTransition () {
-        return this.class.getTransition(this._valueMap[this.class.TRANSITING_ATTR]);
+        return this.class.getTransition(this.getTransitionName());
+    }
+
+    getTransitionName () {
+        return this._valueMap[this.class.TRANSITING_ATTR];
     }
 
     setDefaultState () {
@@ -488,21 +509,26 @@ module.exports = class Model extends Base {
     async transit (transition) {
         try {
             await this.updateTransiting(transition.name);
-            await Behavior.execute('beforeTransit', this);
             const transit = transition.createTransit(this);
+            await Behavior.execute('beforeTransit', this, transit);
+            if (this.hasError()) {
+                return this.updateTransiting(null);
+            }
             const state = await transit.execute();
             await this.updateState(state);
             this.log('info', `Transit done: ${transition.name}`);
         } catch (err) {
-            this.log('error', `Transit failed: ${transition.name}`, err);
+            const message = `Transit failed: ${transition.name}`;
+            this.log('error', message, err);
+            this.addError(this.class.TRANSITING_ATTR, message);
             return this.updateTransiting(null);
         }
         try {
-            await Behavior.execute('afterTransit', this);
+            await this.updateTransiting(null);
+            await Behavior.execute('afterTransit', this, transition);
         } catch (err) {
             this.log('error', `After transit failed: ${transition.name}`, err);
         }
-        return this.updateTransiting(null);
     }
 
     updateTransiting (value) {
@@ -521,12 +547,13 @@ module.exports = class Model extends Base {
         const access = security && security.attrAccess;
         const result = {
             _id: this.getId(),
-            _title: this.getTitle()
+            _title: this.getTitle(),
+            _class: this.class.name
         };
-        const forbidden = this.readForbiddenAttrs;
+        const forbidden = this.forbiddenReadAttrs;
         for (const attr of this.view.attrs) {
             if ((!access || access.canRead(attr.name)) && (!forbidden || !forbidden.includes(attr.name))) {
-                result[attr.name] = this.outputAttr(attr);
+                result[attr.name] = this.outputAttr(attr, result);
             } else if (result._forbidden) {
                 result._forbidden.push(attr.name);
             } else {
@@ -536,24 +563,27 @@ module.exports = class Model extends Base {
         return result;
     }
 
-    outputAttr (attr) {
+    outputAttr (attr, result) {
         if (attr.relation) {
-            const related = this.related.get(attr);
-            if (!Array.isArray(related)) {
-                return related ? related.output() : this.get(attr);
-            }
-            const result = [];
-            for (const model of related) {
-                result.push(model.output());
-            }
-            return result;
+            return this.outputRelationAttr(attr);
         }
-        if (attr.isState()) {
-            const value = this.get(attr);
-            const state = this.class.getState(value);
-            return state ? [value, state.title] : value;
+        if (attr.isEmbeddedModel()) {
+            result[`${attr.name}_title`] = this.related.getTitle(attr);
+            return this.get(attr);
         }
         return this.getDisplayValue(attr);
+    }
+
+    outputRelationAttr (attr) {
+        const related = this.related.get(attr);
+        if (!Array.isArray(related)) {
+            return related ? related.output() : this.get(attr);
+        }
+        const result = [];
+        for (const model of related) {
+            result.push(model.output());
+        }
+        return result;
     }
 };
 

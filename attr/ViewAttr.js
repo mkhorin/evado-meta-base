@@ -46,7 +46,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     initCommon () {
-        this.title = MetaHelper.createTitle(this);
+        this.title = MetaHelper.createLabel(this);
         this.hint = this.data.hint;
         this.extHint = this.data.extHint;
         this.options = this.data.options || {};
@@ -174,6 +174,10 @@ module.exports = class ViewAttr extends Base {
         return !this.isReadOnly();
     }
 
+    canSave () {
+        return !this.isCalc() && !this.isBackRef();
+    }
+
     getId() {
         return this.id;
     }
@@ -231,7 +235,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     getOption (key, defaults) {
-        return NestedValueHelper.get(key, this.options, defaults);
+        return NestedHelper.get(key, this.options, defaults);
     }
 
     getFormat () {
@@ -403,7 +407,7 @@ module.exports.init();
 const AssignHelper = require('areto/helper/AssignHelper');
 const ClassHelper = require('areto/helper/ClassHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
-const NestedValueHelper = require('areto/helper/NestedValueHelper');
+const NestedHelper = require('areto/helper/NestedHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const ActionBinder = require('./ActionBinder');
 const Enum = require('./Enum');

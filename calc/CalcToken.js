@@ -15,12 +15,14 @@ module.exports = class CalcToken extends Base {
             case '$-': return methods.resolveSubtraction;
             case '$*': return methods.resolveMultiplication;
             case '$/': return methods.resolveDivision;
+            case '$class': return methods.resolveClass;
             case '$join': return methods.resolveJoin;
             case '$map': return methods.resolveMap;
             case '$method': return methods.resolveMethod;
             case '$moment': return methods.resolveMoment;
             case '$now': return methods.resolveNow;
             case '$round': return methods.resolveRound;
+            case '$state': return methods.resolveState;
             case '$user': return methods.resolveUser;
         }
     }
@@ -91,6 +93,11 @@ module.exports = class CalcToken extends Base {
         return result;
     }
 
+    resolveClass (model, name) {
+        const metaClass = model.class.meta.getClass(name);
+        return metaClass ? metaClass.title : name;
+    }
+
     resolveJoin (model, separator, ...values) {
         return values.map(value => {
             return Array.isArray(value) ? value.join(separator) : value;
@@ -120,6 +127,11 @@ module.exports = class CalcToken extends Base {
 
     resolveRound (model, value, precision) {
         return MathHelper.round(value, precision);
+    }
+
+    resolveState (model, name) {
+        const state = model.class.getState(name);
+        return state ? state.title : name;
     }
 
     resolveUser (model) {

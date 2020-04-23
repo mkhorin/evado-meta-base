@@ -144,9 +144,12 @@ module.exports = class ModelRelated extends Base {
 
     setChanges (attr, data) {
         data = CommonHelper.parseRelationChanges(data);
-        attr = attr.name || attr;
-        this._changes[attr] = data;
+        this._changes[attr.name || attr] = data;
         this._resolved = false;
+    }
+
+    unsetChanges (attr) {
+        delete this._changes[attr.name || attr];
     }
 
     async resolveChanges () {

@@ -3,10 +3,13 @@
  */
 'use strict';
 
-// ["$query", "count", "class", {order:{}, limit: 10, offset: 10}, [condition]]
-// ["$query", "count", "view.class", {}, {"$key": ".attrName"}] // $key - alias for primary key name
-// ["$query", "count", "view.class", {}, {"backReference": ".$key"}]
-// ["$query", "scalar", "class", {"key": "num", "order": {"num": 1}}] // minimum
+// ["$query", "count", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
+// ["$query", "count", "viewName.className", {}, {"$key": ".attrName"}] // $key - alias for primary key name
+// ["$query", "count", "viewName.className", {}, {"backRefAttrName": ".$key"}]
+// ["$query", "column", "className", {"key": "attrName", "order": {"attrName": 1}}]
+// ["$query", "scalar", "className", {"key": "attrName", "order": {"attrName": -1}}]
+// ["$query", "ids", "className", {"order": {"attrName": -1}}]
+// ["$query", "id", "className", {"order": {"attrName": -1}}]
 
 const Base = require('./CalcToken');
 
@@ -18,6 +21,8 @@ module.exports = class CalcQuery extends Base {
         if (this.view) {
             this.params = this.operands[2] || {};
             this.condition = this.createCondition(this.operands[3]);
+            this.columnName = this.createColumnName();
+            this.order = this.createOrder();
         }
     }
     
@@ -36,6 +41,17 @@ module.exports = class CalcQuery extends Base {
             || this.calc.getClass(id)
             || this.log('error', `View not found: ${id}`);
     }
+
+    createColumnName () {
+        return typeof this.params.key === 'string'
+            ? this.params.key.replace('$key', this.view.getKey())
+            : null;
+    }
+
+    createOrder (data) {
+        ObjectHelper.replaceKeys({'$key': this.view.getKey()}, this.params.order);
+        return this.params.order;
+    }
     
     createQuery () {
         const query = this.view.find();
@@ -45,8 +61,8 @@ module.exports = class CalcQuery extends Base {
         if (this.params.offset) {
             query.offset(this.params.offset);
         }
-        if (this.params.order) {
-            query.order(this.params.order);
+        if (this.order) {
+            query.order(this.order);
         }
         return query;
     }
@@ -73,14 +89,23 @@ module.exports = class CalcQuery extends Base {
         return query.count();
     }
 
-    resolveScalar (query) {
-        return query.scalar(this.params.key);
+    resolveColumn (query) {
+        return query.column(this.columnName);
     }
 
-    resolveColumn (query) {
-        return query.column(this.params.key);
+    resolveScalar (query) {
+        return query.scalar(this.columnName);
+    }
+
+    resolveIds (query) {
+        return query.ids();
+    }
+
+    resolveId (query) {
+        return query.id();
     }
 };
 
+const ObjectHelper = require('areto/helper/ObjectHelper');
 const StringHelper = require('areto/helper/StringHelper');
 const CalcCondition = require('./CalcCondition');

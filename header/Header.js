@@ -6,6 +6,11 @@
 // [".attrName"]
 // [".attrName", "suffix"] // "value suffix"
 // ["static text", ".attrName.nestedAttrName", ["$method", ".attrName", "toLowerCase"]]
+// [".$key"] // object ID
+
+// ["$class", ".attrName"] // resolve class title
+// ["$enum", ".attrName"] // resolve enum title
+// ["$state", ".attrName"] // resolve state title
 
 // ["$method", ".attrName", "toUpperCase"] // value.toUpperCase()
 

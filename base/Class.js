@@ -37,7 +37,8 @@ module.exports = class Class extends Base {
         this.parentTemplateDir = MetaHelper.addClosingChar(this.data.templateRoot, '/');
         this.viewModel = `_class/${this.class.name}`;
         this.options = this.data.options || {};
-        this.title = MetaHelper.createTitle(this);
+        this.title = MetaHelper.createLabel(this);
+        this.data.label = this.title;
         this.createModelConfig();
     }
 
@@ -220,6 +221,8 @@ module.exports = class Class extends Base {
         Behavior.createConfigurations(this);
         this.prepareFileBehavior();
         this.prepareHistoryBehavior();
+        Behavior.setAfterFindBehaviors(this);
+        Behavior.sort(this);
         this.views.forEach(view => view.prepareBehaviors());
     }
 
@@ -266,6 +269,9 @@ module.exports = class Class extends Base {
         this.transitions = MetaHelper.sortByDataOrderNumber(Object.values(data));
         this.transitionMap = this.transitions.length ? data : null;
         this.startStateTransitionMap = this.indexStateTransitions('startStates', 'nullStartState');
+        for (const state of this.states) {
+            state.resolveDeadEnd(this.transitions);
+        }
     }
 
     indexStateTransitions (key, nullStateKey) {
@@ -323,26 +329,6 @@ module.exports = class Class extends Base {
                 this.createView(view.data);
             }
         }
-    }
-
-    // GROUPS
-
-    createGroups () {
-        this.rootGroup = new RootGroup({view: this});
-        this.groups = {};
-        this.data.groups = this.getInheritedData('groups');
-        if (Array.isArray(this.data.groups)) {
-            this.data.groups.sort((a, b) => a.orderNumber - b.orderNumber);
-            for (const data of this.data.groups) {
-                this.groups[data.name] = new Group({view: this, data});
-            }
-        }
-    }
-
-    getInheritedData (key) {
-        return Object.prototype.hasOwnProperty.call(this.data, key)
-            ? this.data[key]
-            : this.getParent() ? this.getParent().getInheritedData(key) : undefined;
     }
 
     // ATTRIBUTES
@@ -471,10 +457,15 @@ module.exports = class Class extends Base {
         }
         return this._descendants;
     }
+
+    getInheritedData (key) {
+        return Object.prototype.hasOwnProperty.call(this.data, key)
+            ? this.data[key]
+            : this.getParent() ? this.getParent().getInheritedData(key) : undefined;
+    }
 };
 module.exports.init();
 
-const ArrayHelper = require('areto/helper/ArrayHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
@@ -486,7 +477,5 @@ const ClassHeader = require('../header/ClassHeader');
 const ClassKey = require('./ClassKey');
 const ClassIndexing = require('./ClassIndexing');
 const View = require('./View');
-const Group = require('../group/Group');
-const RootGroup = require('../group/RootGroup');
 const State = require('../workflow/State');
 const Transition = require('../workflow/Transition');

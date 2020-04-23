@@ -23,6 +23,7 @@ module.exports = class View extends Base {
         this.translationKey = `${this.class.translationKey}.view.${this.name}`;
         this.meta = this.class.meta;
         this.title = this.data.label || this.class.title;
+        this.data.label = this.title;
     }
 
     isClass () {
@@ -50,7 +51,7 @@ module.exports = class View extends Base {
     }
 
     getOption (key, defaults) {
-        return NestedValueHelper.get(key, this.options, defaults);
+        return NestedHelper.get(key, this.options, defaults);
     }
 
     toString () {
@@ -84,7 +85,6 @@ module.exports = class View extends Base {
     prepare () {
         this.createAttrs();
         this.createGroups();
-        this.prepareGroups();
         this.prepareRules();
         this.prepareOrder();
     }
@@ -96,22 +96,23 @@ module.exports = class View extends Base {
     }
 
     createAttrs () {
-        this.data.attrs = Array.isArray(this.data.attrs) ? this.data.attrs : [];
-        MetaHelper.sortByOrderNumber(this.data.attrs);
+        const attrs = Array.isArray(this.data.attrs) ? this.data.attrs : [];
+        MetaHelper.sortByOrderNumber(attrs);
         this.attrMap = {};
         this.attrs = [];
+        this.attrBehaviors = [];
         this.eagerAttrs = [];
+        this.eagerUserAttrs = [];
         this.fileAttrs = [];
-        this.userAttrs = [];
         this.calcAttrs = [];
         this.defaultValueAttrs = [];
         this.searchAttrs = [];
         this.commonSearchAttrs = []; // search attributes for common grid search
-        this.selectSearchAttrs = []; // search attributes for select2 requests
+        this.selectSearchAttrs = []; // search attributes for select2
         this.historyAttrs = [];
         this.refAttrs = [];
         this.backRefAttrs = [];
-        for (const data of this.data.attrs) {
+        for (const data of attrs) {
             this.appendAttr(this.createAttr(data));
         }
     }
@@ -139,16 +140,17 @@ module.exports = class View extends Base {
         if (!attr) {
             return false;
         }
+        const eagerLoading = attr.data.eagerLoading;
         const classAttr = attr.classAttr;
         this.attrs.push(attr);
-        if (attr.data.eagerLoading && classAttr.isRelation()) {
+        if (classAttr.isRelation() && eagerLoading) {
             this.eagerAttrs.push(attr);
         }
         if (attr.isFile()) {
             this.fileAttrs.push(attr);
         }
-        if (attr.isUser()) {
-            this.userAttrs.push(attr);
+        if (attr.isUser() && eagerLoading) {
+            this.eagerUserAttrs.push(attr);
         }
         if (attr.isCalc()) {
             this.calcAttrs.push(attr);
@@ -275,54 +277,16 @@ module.exports = class View extends Base {
 
     // GROUPS
 
-    hasGroup (name) {
-        return Object.prototype.hasOwnProperty.call(this.groups, name);
-    }
-
     createGroups () {
-        this.rootGroup = new RootGroup({view: this});
-        this.groups = {};
-        if (this.data.disableGroups || (!Array.isArray() && !Array.isArray(this.class.data.groups))) {
-            return false;
-        }
-        const viewGroupMap = IndexHelper.indexObjects(this.data.groups, 'name');
-        const groups = [];
-        for (const data of this.class.data.groups) {
-            groups.push(AssignHelper.deepAssign({}, data, viewGroupMap[data.name]));
-        }
-        groups.sort((a, b) => a.orderNumber - b.orderNumber);
-        for (const data of groups) {
-            this.groups[data.name] = new Group({view: this, data});
-        }
-    }
-
-    prepareGroups () {
-        this.deleteUnusedGroups();
-        this.rootGroup.prepare();
-        Object.values(this.groups).forEach(group => group.prepare());
-    }
-
-    deleteUnusedGroups () {
-        let usedGroups = {};
-        for (const attr of this.attrs) {
-            if (attr.data.group) {
-                usedGroups[attr.data.group] = true;
-            }
-        }
-        usedGroups = InheritanceHelper.addParents(usedGroups, this.groups);
-        for (const name of Object.keys(this.groups)) {
-            if (!Object.prototype.hasOwnProperty.call(usedGroups, name)) {
-                delete this.groups[name];
-            }
-        }
+        this.grouping = new Grouping({view: this});
+        this.grouping.createGroups();
     }
 
     // BEHAVIOR
 
     addAttrBehavior (attr, data) {
         data.attrName = attr.name;
-        ObjectHelper.push(data, 'behaviors', this.data);
-        return data;
+        this.attrBehaviors.push(data);
     }
 
     getBehaviorsByClassAndAttr (Class, attr) {
@@ -339,6 +303,9 @@ module.exports = class View extends Base {
 
     prepareBehaviors () {
         Behavior.createConfigurations(this);
+        Behavior.appendClassBehaviors(this);
+        Behavior.setAfterFindBehaviors(this);
+        Behavior.sort(this);
     }
 
     // TREE VIEW
@@ -354,6 +321,14 @@ module.exports = class View extends Base {
     }
 
     // MODEL
+
+    getModelClass (data) {
+        return this.meta.getClass(data[this.class.CLASS_ATTR]) || this.class;
+    }
+
+    getModelView (metaClass) {
+        return this.isClass() ? metaClass : (metaClass.getView(this.name) || metaClass);
+    }
 
     find (config) {
         return new ModelQuery({view: this, ...config});
@@ -384,14 +359,6 @@ module.exports = class View extends Base {
         return new config.Class({...config, view: this, module, ...params});
     }
 
-    getModelClass (data) {
-        return this.meta.getClass(data[this.class.CLASS_ATTR]) || this.class;
-    }
-
-    getModelView (metaClass) {
-        return this.isClass() ? metaClass : (metaClass.getView(this.name) || metaClass);
-    }
-
     // LOG
 
     log () {
@@ -400,11 +367,8 @@ module.exports = class View extends Base {
 };
 
 const ArrayHelper = require('areto/helper/ArrayHelper');
-const AssignHelper = require('areto/helper/AssignHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
-const IndexHelper = require('areto/helper/IndexHelper');
-const NestedValueHelper = require('areto/helper/NestedValueHelper');
-const ObjectHelper = require('areto/helper/ObjectHelper');
+const NestedHelper = require('areto/helper/NestedHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const AttrHeader = require('../header/AttrHeader');
@@ -412,8 +376,7 @@ const ViewAttr = require('../attr/ViewAttr');
 const ObjectFilter = require('./ObjectFilter');
 const Model = require('../model/Model');
 const ModelQuery = require('../model/ModelQuery');
-const Group = require('../group/Group');
-const RootGroup = require('../group/RootGroup');
+const Grouping = require('./Grouping');
 const Behavior = require('../behavior/Behavior');
 const ClassHeader = require('../header/ClassHeader');
 const Validator = require('../validator/Validator');

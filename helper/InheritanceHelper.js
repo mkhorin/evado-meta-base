@@ -7,11 +7,17 @@ const CLASS_MERGED_LIST_MAP = {
     attrs: true,
     groups: true
 };
-const CLASS_SKIPPED_MAP = {
+const CLASS_SKIP_MAP = {
     activeDescendants: true,
+    description: true,
+    label: true,
     parent: true
 };
-const EXTENDED_MAP = {
+const CLASS_REPLACEMENT_MAP = {
+    states: true,
+    transitions: true
+};
+const EXTENTION_MAP = {
     actionBinder: true
 };
 const IMMUTABLE_ARRAY_MAP = {
@@ -33,14 +39,17 @@ module.exports = class InheritanceHelper extends Base {
 
     static mergeClassData (child, parent) {
         for (const key of Object.keys(parent)) {
-            if (CLASS_SKIPPED_MAP[key] === true) {
-                continue;
-            }
-            if (CLASS_MERGED_LIST_MAP[key] === true) {
+            if (CLASS_SKIP_MAP[key] === true) {
+            } else if (CLASS_MERGED_LIST_MAP[key] === true) {
                 child[key] = this.mergeObjectList(child[key], parent[key]);
             } else if (Array.isArray(parent[key]) && Array.isArray(child[key])) {
-                child[key] = parent[key].concat(child[key]);
-            } else if (!Object.prototype.hasOwnProperty.call(child, key)) {
+                if (CLASS_REPLACEMENT_MAP[key] !== true) {
+                    child[key] = parent[key].concat(child[key]);
+                }
+            } else if (Object.prototype.hasOwnProperty.call(child, key)) {
+            } else if (Array.isArray(parent[key])) {
+                child[key] = [].concat(parent[key]);
+            } else {
                 child[key] = parent[key];
             }
         }
@@ -64,7 +73,7 @@ module.exports = class InheritanceHelper extends Base {
         for (const key of Object.keys(source)) {
             const hasSource = Object.prototype.hasOwnProperty.call(source, key);
             const hasTarget = Object.prototype.hasOwnProperty.call(target, key);
-            if (EXTENDED_MAP[key] === true) {
+            if (EXTENTION_MAP[key] === true) {
                 if (!hasTarget) {
                     target[key] = source[key];
                 } else if (hasSource && target[key]) {
@@ -82,11 +91,11 @@ module.exports = class InheritanceHelper extends Base {
         }
     }
 
-    static addParents (children, map) {
+    static assignParents (children, map) {
         for (const key of Object.keys(children)) {
             const parent = map[key] && map[key].data.parent;
             if (parent && !Object.prototype.hasOwnProperty.call(children, parent)) {
-                Object.assign(children, this.addParents({[map[key].data.parent]: true}, map));
+                Object.assign(children, this.assignParents({[map[key].data.parent]: true}, map));
             }
         }
         return children;

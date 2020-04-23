@@ -36,10 +36,12 @@ module.exports = class Token extends Base {
 
     getHandlerClass (name) {
         switch (name) {
+            case '$class': return ClassHandler;
             case '$enum': return EnumHandler;
             case '$map': return MapHandler;
             case '$method': return MethodHandler;
             case '$moment': return MomentHandler;
+            case '$state': return StateHandler;
         }
     }
 
@@ -65,11 +67,11 @@ module.exports = class Token extends Base {
         const attrs = [];
         const names = text.split('.');
         for (let i = 1; i < names.length; ++i) {
-            const name = names[i];
+            const name = names[i] === '$key' ? refClass.getKey() : names[i];
             const attr = refClass.getAttr(name);
             if (!attr) {
-                this.log('error', `Attribute not found: ${name}`);
-                return false;
+                attrs.push(name);
+                break;
             }
             refClass = attr.relation && attr.relation.refClass;
             if (!refClass && i + 1 < names.length) {
@@ -95,42 +97,42 @@ module.exports = class Token extends Base {
 
     resolveAttrValue (model) {
         if (!this._firstAttr.relation) {
-            return model.get(this._firstAttr);
+            return this.formatValue(model, this._firstAttr);
         }
-        let data = model;
+        let target = model;
         for (const attr of this._attrs) {
             if (attr.relation) {
-                data = Array.isArray(data)
-                    ? this.getRelatedByModels(data, attr)
-                    : data.related.get(attr);
-                if (!data) {
+                target = Array.isArray(target)
+                    ? this.getRelatedByModels(target, attr)
+                    : this.formatValue(target.related, attr);
+                if (!target) {
                     return Array.isArray(model)
                         ? this.getValueByModels(model)
-                        : model.get(attr);
+                        : this.formatValue(model, attr);
                 }
-                model = data;
+                model = target;
             } else {
-                data = Array.isArray(data)
-                    ? this.getValueByModels(data, attr)
-                    : data.get(attr);
+                target = Array.isArray(target)
+                    ? this.getValueByModels(target, attr)
+                    : this.formatValue(target, attr);
             }
         }
         if (!this._lastAttr.relation) {
-            return data;
+            return target;
         }
-        return Array.isArray(data)
-            ? data.map(model => model.header.resolve())
-            : data.header.resolve();
+        return Array.isArray(target)
+            ? target.map(model => model.header.resolve())
+            : target.header.resolve();
     }
 
     getValueByModels (models, attr) {
         const result = [];
         for (const model of models) {
-            const data = model.get(attr);
-            if (Array.isArray(data)) {
-                result.push(...data);
-            } else if (data !== undefined && data !== null && data !== '') {
-                result.push(data);
+            const value = model.get(attr);
+            if (Array.isArray(value)) {
+                result.push(...value);
+            } else if (value !== undefined && value !== null && value !== '') {
+                result.push(value);
             }
         }
         return result;
@@ -139,14 +141,19 @@ module.exports = class Token extends Base {
     getRelatedByModels (models, attr) {
         const result = [];
         for (const model of models) {
-            const data = model.related.get(attr);
-            if (Array.isArray(data)) {
-                result.push(...data);
-            } else if (data) {
-                result.push(data);
+            const value = model.related.get(attr);
+            if (Array.isArray(value)) {
+                result.push(...value);
+            } else if (value) {
+                result.push(value);
             }
         }
         return result;
+    }
+
+    formatValue (model, attr) {
+        const value = model.get(attr);
+        return value === null || value === undefined ? '' : value;
     }
 
     log (type, message, data) {
@@ -155,7 +162,9 @@ module.exports = class Token extends Base {
 };
 
 const BaseHandler = require('./BaseHandler');
+const ClassHandler = require('./ClassHandler');
 const EnumHandler = require('./EnumHandler');
 const MapHandler = require('./MapHandler');
 const MethodHandler = require('./MethodHandler');
 const MomentHandler = require('./MomentHandler');
+const StateHandler = require('./StateHandler');

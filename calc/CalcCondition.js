@@ -9,6 +9,7 @@ const Base = require('areto/base/Base');
 // {"attrName": ".attrName"}
 // ["!=", "attrName", "value"]
 // {"$key": ".attrName"} // $key - alias for primary key name
+// {"attrName": ".$key"}
 
 module.exports = class CalcCondition extends Base {
 

@@ -18,7 +18,7 @@ module.exports = class Group extends Base {
         this.id = `${this.name}.${this.view.id}`;
         this.options = this.data.options || {};
         this.type = this.data.type || 'set';
-        this.title = MetaHelper.createTitle(this);
+        this.title = MetaHelper.createLabel(this);
         this.hint = this.data.hint;
         this.setTranslationKey();
         this.setTemplateKeys();
@@ -40,9 +40,33 @@ module.exports = class Group extends Base {
         return this.title;
     }
 
+    getAllAttrs () {
+        if (!this._allAttrs) {
+            this._allAttrs = this.attrs.slice();
+            for (const group of this.groups) {
+                this._allAttrs.push(...group.getAllAttrs());
+            }
+        }
+        return this._allAttrs;
+    }
+
+    getAllGroups () {
+        if (!this._allGroups) {
+            this._allGroups = this.groups.slice();
+            for (const group of this.groups) {
+                this._allGroups.push(...group.getAllGroups());
+            }
+        }
+        return this._allGroups;
+    }
+
     prepare () {
-        this.children = this.getAttrs().concat(this.getGroups());
+        this.attrs = this.forceGetAttrs();
+        this.groups = this.forceGetGroups();
+        this.children = this.attrs.concat(this.groups);
         this.createActionBinder();
+        MetaHelper.sortByDataOrderNumber(this.attrs);
+        MetaHelper.sortByDataOrderNumber(this.groups);
         MetaHelper.sortByDataOrderNumber(this.children);
     }
 
@@ -53,7 +77,7 @@ module.exports = class Group extends Base {
         });
     }
 
-    getAttrs () {
+    forceGetAttrs () {
         const list = [];
         for (const attr of this.view.attrs) {
             if (attr.data.group === this.name) {
@@ -63,9 +87,9 @@ module.exports = class Group extends Base {
         return list;
     }
 
-    getGroups () {
+    forceGetGroups () {
         const list = [];
-        for (const group of Object.values(this.view.groups)) {
+        for (const group of Object.values(this.view.grouping.groupMap)) {
             if (group.data.parent === this.name) {
                 list.push(group);
             }

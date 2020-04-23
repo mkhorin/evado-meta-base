@@ -11,15 +11,24 @@ module.exports = class Transition extends Base {
         super(config);
         this.name = this.data.name;
         this.id = `${this.name}.${this.class.id}`;
-        this.title = MetaHelper.createTitle(this);
+        this.title = MetaHelper.createLabel(this);
         this.hint = this.data.hint;
         this.nullStartState = this.data.nullStartState;
-        this.startStates = this.resolveStateNames(this.data.startStates);
+        this.startStates = this.resolveStates(this.data.startStates);
         this.finalState = this.class.getState(this.data.finalState);
         this.options = this.data.options || {};
         this.translationKey = `${this.class.translationKey}.transition.${this.name}`;
         this.createCondition();
         this.createTransitConfig();
+    }
+
+    hasStartState (name) {
+        for (const state of this.startStates) {
+            if (state.name === name) {
+                return true;
+            }
+        }
+        return false;
     }
 
     getName () {
@@ -30,6 +39,10 @@ module.exports = class Transition extends Base {
         return this.title;
     }
 
+    getOption (key, defaults) {
+        return NestedHelper.get(key, this.options, defaults);
+    }
+
     toString () {
         return this.id;
     }
@@ -38,16 +51,18 @@ module.exports = class Transition extends Base {
         return this.finalState ? this.finalState.name : null;
     }
 
-    resolveStateNames (names) {
-        names = Array.isArray(names) ? names.map(name => this.class.getState(name)) : [];
-        names = names.filter(name => name);
-        return names.length ? names : null;
+    resolveStates (names) {
+        let states = Array.isArray(names) ? names.map(name => this.class.getState(name)) : [];
+        states = states.filter(state => state);
+        return states.length ? states : null;
     }
 
     createCondition () {
         const data = this.data.condition;
         if (data) {
-            this.condition = data.Class ? this.class.meta.resolveSpawn(data) : data;
+            this.condition = data.Class
+                ? this.class.meta.resolveSpawn(data)
+                : data;
         }
     }
 
@@ -75,4 +90,5 @@ module.exports = class Transition extends Base {
 };
 
 const MetaHelper = require('../helper/MetaHelper');
+const NestedHelper = require('areto/helper/NestedHelper');
 const Transit = require('./Transit');

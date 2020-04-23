@@ -19,10 +19,6 @@ module.exports = class ClassAttr extends Base {
         this.initCommon();
     }
 
-    canSave () {
-        return !this.isCalc() && !this.isBackRef();
-    }
-
     setParent () {
         const parent = this.class.getParent();
         this.parent = parent ? parent.getAttr(this.name) : null;
@@ -46,12 +42,15 @@ module.exports = class ClassAttr extends Base {
     }
 
     createCalc () {
-        this.calc = this.spawnCalc(this.data.expression);
+        const expression = this.data.expression;
+        this.calc = this.parent && this.parent.data.expression === expression
+            ? this.parent.calc
+            : this.spawnCalc(expression);
     }
 
     prepareBehaviors () {
         super.prepareBehaviors();
-        if (this.data.trim) {
+        if (this.data.trim && !this.isReadOnly() && (this.isString() || this.isText())) {
             this.class.addAttrBehavior(this, {type: 'trim'});
         }
     }

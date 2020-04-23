@@ -13,7 +13,7 @@ module.exports = class TreeViewLevel extends Base {
     }
 
     getOption (key, defaults) {
-        return NestedValueHelper.get(key, this.data.options, defaults);
+        return NestedHelper.get(key, this.data.options, defaults);
     }
 
     getRefClass () {
@@ -36,4 +36,4 @@ module.exports = class TreeViewLevel extends Base {
     }
 };
 
-const NestedValueHelper = require('areto/helper/NestedValueHelper');
+const NestedHelper = require('areto/helper/NestedHelper');

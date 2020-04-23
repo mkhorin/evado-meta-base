@@ -16,7 +16,6 @@ module.exports = class Validator extends Base {
                 actionBinder: './ActionBinderValidator',
                 boolean: './BooleanValidator',
                 date: './DateValidator',
-                defaultValue: './DefaultValueValidator',
                 email: './EmailValidator',
                 enum: './EnumValidator',
                 exist: './ExistValidator',
@@ -64,16 +63,12 @@ module.exports = class Validator extends Base {
         const validators = this.createBaseValidators(view);
         validators.push(...this.createRuleValidators(view.class.data.rules, view));
         for (const attr of view.attrs) {
-            if (!attr.readOnly) {
-                validators.push(...this.createAttrValidators(attr.classAttr));
-            }
+            validators.push(...this.createAttrValidators(attr.classAttr));
         }
         if (view !== view.class) {
             validators.push(...this.createRuleValidators(view.data.rules, view));
             for (const attr of view.attrs) {
-                if (!attr.readOnly) {
-                    validators.push(...this.createAttrValidators(attr));
-                }
+                validators.push(...this.createAttrValidators(attr));
             }
         }
         for (const {name, actionBinder, readOnly} of view.attrs) {
@@ -147,7 +142,7 @@ module.exports = class Validator extends Base {
         const result = [];
         for (const name of names) {
             const attr = view.getAttr(name);
-            if (attr && !attr.readOnly) {
+            if (attr) {
                 result.push(name);
             }
         }
@@ -192,12 +187,12 @@ module.exports = class Validator extends Base {
             return message.addParams(params);
         }
         if (message) {
-            return new Message(message, this.messageSource, params);
+            return new Message(message, params, this.messageSource);
         }
         if (defaultMessage instanceof Message) {
             return defaultMessage.addParams(params);
         }
-        return new Message(defaultMessage, this.defaultMessageSource, params);
+        return new Message(defaultMessage, params, this.defaultMessageSource);
     }
 
     async execute (model) {
