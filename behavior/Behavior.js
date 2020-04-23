@@ -23,15 +23,15 @@ module.exports = class Behavior extends Base {
         };
     }
 
-    static createConfigurations (owner) {
-        const items = owner.data.behaviors;
-        if (!Array.isArray(items)) {
-            return null;
+    static createConfigurations (view) {
+        const items = [].concat(view.attrBehaviors);
+        if (Array.isArray(view.data.behaviors)) {
+            items.push(...view.data.behaviors);
         }
         for (const item of items) {
-            const data = this.createConfiguration(owner, item);
-            data ? this.appendConfiguration(owner, data)
-                 : owner.log('error', 'Invalid behavior configuration:', item);
+            const data = this.createConfiguration(view, item);
+            data ? this.appendConfiguration(view, data)
+                 : view.log('error', 'Invalid behavior configuration:', item);
         }
     }
 
@@ -39,24 +39,53 @@ module.exports = class Behavior extends Base {
         // override if necessary
     }
 
-    static appendConfiguration (owner, data) {
+    static appendConfiguration (view, data) {
         data.Class.initConfiguration(data);
-        ObjectHelper.push(data, 'behaviors', owner);
+        ObjectHelper.push(data, 'behaviors', view);
         return data;
     }
 
-    static createConfiguration (owner, data) {
+    static createConfiguration (view, data) {
         if (!data) {
             return null;
         }
         if (this.BUILTIN.hasOwnProperty(data)) {
-            return {Class: require(this.BUILTIN[data])};
+            return {
+                Class: require(this.BUILTIN[data]),
+                orderNumber: 0
+            };
         }
         if (data.type === this.CUSTOM_BEHAVIOR_TYPE) {
-            return owner.getMeta().resolveSpawn(data.config);
+            data.config.orderNumber = data.config.orderNumber || data.orderNumber || 0;
+            return view.getMeta().resolveSpawn(data.config);
         }
         if (this.BUILTIN.hasOwnProperty(data.type)) {
+            data.orderNumber = data.orderNumber || 0;
             return {...data, Class: require(this.BUILTIN[data.type])};
+        }
+    }
+
+    static appendClassBehaviors (view) {
+        if (view.class.behaviors) {
+            view.behaviors = view.behaviors || [];
+            view.behaviors.push(...view.class.behaviors);
+        }
+    }
+
+    static setAfterFindBehaviors (view) {
+        view.afterFindBehaviors = this.getBehaviorsByMethod('afterFind', view);
+    }
+
+    static getBehaviorsByMethod (name, view) {
+        if (view.behaviors) {
+            const result = view.behaviors.filter(behavior => behavior.Class.prototype[name] instanceof Function);
+            return result.length ? result : null;
+        }
+    }
+
+    static sort (view) {
+        if (view.behaviors) {
+            MetaHelper.sortByOrderNumber(view.behaviors);
         }
     }
 
@@ -64,9 +93,6 @@ module.exports = class Behavior extends Base {
         model.behaviors = [];
         if (model.view.behaviors) {
             this.createModelBehaviorsByData(model.view.behaviors, model);
-        }
-        if (model.view !== model.class && model.class.behaviors) {
-            this.createModelBehaviorsByData(model.class.behaviors, model);
         }
     }
 
@@ -77,11 +103,11 @@ module.exports = class Behavior extends Base {
         }
     }
 
-    static async execute (method, model) {
+    static async execute (method, model, ...args) {
         model.ensureBehaviors();
         for (const behavior of model.behaviors) {
             if (behavior[method] instanceof Function) {
-                await behavior[method]();
+                await behavior[method](...args);
             }
         }
     }
@@ -112,6 +138,9 @@ module.exports = class Behavior extends Base {
     emitEvent (name, data) {
         return this.owner.getMeta().emitEvent(name, {model: this.owner, ...data});
     }
+
+    // afterDefaultValues
+    // afterFind
 
     // beforeValidate
     // afterValidate
@@ -146,4 +175,5 @@ module.exports = class Behavior extends Base {
 module.exports.init();
 
 const ClassHelper = require('areto/helper/ClassHelper');
+const MetaHelper = require('../helper/MetaHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');

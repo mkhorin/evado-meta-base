@@ -26,7 +26,7 @@ module.exports = class AutoIncrementBehavior extends Base {
         });
     }
 
-    async setDefaultValues () {
+    async afterDefaultValues () {
         const query = this.getValueQuery();
         const current = await query.scalar('value');
         this.owner.set(this.attrName, this.getNextValue(current));

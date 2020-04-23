@@ -15,7 +15,7 @@ module.exports = class SortOrderBehavior extends Base {
         });
     }
 
-    setDefaultValues () {
+    afterDefaultValues () {
         return this.setNextNumber();
     }
 
@@ -41,13 +41,13 @@ module.exports = class SortOrderBehavior extends Base {
         }).scalar(this.attrName);
     }
 
-    async update (data, metaClass) {
+    async update (data, view) {
         const config = {
             module: this.module,  
             user: this.user  
         };
         for (const id of Object.keys(data)) {
-            const model = await metaClass.findById(id, config).one();
+            const model = await view.findById(id, config).one();
             if (model) {                
                 model.set(this.attrName, data[id]);
                 await model.forceSave();
