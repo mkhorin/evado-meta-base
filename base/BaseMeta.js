@@ -3,13 +3,13 @@
  */
 'use strict';
 
-const Base = require('evado/component/meta/BaseMetaModel');
+const Base = require('evado/component/meta/MetaModel');
 
-module.exports = class DocMeta extends Base {
+module.exports = class BaseMeta extends Base {
 
     constructor (config) {
         super({
-            name: 'document',
+            name: 'base',
             source: {Class: require('../source/FileSource')},
             autoIncrementTable: 'ds_autoIncrement',
             dataTablePrefix: 'd_',

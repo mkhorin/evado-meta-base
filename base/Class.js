@@ -213,10 +213,6 @@ module.exports = class Class extends Base {
 
     // BEHAVIOR
 
-    getFileBehaviorAttr () {
-        return this.FileBehaviorConfig ? this.getAttr(this.FileBehaviorConfig.attrName) : null;
-    }
-
     prepareBehaviors () {
         Behavior.createConfigurations(this);
         this.prepareFileBehavior();

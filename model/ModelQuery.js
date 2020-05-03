@@ -26,7 +26,7 @@ module.exports = class ModelQuery extends Base {
         return this.column(this.view.getKey());
     }
 
-    indexById () {
+    indexByKey () {
         return this.index(this.view.getKey());
     }
 
@@ -47,6 +47,18 @@ module.exports = class ModelQuery extends Base {
 
     setRelatedFilter (filter) {
         this._relatedFilter = filter;
+        return this;
+    }
+
+    with (...relations) {
+        this._with = this._with || {};
+        for (const data of relations) {
+            if (typeof data === 'string') {
+                this._with[data] = {view: true};
+            } else {
+                Object.assign(this._with, data);
+            }
+        }
         return this;
     }
 
@@ -144,6 +156,9 @@ module.exports = class ModelQuery extends Base {
         if (this._withRelated && this._relatedDepth < this._maxRelatedDepth) {
             await this.resolveRelation(models);
         }
+        if (this._with) {
+            await this.resolveWith(models);
+        }
         if (this._withCalc && this.view.calcAttrs.length) {
             await this.resolveCalc(models);
         }
@@ -178,6 +193,26 @@ module.exports = class ModelQuery extends Base {
         }
     }
 
+    async resolveWith (models) {
+        for (const name of Object.keys(this._with)) {
+            const value = this._with[name];
+            if (!value) {
+                continue;
+            }
+            const attr = this.view.getAttr(name);
+            const view = value.view === true
+                ? attr.getEagerView()
+                : value.view
+                    ? attr.getRefClass().getView(value.view)
+                    : attr.getRefClass();
+            const query = view.find().copyParams(this);
+            if (value.handler) {
+                value.handler(query);
+            }
+            await attr.relation.findByModels(models, query);
+        }
+    }
+
     async resolveCalc (models) {
         for (const attr of this.view.calcAttrs) {
             await attr.calc.resolveAll(models);
@@ -208,7 +243,7 @@ module.exports = class ModelQuery extends Base {
         const ids = MetaHelper.getModelValues(models, this.view.eagerUserAttrs);
         if (ids.length) {
             const user = this.view.meta.spawnUser();
-            const userMap = await user.findById(ids).indexById().all();
+            const userMap = await user.findById(ids).indexByKey().all();
             MetaHelper.setModelRelated(userMap, models, this.view.eagerUserAttrs);
         }
     }

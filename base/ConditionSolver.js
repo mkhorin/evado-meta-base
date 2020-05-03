@@ -5,8 +5,14 @@
 
 // {"attrName": "value"}
 // {"$key": "value"} // $key - primary key name
-// [">", "dateAttrName", "$now"] // $now - current datetime
-// {"creator": "$user"} // $user - current user
+// {"creator": "$user"} // current user
+// [">", "dateAttrName", "$now"] // current datetime
+// [">", "dateAttrName", "$currentMonth"]
+// [">", "dateAttrName", "$currentYear"]
+// ["<", "dateAttrName", "$nextMonth"]
+// ["<", "dateAttrName", "$nextYear"]
+// ["<", "dateAttrName", "$previousMonth"]
+// ["<", "dateAttrName", "$previousYear"]
 
 const Base = require('areto/base/Base');
 

@@ -99,7 +99,7 @@ module.exports = class Behavior extends Base {
     static createModelBehaviorsByData (data, model) {
         for (const config of data) {
             config.owner = model;
-            model.behaviors.push(ClassHelper.spawn(config));
+            model.behaviors.push(new config.Class(config));
         }
     }
 

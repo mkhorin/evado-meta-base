@@ -93,9 +93,9 @@ module.exports = class Calc extends Base {
     }
 
     createRelation (data) {
-        if (this.isAttrName(data) && data.charAt(1) !== '_' && data.charAt(1) !== '$') {
-            const relation = new CalcRelation({calc: this, data});
-            return this.createToken(relation.queryData);
+        if (this.isAttrName(data) && data.indexOf('.') !== data.lastIndexOf('.')) {
+            const rel = new CalcRelation({calc: this, data});
+            return this.createToken(rel.getQueryData());
         }
     }
 

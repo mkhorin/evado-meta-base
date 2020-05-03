@@ -206,10 +206,6 @@ module.exports = class ViewAttr extends Base {
         return this.viewType;
     }
 
-    getThumbnail () {
-        return this.options.thumbnail;
-    }
-
     getFormId (prefix) {
         return `${prefix}-data-${this.name}`;
     }

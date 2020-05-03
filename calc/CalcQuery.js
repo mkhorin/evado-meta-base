@@ -10,6 +10,8 @@
 // ["$query", "scalar", "className", {"key": "attrName", "order": {"attrName": -1}}]
 // ["$query", "ids", "className", {"order": {"attrName": -1}}]
 // ["$query", "id", "className", {"order": {"attrName": -1}}]
+// ["$query", "title", "className", null, [condition]]
+// ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
 
 const Base = require('./CalcToken');
 
@@ -103,6 +105,16 @@ module.exports = class CalcQuery extends Base {
 
     resolveId (query) {
         return query.id();
+    }
+
+    async resolveTitle (query) {
+        const model = await query.withTitle().one();
+        return model ? model.getTitle() : null;
+    }
+
+    async resolveTitles (query) {
+        const models = await query.withTitle().all();
+        return models.map(model => model.getTitle());
     }
 };
 

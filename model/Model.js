@@ -277,6 +277,11 @@ module.exports = class Model extends Base {
         }
     }
 
+    createBehavior (config) {
+        config.owner = this;
+        return new config.Class(config);
+    }
+
     // VALIDATION
 
     ensureValidators () {
@@ -545,11 +550,7 @@ module.exports = class Model extends Base {
 
     output (security = this.security) {
         const access = security && security.attrAccess;
-        const result = {
-            _id: this.getId(),
-            _title: this.getTitle(),
-            _class: this.class.name
-        };
+        const result = {};
         const forbidden = this.forbiddenReadAttrs;
         for (const attr of this.view.attrs) {
             if ((!access || access.canRead(attr.name)) && (!forbidden || !forbidden.includes(attr.name))) {
@@ -560,6 +561,9 @@ module.exports = class Model extends Base {
                 result._forbidden = [attr.name];
             }
         }
+        result._id = this.getId();
+        result._metaClass = this.class.name;
+        result._title = this.getTitle();
         return result;
     }
 

@@ -22,15 +22,6 @@ module.exports = class Transition extends Base {
         this.createTransitConfig();
     }
 
-    hasStartState (name) {
-        for (const state of this.startStates) {
-            if (state.name === name) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     getName () {
         return this.name;
     }
@@ -47,14 +38,22 @@ module.exports = class Transition extends Base {
         return this.id;
     }
 
+    hasStartState (name) {
+        for (const state of this.startStates) {
+            if (state.name === name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     getFinalStateName () {
         return this.finalState ? this.finalState.name : null;
     }
 
     resolveStates (names) {
-        let states = Array.isArray(names) ? names.map(name => this.class.getState(name)) : [];
-        states = states.filter(state => state);
-        return states.length ? states : null;
+        const states = Array.isArray(names) ? names.map(name => this.class.getState(name)) : [];
+        return states.filter(state => state);
     }
 
     createCondition () {

@@ -109,7 +109,10 @@ module.exports = class FileBehavior extends Base {
 
     async setFile () {
         const value = this.owner.get(this.FILE_ATTR);
-        if (value && value !== this.owner.getOldValue(this.FILE_ATTR)) {
+        const oldValue = this.owner.getOldValue(this.FILE_ATTR);
+        if (!value) {
+            this.owner.set(this.FILE_ATTR, oldValue);
+        } else if (value !== oldValue) {
             this.rawFile = await this.findPending(value).one();
             if (!this.rawFile) {
                 this.owner.addError(this.FILE_ATTR, 'File not found');

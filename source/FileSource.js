@@ -9,7 +9,7 @@ module.exports = class FileSource extends Base {
 
     constructor (config) {
         super({
-            directory: 'document',
+            directory: 'base',
             classDirectory: 'class',
             viewDirectory: 'view',
             ...config

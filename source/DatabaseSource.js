@@ -10,8 +10,8 @@ module.exports = class DatabaseSource extends Base {
     constructor (config) {
         super({
             tables: {
-                class: 'meta_document_class',
-                view: 'meta_document_view'
+                class: 'meta_base_class',
+                view: 'meta_base_view'
             },
             ...config
         });

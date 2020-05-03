@@ -11,6 +11,21 @@ module.exports = class MetaHelper extends Base {
         return !Number.isInteger(value) ? defaults : value > max ? max : value;
     }
 
+    static getRelatedMap (attr, models) {
+        const result = {};
+        for (const model of models) {
+            const data = model.related.get(attr);
+            if (Array.isArray(data)) {
+                for (const related of data) {
+                    result[related.getId()] = related;
+                }
+            } else if (data) {
+                result[data.getId()] = data;
+            }
+        }
+        return result;
+    }
+
     static setModelRelated (data, models, attrs) {
         for (const attr of attrs) {
             for (const model of models) {

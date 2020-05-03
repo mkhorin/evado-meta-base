@@ -31,6 +31,12 @@ module.exports = class ConditionValue extends Base {
     getResolveMethod () {
         switch (this.data) {
             case '$now': return this.resolveNow;
+            case '$currentMonth': return this.resolveCurrentMonth;
+            case '$currentYear': return this.resolveCurrentYear;
+            case '$nextMonth': return this.resolveNextMonth;
+            case '$nextYear': return this.resolveNextYear;
+            case '$previousMonth': return this.resolvePreviousMonth;
+            case '$previousYear': return this.resolvePreviousYear;
             case '$user': return this.resolveUser;
         }
         if (!Array.isArray(this.data)) {
@@ -84,6 +90,33 @@ module.exports = class ConditionValue extends Base {
 
     resolveNow () {
         return new Date;
+    }
+
+    resolveCurrentMonth () {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    resolveCurrentYear () {
+        return new Date(new Date().getFullYear(), 0, 1);
+    }
+
+    resolveNextMonth () {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+
+    resolveNextYear () {
+        return new Date(new Date().getFullYear() + 1, 0, 1);
+    }
+
+    resolvePreviousMonth () {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    }
+
+    resolvePreviousYear () {
+        return new Date(new Date().getFullYear() - 1, 0, 1);
     }
 
     resolveUser (query) {
