@@ -37,11 +37,12 @@ module.exports = class ViewAttr extends Base {
         this.id = `${this.name}.${this.view.id}`;
         this.classAttr = this.class.getAttr(this.name);
         this.type = this.classAttr.type;
-        this.viewType = this.data.viewType || this.classAttr.viewType || this.type;
+        this.embeddedModel = this.classAttr.embeddedModel;
         this.templateKey = `_attr/${this.class.name}/${this.view.basename}/${this.name}`;
         this.parentTemplateKey = `_attr/${this.class.name}/${this.name}`;
         this.translationKey = `${this.classAttr.translationKey}.view.${this.view.name}`;
         this.assignDataFromClassAttr();
+        this.viewType = this.data.viewType || this.type;
         this.initCommon();
     }
 
@@ -138,8 +139,12 @@ module.exports = class ViewAttr extends Base {
             || this.viewType === TypeHelper.VIEW_TYPES.DATETIME;
     }
 
+    isEagerLoading () {
+        return this.data.eagerLoading;
+    }
+
     isEmbeddedModel () {
-        return this.isUser();
+        return !!this.embeddedModel;
     }
 
     isUser () {

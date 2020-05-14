@@ -54,9 +54,11 @@ module.exports = class Token extends Base {
         this.resolve = this.resolveStaticValue;
         this._attrs = this.parseAttrs(this.data, this.header.owner.class);
         if (this._attrs) {
-            this._firstAttr = this._attrs[0];
             this._lastAttr = this._attrs[this._attrs.length - 1];
-            this.resolve = this.resolveAttrValue;
+            const first = this._attrs[0];
+            this.resolve = first.relation || first.embeddedModel
+                ? this.resolveRelatedValue
+                : this.resolveAttrValue;
         }
     }
 
@@ -67,14 +69,19 @@ module.exports = class Token extends Base {
         const attrs = [];
         const names = text.split('.');
         for (let i = 1; i < names.length; ++i) {
-            const name = names[i] === '$key' ? refClass.getKey() : names[i];
+            let name = names[i];
+            if (!refClass) {
+                attrs.push(name);
+                break;
+            }
+            name = name === '$key' ? refClass.getKey() : name;
             const attr = refClass.getAttr(name);
             if (!attr) {
                 attrs.push(name);
                 break;
             }
             refClass = attr.relation && attr.relation.refClass;
-            if (!refClass && i + 1 < names.length) {
+            if (i + 1 < names.length && !refClass && !attr.embeddedModel) {
                 this.log('error', `Attribute has no reference class: ${attr.id}`);
                 return false;
             }
@@ -96,12 +103,13 @@ module.exports = class Token extends Base {
     }
 
     resolveAttrValue (model) {
-        if (!this._firstAttr.relation) {
-            return this.formatValue(model, this._firstAttr);
-        }
+        return this.formatValue(model, this._attrs[0]);
+    }
+
+    resolveRelatedValue (model) {
         let target = model;
         for (const attr of this._attrs) {
-            if (attr.relation) {
+            if (attr.relation || attr.embeddedModel) {
                 target = Array.isArray(target)
                     ? this.getRelatedByModels(target, attr)
                     : this.formatValue(target.related, attr);
@@ -152,7 +160,7 @@ module.exports = class Token extends Base {
     }
 
     formatValue (model, attr) {
-        const value = model.get(attr);
+        const value = attr === '$title' ? model.getTitle() : attr === '$key' ? model.getId() : model.get(attr);
         return value === null || value === undefined ? '' : value;
     }
 

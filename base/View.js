@@ -101,8 +101,6 @@ module.exports = class View extends Base {
         this.attrMap = {};
         this.attrs = [];
         this.attrBehaviors = [];
-        this.eagerAttrs = [];
-        this.eagerUserAttrs = [];
         this.fileAttrs = [];
         this.calcAttrs = [];
         this.defaultValueAttrs = [];
@@ -112,9 +110,12 @@ module.exports = class View extends Base {
         this.historyAttrs = [];
         this.refAttrs = [];
         this.backRefAttrs = [];
+        this.eagerAttrs = [];
+        this.eagerEmbeddedModels = {};
         for (const data of attrs) {
             this.appendAttr(this.createAttr(data));
         }
+        this.eagerEmbeddedModels = Object.values(this.eagerEmbeddedModels);
     }
 
     createAttr (data) {
@@ -140,17 +141,16 @@ module.exports = class View extends Base {
         if (!attr) {
             return false;
         }
-        const eagerLoading = attr.data.eagerLoading;
         const classAttr = attr.classAttr;
         this.attrs.push(attr);
-        if (classAttr.isRelation() && eagerLoading) {
+        if (classAttr.isRelation() && attr.isEagerLoading()) {
             this.eagerAttrs.push(attr);
+        }
+        if (attr.embeddedModel && attr.isEagerLoading()) {
+            ObjectHelper.push(attr, attr.type, this.eagerEmbeddedModels);
         }
         if (attr.isFile()) {
             this.fileAttrs.push(attr);
-        }
-        if (attr.isUser() && eagerLoading) {
-            this.eagerUserAttrs.push(attr);
         }
         if (attr.isCalc()) {
             this.calcAttrs.push(attr);
@@ -322,6 +322,26 @@ module.exports = class View extends Base {
 
     // MODEL
 
+    findByCreator (creator, config) {
+        return this.find(config).and({[this.CREATOR_ATTR]: creator});
+    }
+
+    findByEditor (editor, config) {
+        return this.find(config).and({[this.EDITOR_ATTR]: editor});
+    }
+
+    findById (id, config) {
+        return this.find(config).and(this.class.getIdCondition(id));
+    }
+
+    findByState (state, config) {
+        return this.find(config).and({[this.STATE_ATTR]: state});
+    }
+
+    find (config) {
+        return new ModelQuery({view: this, ...config});
+    }
+
     getModelClass (data) {
         return this.meta.getClass(data[this.class.CLASS_ATTR]) || this.class;
     }
@@ -330,33 +350,33 @@ module.exports = class View extends Base {
         return this.isClass() ? metaClass : (metaClass.getView(this.name) || metaClass);
     }
 
-    find (config) {
-        return new ModelQuery({view: this, ...config});
-    }
-
-    findById (id, config) {
-        return this.find(config).and(this.class.getIdCondition(id));
-    }
-
     createModelByState (data, params) {
         const metaClass = this.getModelClass(data);
         const state = metaClass.getState(data[this.class.STATE_ATTR]);
         const view = (state && state.view) || this.getModelView(metaClass);
-        return view.spawnModel(params);
+        return view.createModel(params);
     }
 
-    createModel (data, params) {
+    createModelByData (data, params) {
         const metaClass = this.getModelClass(data);
-        return this.getModelView(metaClass).spawnModel(params);
+        return this.getModelView(metaClass).createModel(params);
     }
 
-    spawnModel (params) {
-        const module = this.getMeta().module;
-        if (!this.class.modelConfig) {
-            return new Model({view: this, module, ...params});
-        }
+    createModel (params) {
         const config = this.class.modelConfig;
-        return new config.Class({...config, view: this, module, ...params});
+        if (!config) {
+            return new Model({
+                view: this,
+                module: this.meta.module,
+                ...params
+            });
+        }
+        return new config.Class({
+            ...config,
+            view: this,
+            module: this.meta.module,
+            ...params
+        });
     }
 
     // LOG
@@ -369,6 +389,7 @@ module.exports = class View extends Base {
 const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const NestedHelper = require('areto/helper/NestedHelper');
+const ObjectHelper = require('areto/helper/ObjectHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const AttrHeader = require('../header/AttrHeader');

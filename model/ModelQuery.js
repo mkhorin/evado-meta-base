@@ -145,10 +145,13 @@ module.exports = class ModelQuery extends Base {
         for (const doc of docs) {
             const model = this._withState
                 ? this.view.createModelByState(doc, params)
-                : this.view.createModel(doc, params);
+                : this.view.createModelByData(doc, params);
             model.populate(doc);
             model.related.depth = this._relatedDepth;
             models.push(model);
+        }
+        if (this.view.eagerEmbeddedModels.length) {
+            await this.resolveEmbeddedModels(models);
         }
         if (this._withState) {
             this.view = models[0].view; // resolved by state
@@ -170,9 +173,6 @@ module.exports = class ModelQuery extends Base {
         }
         if (this._withTitle) {
             await this.resolveTitle(models);
-        }
-        if (this.view.eagerUserAttrs.length) {
-            await this.resolveUsers(models);
         }
         if (this.security) {
             await this.security.resolveForbiddenReadAttrs(models, this.view);
@@ -239,12 +239,13 @@ module.exports = class ModelQuery extends Base {
         }
     }
 
-    async resolveUsers (models) {
-        const ids = MetaHelper.getModelValues(models, this.view.eagerUserAttrs);
-        if (ids.length) {
-            const user = this.view.meta.spawnUser();
-            const userMap = await user.findById(ids).indexByKey().all();
-            MetaHelper.setModelRelated(userMap, models, this.view.eagerUserAttrs);
+    async resolveEmbeddedModels (models) {
+        for (const attrs of this.view.eagerEmbeddedModels) {
+            const values = MetaHelper.getModelValues(models, attrs);
+            if (values.length) {
+                const data = await attrs[0].embeddedModel.findById(values).indexByKey().all();
+                MetaHelper.setModelRelated(data, models, attrs);
+            }
         }
     }
 

@@ -14,9 +14,21 @@ module.exports = class ClassAttr extends Base {
         this.view = this.view || this.class;
         this.id = `${this.name}.${this.class.id}`;
         this.classAttr = this;
+        this.embeddedModel = this.createEmbeddedModel();
         this.templateKey = `_attr/${this.class.name}/${this.name}`;
         this.translationKey = `${this.class.translationKey}.attr.${this.name}`;
         this.initCommon();
+    }
+
+    createEmbeddedModel () {
+        const constructor  = this.getEmbeddedModelConstructor();
+        return constructor ? this.class.meta.spawn(constructor) : null;
+    }
+
+    getEmbeddedModelConstructor () {
+        switch (this.type) {
+            case TypeHelper.TYPES.USER: return this.class.meta.hub.User;
+        }
     }
 
     setParent () {
