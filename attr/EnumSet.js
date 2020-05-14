@@ -38,10 +38,12 @@ module.exports = class EnumSet extends Base {
     }
 
     getItem (value) {
+        value = value === null || value === undefined ? '' : value;
         return this.hasItem(value) ? this._indexedItems[value] : null;
     }
 
     getText (value) {
+        value = value === null || value === undefined ? '' : value;
         return this.hasItem(value) ? this._indexedItems[value].text : value;
     }
 

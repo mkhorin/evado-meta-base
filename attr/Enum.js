@@ -25,6 +25,7 @@ module.exports = class Enum extends Base {
     }
 
     getItem (value) {
+        value = value === null || value === undefined ? '' : value;
         return this.hasItem(value) ? this._indexedItems[value] : null;
     }
 
@@ -33,6 +34,7 @@ module.exports = class Enum extends Base {
     }
 
     getText (value) {
+        value = value === null || value === undefined ? '' : value;
         return this.hasItem(value) ? this._indexedItems[value].text : value;
     }
 
