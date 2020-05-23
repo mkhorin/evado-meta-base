@@ -54,6 +54,22 @@ module.exports = class Model extends Base {
         return this.header.toString();
     }
 
+    getCreator () {
+        return this._valueMap[this.class.CREATOR_ATTR];
+    }
+
+    getEditor () {
+        return this._valueMap[this.class.EDITOR_ATTR];
+    }
+
+    getCreateDate () {
+        return this._valueMap[this.class.CREATED_AT_ATTR];
+    }
+
+    getUpdateDate () {
+        return this._valueMap[this.class.UPDATED_AT_ATTR];
+    }
+
     hasHistory () {
         return !this._isNew && this.view.historyAttrs.length;
     }
@@ -172,10 +188,10 @@ module.exports = class Model extends Base {
         if (this.hasDisplayValue(attr)) {
             return this._displayValueMap[attr.name];
         }
-        if (attr.isEmbeddedModel()) {
+        if (attr.embeddedModel) {
             return this.related.getTitle(attr);
         }
-        const value = this.header.get(attr.name);
+        const value = this.header.get(attr);
         if (value instanceof Date) {
             return value.toISOString();
         }
@@ -240,12 +256,12 @@ module.exports = class Model extends Base {
         });
     }
 
-    spawnSelf (params) {
-        return this.spawnByView(this.view, params);
+    createSelf (params) {
+        return this.createByView(this.view, params);
     }
 
-    spawnByView (view, params) {
-        return view.spawnModel({
+    createByView (view, params) {
+        return view.createModel({
             module: this.module,
             user: this.user,
             ...params
@@ -571,11 +587,25 @@ module.exports = class Model extends Base {
         if (attr.relation) {
             return this.outputRelationAttr(attr);
         }
-        if (attr.isEmbeddedModel()) {
-            result[`${attr.name}_title`] = this.related.getTitle(attr);
+        if (attr.embeddedModel) {
+            this.setOutputAttrTitle(this.related.getTitle(attr), attr, result);
             return this.get(attr);
         }
-        return this.getDisplayValue(attr);
+        if (attr.enum) {
+            const value = this.get(attr);
+            this.setOutputAttrTitle(attr.enum.getText(value), attr, result);
+            return value;
+        }
+        if (attr.isState()) {
+            const value = this.get(attr);
+            const state = this.class.getState(value);
+            if (state) {
+                this.setOutputAttrTitle(state.title, attr, result);
+            }
+            return value;
+        }
+        const value = this.header.get(attr);
+        return value instanceof Date ? value.toISOString() : value;
     }
 
     outputRelationAttr (attr) {
@@ -588,6 +618,10 @@ module.exports = class Model extends Base {
             result.push(model.output());
         }
         return result;
+    }
+
+    setOutputAttrTitle (value, attr, result) {
+        result[`${attr.name}_title`] = value;
     }
 };
 

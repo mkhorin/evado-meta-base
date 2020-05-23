@@ -5,7 +5,7 @@
 
 // {"attrName": "value"}
 // {"$key": "value"} // $key - primary key name
-// {"creator": "$user"} // current user
+// {"userAttrName": "$user"} // current user
 // [">", "dateAttrName", "$now"] // current datetime
 // [">", "dateAttrName", "$currentMonth"]
 // [">", "dateAttrName", "$currentYear"]

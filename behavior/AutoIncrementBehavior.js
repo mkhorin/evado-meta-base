@@ -9,7 +9,7 @@ module.exports = class AutoIncrementBehavior extends Base {
 
     static async normalize (view) {
         if (Array.isArray(view.behaviors)) {
-            const owner = view.spawnModel();
+            const owner = view.createModel();
             for (const config of view.behaviors) {
                 if (config.Class === this) {
                     await ClassHelper.spawn(config, {owner}).normalize();

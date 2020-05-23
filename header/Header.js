@@ -7,6 +7,7 @@
 // [".attrName", "suffix"] // "value suffix"
 // ["static text", ".attrName.nestedAttrName", ["$method", ".attrName", "toLowerCase"]]
 // [".$key"] // object ID
+// [".userAttr.$title"] // user title
 
 // ["$class", ".attrName"] // resolve class title
 // ["$enum", ".attrName"] // resolve enum title

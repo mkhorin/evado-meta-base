@@ -69,11 +69,10 @@ module.exports = class ModelQuery extends Base {
         return this;
     }
 
-    withFormData (value = true) {
+    withReadData (value = true) {
         this._withCalc = value;
         this._withReadOnlyTitle = value;
         this._withRelated = value;
-        this._withState = value;
         this._withTitle = value;
         return this;
     }
@@ -103,8 +102,8 @@ module.exports = class ModelQuery extends Base {
         return this;
     }
 
-    withState (value = true) {
-        this._withState = value;
+    withStateView (value = true) {
+        this._withStateView = value;
         return this;
     }
 
@@ -113,7 +112,7 @@ module.exports = class ModelQuery extends Base {
         this._withCalc = query._withCalc;
         this._withReadOnlyTitle = query._withReadOnlyTitle;
         this._withRelated = query._withRelated;
-        this._withState = query._withState;
+        this._withStateView = query._withStateView;
         this._withTitle = query._withTitle;
         this._maxRelatedDepth = query._maxRelatedDepth;
         this._relatedFilter = query._relatedFilter;
@@ -143,18 +142,18 @@ module.exports = class ModelQuery extends Base {
             user: this.user
         };
         for (const doc of docs) {
-            const model = this._withState
+            const model = this._withStateView
                 ? this.view.createModelByState(doc, params)
                 : this.view.createModelByData(doc, params);
             model.populate(doc);
             model.related.depth = this._relatedDepth;
             models.push(model);
         }
+        if (this._withStateView) {
+            this.view = models[0].view; // model view resolved by state
+        }
         if (this.view.eagerEmbeddedModels.length) {
             await this.resolveEmbeddedModels(models);
-        }
-        if (this._withState) {
-            this.view = models[0].view; // resolved by state
         }
         if (this._withRelated && this._relatedDepth < this._maxRelatedDepth) {
             await this.resolveRelation(models);

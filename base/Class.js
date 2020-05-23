@@ -9,7 +9,7 @@ const TypeHelper = require('../helper/TypeHelper');
 module.exports = class Class extends Base {
 
     static getConstants () {
-        return {           
+        return {
             TYPES: TypeHelper.TYPES,
             CLASS_ATTR: '_class',
             CREATED_AT_ATTR: '_createdAt',

@@ -25,4 +25,4 @@ module.exports = class ObjectFilter extends Base {
 };
 
 const ClassHelper = require('areto/helper/ClassHelper');
-const ConditionSolver = require('./ConditionSolver');
+const ConditionSolver = require('../base/ConditionSolver');

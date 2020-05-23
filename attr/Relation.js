@@ -104,9 +104,9 @@ module.exports = class Relation extends Base {
         const buckets = await this.setQueryByModels(query, models);
         query.setRelatedDepth(model.related.depth + 1);
         await query.filterRelated();
-        const relatedModels = await query.all();
-        this.assignRelatedModels(models, relatedModels, buckets, query.security);
-        return relatedModels;
+        const relatives = await query.all();
+        this.assignRelatedModels(models, relatives, buckets, query.security);
+        return relatives;
     }
 
     async setQueryByModels (query, models) {
@@ -133,23 +133,23 @@ module.exports = class Relation extends Base {
         }
     }
 
-    assignRelatedModels (models, relatedModels, buckets, security) {
+    assignRelatedModels (models, relatives, buckets, security) {
         for (const model of models) {
             model.related.set(this.attr, this.multiple ? [] : null);
         }
-        for (const relatedModel of relatedModels) {
-            let keys = relatedModel.get(this.refAttrName);
+        for (const relative of relatives) {
+            let keys = relative.get(this.refAttrName);
             keys = Array.isArray(keys) ? keys : [keys];
             for (const key of keys) {
                 if (Array.isArray(buckets.models[key])) {
                     for (const model of buckets.models[key]) {
                         this.multiple
-                            ? model.related.push(this.attr, relatedModel)
-                            : model.related.set(this.attr, relatedModel);
+                            ? model.related.push(this.attr, relative)
+                            : model.related.set(this.attr, relative);
                     }
                 }
             }
-            relatedModel.security = security;
+            relative.security = security;
         }
         if (this.multiple && this.isSortable()) {
             for (const model of models) {

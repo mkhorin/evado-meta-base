@@ -9,8 +9,11 @@ module.exports = class ModelHeader extends Base {
 
     data = {};
 
-    get (name) {
-        return this.data[name] || this.model.get(name);
+    get (attr) {
+        attr = attr.name || attr;
+        return Object.prototype.hasOwnProperty.call(this.data, attr)
+            ? this.data[attr]
+            : this.model.get(attr);
     }
 
     resolve () {
@@ -22,7 +25,7 @@ module.exports = class ModelHeader extends Base {
 
     toString () {
         if (this.value) {
-            return this.value;
+            return String(this.value);
         }
         const id = this.model.getId();
         return id ? String(id) : '';

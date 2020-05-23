@@ -114,7 +114,7 @@ module.exports = class Behavior extends Base {
 
     static async dropData (view) {
         if (Array.isArray(view.behaviors)) {
-            const owner = view.spawnModel();
+            const owner = view.createModel();
             for (const config of view.behaviors) {
                 await ClassHelper.spawn(config, {owner}).dropData();
             }

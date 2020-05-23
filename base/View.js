@@ -385,6 +385,7 @@ module.exports = class View extends Base {
         CommonHelper.log(this.meta, `${this.constructor.name}: ${this.id}`, ...arguments);
     }
 };
+module.exports.init();
 
 const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
@@ -394,7 +395,7 @@ const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const AttrHeader = require('../header/AttrHeader');
 const ViewAttr = require('../attr/ViewAttr');
-const ObjectFilter = require('./ObjectFilter');
+const ObjectFilter = require('../filter/ObjectFilter');
 const Model = require('../model/Model');
 const ModelQuery = require('../model/ModelQuery');
 const Grouping = require('./Grouping');

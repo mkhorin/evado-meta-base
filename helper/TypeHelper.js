@@ -84,8 +84,8 @@ module.exports = class TypeHelper extends Base {
     static getSearchCondition (value, type, attrName, db) {
         switch (type) {
             case this.TYPES.STRING:
-                value = EscapeHelper.escapeRegex(value);
-                return ['LIKE', attrName, new RegExp(value, 'i')];
+            case this.TYPES.TEXT:
+                return {[attrName]: new RegExp(EscapeHelper.escapeRegex(value), 'i')};
 
             case this.TYPES.INTEGER:
             case this.TYPES.FLOAT:
@@ -93,6 +93,7 @@ module.exports = class TypeHelper extends Base {
                 return isNaN(value) ? null : {[attrName]: value};
 
             case TypeHelper.TYPES.ID:
+            case TypeHelper.TYPES.USER:
                 value = db.normalizeId(value);
                 return value ? {[attrName]: value} : null;
 

@@ -16,8 +16,8 @@ module.exports = class MetaHelper extends Base {
         for (const model of models) {
             const data = model.related.get(attr);
             if (Array.isArray(data)) {
-                for (const related of data) {
-                    result[related.getId()] = related;
+                for (const relative of data) {
+                    result[relative.getId()] = relative;
                 }
             } else if (data) {
                 result[data.getId()] = data;

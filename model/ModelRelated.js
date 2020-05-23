@@ -66,9 +66,9 @@ module.exports = class ModelRelated extends Base {
         attr = this.model.view.resolveAttr(attr);
         const query = await this.getRelation(attr);
         const models = await query.all();
-        const related = attr.relation.multiple ? models : models[0];
-        this.set(attr, related);
-        return related;
+        const relative = attr.relation.multiple ? models : models[0];
+        this.set(attr, relative);
+        return relative;
     }
 
     async onUpdateModel () {
@@ -401,7 +401,7 @@ module.exports = class ModelRelated extends Base {
         await this.unsetOrderField(attr.relation.refClass, attr);
         const names = this.model.getRelationOrder();
         if (names) {
-            ArrayHelper.removeValue(attr.name, names);
+            ArrayHelper.remove(attr.name, names);
             await this.model.class.findById(this.model.getId()).update({
                 [this.model.class.RELATION_SORT_ATTR]: names
             });
