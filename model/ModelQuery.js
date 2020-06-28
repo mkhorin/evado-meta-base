@@ -139,6 +139,7 @@ module.exports = class ModelQuery extends Base {
         const params = {
             controller: this.controller,
             module: this.module,
+            security: this.security,
             user: this.user
         };
         for (const doc of docs) {
@@ -187,8 +188,8 @@ module.exports = class ModelQuery extends Base {
             if (this._relatedDepth === 0) {
                 this._maxRelatedDepth = attr.eagerDepth;
             }
-            const query = attr.getEagerView().find().copyParams(this);
-            await attr.relation.findByModels(models, query);
+            const query = attr.eagerView.find().copyParams(this);
+            await attr.relation.setRelatedToAll(query, models);
         }
     }
 
@@ -200,7 +201,7 @@ module.exports = class ModelQuery extends Base {
             }
             const attr = this.view.getAttr(name);
             const view = value.view === true
-                ? attr.getEagerView()
+                ? attr.eagerView
                 : value.view
                     ? attr.getRefClass().getView(value.view)
                     : attr.getRefClass();
@@ -208,7 +209,7 @@ module.exports = class ModelQuery extends Base {
             if (value.handler) {
                 value.handler(query);
             }
-            await attr.relation.findByModels(models, query);
+            await attr.relation.setRelatedToAll(query, models);
         }
     }
 
@@ -256,7 +257,7 @@ module.exports = class ModelQuery extends Base {
         return result;
     }
 
-    filterRelated () {
+    filterRelatedModels () {
         return this._relatedFilter && this._relatedFilter(this);
     }
 

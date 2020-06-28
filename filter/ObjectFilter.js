@@ -15,14 +15,19 @@ module.exports = class ObjectFilter extends Base {
         if (data.Class) {
             return ClassHelper.resolveSpawn(data, module, {module});
         }
-        const solver = new ConditionSolver({data, view});
+        data = ['$condition', data];
+        const solver = new Calc({data, view});
         return {Class: this, module, solver};
     }
 
-    async resolve (query) {
-        query.and(await this.solver.resolve(query));
+    async apply (query) {
+        query.and(await this.solver.resolve({
+            view: query.view,
+            user: query.user,
+            query
+        }));
     }
 };
 
 const ClassHelper = require('areto/helper/ClassHelper');
-const ConditionSolver = require('../base/ConditionSolver');
+const Calc = require('../calc/Calc');

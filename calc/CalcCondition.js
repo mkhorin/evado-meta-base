@@ -3,70 +3,144 @@
  */
 'use strict';
 
-const Base = require('areto/base/Base');
-
 // {"attrName": "value"}
 // {"attrName": ".attrName"}
 // ["!=", "attrName", "value"]
 // {"$key": ".attrName"} // $key - alias for primary key name
 // {"attrName": ".$key"}
 
+const Base = require('./CalcToken');
+
 module.exports = class CalcCondition extends Base {
 
-    constructor (config) {
-        super(config);
+    prepareResolvingMethod () {
+        this.data = this.data[1];
         if (Array.isArray(this.data)) {
-            this.createSimple();
-        } else if (this.data && typeof this.data === 'object') {
-            this.createHash();
+            return this.prepareArray();
         }
+        if (this.data && typeof this.data === 'object') {
+            return this.prepareHash();
+        }
+        return this.resolveStatic;
     }
 
-    createSimple () {
-        this.method = this.constructor.prototype.resolveSimple;
-        this.operator = this.data[0];
-        this.operands = this.data.slice(1).map(this.createOperand, this);
+    prepareArray () {
+        this._operator = this.data[0];
+        const method = this.getPrepareMethod();
+        return method.call(this, this.data.slice(1));
     }
 
-    createHash () {
-        // hash condition - {a1: 1, a2: [1, 2, 3]}
-        this.method = this.constructor.prototype.resolveHash;
-        for (let key of Object.keys(this.data)) {
-            const value = this.data[key];
-            if (key === '$key') {
-                delete this.data[key];
-                key = this.token.view.getKey();
+    getPrepareMethod () {
+        if (['AND', 'OR', 'NOR'].includes(this.data[0])) {
+            return this.prepareChildren;
+        }
+        const length = this.data.length;
+        return length < 2 ? this.prepareStatic : length === 4 ? this.preparePairValue : this.prepareValue;
+    }
+
+    prepareStatic () {
+        return this.resolveStatic;
+    }
+
+    prepareChildren (items) {
+        this._children = items
+            .map(data => this.createCondition(data))
+            .filter(item => !!item);
+        return this._children.filter(item => !item.isStatic()).length
+            ? this.resolveChildren
+            : this.resolveStatic;
+    }
+
+    prepareValue (data) {
+        const field = this.normalizeFieldItem(0, data);
+        this._field = field;
+        this._value = this.createToken(data[1], {field});
+        return this._value.isStatic() ? this.resolveStatic : this.resolveValue;
+    }
+
+    preparePairValue (data) {
+        const field = this.normalizeFieldItem(0, data);
+        this._field = field;
+        this._value1 = this.createToken(data[1], {field});
+        this._value2 = this.createToken(data[2], {field});
+        return this._value1.isStatic() && this._value2.isStatic()
+            ? this.resolveStatic
+            : this.resolvePairValue;
+    }
+
+    prepareHash () {
+        this._valueMap = {};
+        for (const key of Object.keys(this.data)) {
+            const field = this.normalizeFieldKey(key, this.data);
+            this._valueMap[field] = this.createToken(this.data[field], {field});
+        }
+        for (const key of Object.keys(this._valueMap)) {
+            if (!this._valueMap[key].isStatic()) {
+                return this.resolveHash;
             }
-            this.data[key] = this.createOperand(value);
         }
-    }
-
-    createOperand (data) {
-        return this.token.createOperand(data);
-    }
-
-    resolve (model) {
-        return this.method ? this.method.call(this, model) : null;
-    }
-
-    async resolveSimple (model) {
-        const values = [];
-        if (Array.isArray(this.operands)) {
-            for (const operand of this.operands) {
-                values.push(await operand.resolve(model));
-            }
+        this.data = this._valueMap;
+        for (const key of Object.keys(this.data)) {
+            this.data[key] = this.data[key].data;
         }
-        values.unshift(this.operator);
-        return values;
+        return this.resolveStatic;
     }
 
-    async resolveHash (model) {
+    getField (name) {
+        return name === '$key' ? this.view.getKey() : name;
+    }
+
+    normalizeFieldItem (index, items) {
+        const name = this.getField(items[index]);
+        if (name !== items[index]) {
+            items[index] = name;
+        }
+        return name;
+    }
+
+    normalizeFieldKey (key, data) {
+        const name = this.getField(key);
+        if (name !== key) {
+            data[name] = data[key];
+            delete data[key];
+        }
+        return name;
+    }
+
+    createCondition (data) {
+        return data ? this.createToken(['$condition', data]) : null;
+    }
+
+    createToken () {
+        return this.calc.createToken(...arguments);
+    }
+
+    // RESOLVE
+
+    async resolveHash () {
         const result = {};
-        if (this.data) {
-            for (const key of Object.keys(this.data)) {
-                result[key] = await this.data[key].resolve(model);
-            }
+        for (const key of Object.keys(this._valueMap)) {
+            result[key] = await this._valueMap[key].resolve(...arguments);
         }
         return result;
+    }
+
+    async resolveChildren () {
+        const result = [this._operator];
+        for (const condition of this._children) {
+            result.push(await condition.resolve(...arguments));
+        }
+        return result;
+    }
+
+    async resolveValue () {
+        const value = await this._value.resolve(...arguments);
+        return [this._operator, this._field, value];
+    }
+
+    async resolvePairValue () {
+        const v1 = await this._value1.resolve(...arguments);
+        const v2 = await this._value2.resolve(...arguments);
+        return [this._operator, this._field, v1, v2];
     }
 };

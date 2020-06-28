@@ -11,7 +11,8 @@ module.exports = class Transition extends Base {
         super(config);
         this.name = this.data.name;
         this.id = `${this.name}.${this.class.id}`;
-        this.title = MetaHelper.createLabel(this);
+        this.label = MetaHelper.createLabel(this);
+        this.title = this.label;
         this.hint = this.data.hint;
         this.nullStartState = this.data.nullStartState;
         this.startStates = this.resolveStates(this.data.startStates);

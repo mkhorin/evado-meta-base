@@ -26,6 +26,10 @@ module.exports = class Model extends Base {
         this.header = new ModelHeader({model: this});
     }
 
+    isId (id) {
+        return !this._isNew && JSON.stringify(id) === JSON.stringify(this.getId());
+    }
+
     isNew () {
         return this._isNew;
     }
@@ -36,6 +40,14 @@ module.exports = class Model extends Base {
 
     getId () {
         return this._valueMap[this.class.getKey()];
+    }
+
+    getIdCondition () {
+        return {[this.class.getKey()]: this.getId()};
+    }
+
+    getNotIdCondition () {
+        return ['!=', this.class.getKey(), this.getId()];
     }
 
     getViewMetaId () {
@@ -202,6 +214,10 @@ module.exports = class Model extends Base {
         this._displayValueMap[attr.name || attr] = value;
     }
 
+    hasOldValue (attr) {
+        return Object.prototype.hasOwnProperty.call(this._oldValueMap, attr.name || attr);
+    }
+
     getOldValue (attr) {
         attr = attr.name || attr;
         if (Object.prototype.hasOwnProperty.call(this._oldValueMap, attr)) {
@@ -225,7 +241,7 @@ module.exports = class Model extends Base {
 
     async setDefaultValues () {
         this.set(this.class.CLASS_ATTR, this.class.name);
-        this.set(this.class.CREATOR_ATTR, this.user.getId());
+        this.set(this.class.CREATOR_ATTR, this.getUserId());
         for (const attr of this.view.defaultValueAttrs) {
             this.set(attr, await attr.defaultValue.resolve(this));
         }
@@ -368,7 +384,7 @@ module.exports = class Model extends Base {
     async beforeInsert () {
         await this.beforeSave(true);
         await Behavior.execute('beforeInsert', this);
-        this.set(this.class.CREATOR_ATTR, this.user.getId());
+        this.set(this.class.CREATOR_ATTR, this.getUserId());
         this.setDefaultState();
     }
 
@@ -389,7 +405,7 @@ module.exports = class Model extends Base {
         await this.beforeSave();
         await Behavior.execute('beforeUpdate', this);
         this.unset(this.class.CREATOR_ATTR);
-        this.set(this.class.EDITOR_ATTR, this.user.getId());
+        this.set(this.class.EDITOR_ATTR, this.getUserId());
     }
 
     async afterUpdate () {
@@ -513,6 +529,10 @@ module.exports = class Model extends Base {
         if (this.class.defaultState && !this.getState()) {
             this.set(this.class.STATE_ATTR, this.class.defaultState.name);
         }
+    }
+
+    setState (value) {
+        this.set(this.class.STATE_ATTR, value);
     }
 
     async resolveTransitions () {

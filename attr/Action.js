@@ -34,10 +34,10 @@ module.exports = class Action extends Base {
     }
 
     validate (model) {
-        return this.validateInternal(this.data, model);
+        return this.executeValidation(this.data, model);
     }
 
-    validateInternal (data, model) {
+    executeValidation (data, model) {
         if (!Array.isArray(data)) {
             return this.validateHash(data, model);
         }
@@ -72,7 +72,7 @@ module.exports = class Action extends Base {
             return this.logDataError(operator, operands);
         }
         for (const operand of operands) {
-            if (!this.validateInternal(operand, model)) {
+            if (!this.executeValidation(operand, model)) {
                 return false;
             }
         }
@@ -84,7 +84,7 @@ module.exports = class Action extends Base {
             return this.logDataError(operator, operands);
         }
         for (const operand of operands) {
-            if (this.validateInternal(operand, model)) {
+            if (this.executeValidation(operand, model)) {
                 return true;
             }
         }

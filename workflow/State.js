@@ -11,7 +11,8 @@ module.exports = class State extends Base {
         super(config);
         this.name = this.data.name;        
         this.view = this.class.getView(this.data.view);
-        this.title = MetaHelper.createLabel(this);
+        this.label = MetaHelper.createLabel(this);
+        this.title = this.label;
         this.id = `${this.name}.${this.view ? this.view.id : this.class.id}`;
         this.options = this.data.options || {};
     }

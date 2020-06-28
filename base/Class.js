@@ -38,7 +38,7 @@ module.exports = class Class extends Base {
         this.viewModel = `_class/${this.class.name}`;
         this.options = this.data.options || {};
         this.title = MetaHelper.createLabel(this);
-        this.data.label = this.title;
+        this.label = this.title;
         this.createModelConfig();
     }
 

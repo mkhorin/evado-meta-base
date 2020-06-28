@@ -108,8 +108,8 @@ module.exports = class BaseMeta extends Base {
             'prepareKey',
             'prepareFilter',
             'createHeader',
-            'createCalc',
             'createDefaultValues',
+            'createCalc',
             'createStates',
             'createTransitions',
             'createTreeView',
@@ -149,9 +149,26 @@ module.exports = class BaseMeta extends Base {
     resolveClassesByNames (names) {
         return Object.values(ObjectHelper.filterByKeys(names, this.classMap));
     }
+
+    createDataFinder (items, params) {
+        if (!Array.isArray(items)) {
+            items = items.split('.');
+        }
+        const metaClass = this.getClass(items[0]);
+        if (!metaClass) {
+            return null;
+        }
+        return this.spawn({
+            Class: DataFinder,
+            field: items[1],
+            view: metaClass,
+            ...params
+        });
+    }
 };
 
 const ArrayHelper = require('areto/helper/ArrayHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const AutoIncrementBehavior = require('../behavior/AutoIncrementBehavior');
 const Class = require('./Class');
+const DataFinder = require('./DataFinder');

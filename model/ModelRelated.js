@@ -45,6 +45,7 @@ module.exports = class ModelRelated extends Base {
 
     getQueryConfig () {
         return {
+            controller: this.model.controller,
             dependency: this.model.getValues(),
             model: this.model,
             module: this.model.module,
@@ -54,7 +55,7 @@ module.exports = class ModelRelated extends Base {
 
     getRelation (attr) {
         attr = this.model.view.resolveAttr(attr);
-        const query = attr.getEagerView().find(this.getQueryConfig());
+        const query = attr.eagerView.find(this.getQueryConfig());
         return attr.relation.setQueryByModel(query, this.model);
     }
 

@@ -4,12 +4,13 @@
 'use strict';
 
 // ["$query", "count", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
-// ["$query", "count", "viewName.className", {}, {"$key": ".attrName"}] // $key - alias for primary key name
+// ["$query", "count", "viewName.className", {}, {"$key": ".attrName"}] // $key - alias for primary key
 // ["$query", "count", "viewName.className", {}, {"backRefAttrName": ".$key"}]
 // ["$query", "column", "className", {"key": "attrName", "order": {"attrName": 1}}]
 // ["$query", "scalar", "className", {"key": "attrName", "order": {"attrName": -1}}]
 // ["$query", "ids", "className", {"order": {"attrName": -1}}]
 // ["$query", "id", "className", {"order": {"attrName": -1}}]
+// ["$query", "id", "className", {}, {"userAttrName": "$user"}] // $user - current user
 // ["$query", "title", "className", null, [condition]]
 // ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
 
@@ -17,25 +18,25 @@ const Base = require('./CalcToken');
 
 module.exports = class CalcQuery extends Base {
 
-    init () {
-        this.method = this.getMethod(this.operands[0]);
-        this.view = this.getView(this.operands[1]);
-        if (this.view) {
-            this.params = this.operands[2] || {};
-            this.condition = this.createCondition(this.operands[3]);
-            this.columnName = this.createColumnName();
-            this.order = this.createOrder();
+    prepareResolvingMethod () {
+        this._operation = this.getOperation(this.data[1]);
+        this._view = this.getView(this.data[2]);
+        if (this._view) {
+            this._params = this.data[3] || {};
+            this._condition = this.createCondition(this.data[4]);
+            this._column = this.createColumnName();
+            this._order = this.createOrder();
         }
+        return this.resolveOperation;
     }
-    
-    getMethod (name) {
+
+    getOperation (name) {
         if (typeof name === 'string') {
             name = `resolve${StringHelper.toFirstUpperCase(name)}`;
         }
-        const method = this.constructor.prototype[name];
-        return typeof method !== 'function'            
-            ? this.log('error', `Solution method not found: ${name}`)
-            : method;
+        return typeof this[name] !== 'function'
+            ? this.log('error', `Operation not found: ${name}`)
+            : this[name];
     }
     
     getView (id) {
@@ -45,46 +46,49 @@ module.exports = class CalcQuery extends Base {
     }
 
     createColumnName () {
-        return typeof this.params.key === 'string'
-            ? this.params.key.replace('$key', this.view.getKey())
-            : null;
+        const name = this._params.key;
+        return name === '$key' ? this._view.getKey() : name;
     }
 
-    createOrder (data) {
-        ObjectHelper.replaceKeys({'$key': this.view.getKey()}, this.params.order);
-        return this.params.order;
+    createOrder () {
+        ObjectHelper.replaceKeys({'$key': this._view.getKey()}, this._params.order);
+        return this._params.order;
     }
     
     createQuery () {
-        const query = this.view.find();
-        if (this.params.limit) {
-            query.limit(this.params.limit);
+        const query = this._view.find();
+        if (this._params.limit) {
+            query.limit(this._params.limit);
         }
-        if (this.params.offset) {
-            query.offset(this.params.offset);
+        if (this._params.offset) {
+            query.offset(this._params.offset);
         }
-        if (this.order) {
-            query.order(this.order);
+        if (this._order) {
+            query.order(this._order);
         }
         return query;
     }
-    
+
     createCondition (data) {
-        return new CalcCondition({token: this, data});
+        return data ? this.calc.createToken(['$condition', data]) : null;
     }
 
-    async resolve (model) {
-        if (!this.method) {
+    // RESOLVE
+
+    async resolveOperation (params) {
+        if (!this._operation) {
             return null;
         }
         const query = this.createQuery();
-        query.module = model.module;
-        query.user = model.user;
-        const condition = await this.condition.resolve(model);
-        if (condition) {
-            query.and(condition);
+        query.module = params.view.meta.module;
+        query.user = params.user;
+        if (this._condition) {
+            const condition = await this._condition.resolve(params);
+            if (condition) {
+                query.and(condition);
+            }
         }
-        return this.method.call(this, query);
+        return this._operation(query);
     }
 
     resolveCount (query) {
@@ -92,11 +96,11 @@ module.exports = class CalcQuery extends Base {
     }
 
     resolveColumn (query) {
-        return query.column(this.columnName);
+        return query.column(this._column);
     }
 
     resolveScalar (query) {
-        return query.scalar(this.columnName);
+        return query.scalar(this._column);
     }
 
     resolveIds (query) {
@@ -120,4 +124,3 @@ module.exports = class CalcQuery extends Base {
 
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const StringHelper = require('areto/helper/StringHelper');
-const CalcCondition = require('./CalcCondition');

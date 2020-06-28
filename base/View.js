@@ -23,7 +23,7 @@ module.exports = class View extends Base {
         this.translationKey = `${this.class.translationKey}.view.${this.name}`;
         this.meta = this.class.meta;
         this.title = this.data.label || this.class.title;
-        this.data.label = this.title;
+        this.label = MetaHelper.createLabel(this);
     }
 
     isClass () {
@@ -271,7 +271,7 @@ module.exports = class View extends Base {
 
     resolveFilter (query) {
         if (this._filter) {
-            return (new this._filter.Class(this._filter)).resolve(query);
+            return (new this._filter.Class(this._filter)).apply(query);
         }
     }
 

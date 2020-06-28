@@ -22,7 +22,7 @@ module.exports = class Relation extends Base {
         this.via = this.data.via;
         this.onUpdate = this.data.onUpdate;
         this.onDelete = this.data.onDelete;
-        this.createFinder();
+        this.createFilter();
     }
 
     isBackRef () {
@@ -45,8 +45,12 @@ module.exports = class Relation extends Base {
         return this.linkAttr ? this.linkAttr.getType() : this.attr.class.key.type;
     }
 
-    createFinder () {
-        this.finder = RelationFinder.create(this.data.finder, this);
+    createFilter () {
+        try {
+            this.filter = RelationFilter.create(this.data.filter, this);
+        } catch (err) {
+            this.attr.log('error', 'Create filter', err);
+        }
     }
 
     resolveLinkAttrName () {
@@ -70,8 +74,8 @@ module.exports = class Relation extends Base {
         if (model.hasRelationOrder(this.attr)) {
             query.order({[model.related.getOrderKey(this.attr)]: 1});
         }
-        return this.finder
-            ? this.finder.execute(query, model)
+        return this.filter
+            ? this.filter.apply(query, model)
             : this.setQueryByDoc(query, model.getValues());
     }
 
@@ -96,26 +100,25 @@ module.exports = class Relation extends Base {
 
     // MANY DOCS
 
-    async findByModels (models, query) {
-        if (models.length === 0) {
-            return [];
+    async setRelatedToAll (query, models) {
+        if (!models.length) {
+            return null;
         }
-        const model = models[0];
-        const buckets = await this.setQueryByModels(query, models);
-        query.setRelatedDepth(model.related.depth + 1);
-        await query.filterRelated();
+        if (this.filter) {
+            return this.filter.applyForAll(query, models);
+        }
+        const buckets = await this.createBuckets(models);
+        query.and({[this.refAttrName]: buckets.values});
+        query.setRelatedDepth(models[0].related.depth + 1);
+        await query.filterRelatedModels();
         const relatives = await query.all();
-        this.assignRelatedModels(models, relatives, buckets, query.security);
-        return relatives;
+        this.assignRelatedModels(models, relatives, buckets);
+        this.sortRelatedModels(models);
     }
 
-    async setQueryByModels (query, models) {
+    createBuckets (models) {
         const buckets = MetaHelper.createBuckets(models, this.linkAttrName);
-        if (this.via) {
-            await this.resolveViaBuckets(this.via, buckets);
-        }
-        query.and({[this.refAttrName]: buckets.values});
-        return buckets;
+        return this.via ? this.resolveViaBuckets(this.via, buckets) : buckets;
     }
 
     async resolveViaBuckets (via, buckets) {
@@ -128,12 +131,10 @@ module.exports = class Relation extends Base {
             [viaLinkAttrName]: 1
         }).all();
         MetaHelper.rebuildBuckets(buckets, docs, viaLinkAttrName, viaAttrName);
-        if (via.via) {
-            await this.resolveViaBuckets(via.via, buckets);
-        }
+        return via.via ? this.resolveViaBuckets(via.via, buckets) : buckets;
     }
 
-    assignRelatedModels (models, relatives, buckets, security) {
+    assignRelatedModels (models, relatives, buckets) {
         for (const model of models) {
             model.related.set(this.attr, this.multiple ? [] : null);
         }
@@ -149,14 +150,14 @@ module.exports = class Relation extends Base {
                     }
                 }
             }
-            relative.security = security;
         }
+    }
+
+    sortRelatedModels (models) {
         if (this.multiple && this.isSortable()) {
             for (const model of models) {
-                if (model.hasRelationOrder(this.attr)) {
-                    const key = model.related.getOrderKey(this.attr);
-                    model.related.get(this.attr).sort((a, b) => a.get(key) - b.get(key));
-                }
+                const key = model.related.getOrderKey(this.attr);
+                model.related.get(this.attr).sort((a, b) => a.get(key) - b.get(key));
             }
         }
     }
@@ -179,4 +180,4 @@ module.exports = class Relation extends Base {
 
 const MetaHelper = require('../helper/MetaHelper');
 const TypeHelper = require('../helper/TypeHelper');
-const RelationFinder = require('./RelationFinder');
+const RelationFilter = require('../filter/RelationFilter');

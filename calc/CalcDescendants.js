@@ -3,46 +3,51 @@
  */
 'use strict';
 
-// ["$descendants", "parentAttrName", [condition]] // get descendant ids by parent
-
 const Base = require('./CalcToken');
 
 module.exports = class CalcDescendants extends Base {
 
-    init () {
-        this.method = this.resolve;
-        this.view = this.calc.attr.class;
-        this.key = this.view.getKey();
-        this.parentName = this.operands[0];
-        this.condition = this.createCondition(this.operands[1]);
+    prepareResolvingMethod () {
+        this._view = this.calc.attr.class;
+        this._key = this._view.getKey();
+        this._parentName = this.data[1];
+        this._condition = this.createCondition(this.data[2]);
+        return this.resolveDescendants;
     }
 
     createCondition (data) {
-        return data ? new CalcCondition({token: this, data}) : null;
+        if (!data) {
+            return null;
+        }
+        return new CalcCondition({
+            calc: this.calc,
+            view: this.view,
+            data
+        });
     }
 
-    async resolve (model) {
+    async resolveDescendants ({model}) {
         const result = [];
         if (model.isNew()) {
             return result;
         }
-        const query = this.view.find();
+        const query = this._view.find();
         query.module = model.module;
-        if (this.condition) {
-            query.and(await this.condition.resolve(model));
+        if (this._condition) {
+            query.and(await this._condition.resolve(model));
         }
-        const parentCondition = {[this.parentName]: model.getId()};
+        const parentCondition = {[this._parentName]: model.getId()};
         query.and(parentCondition);
         return this.resolveChildren(query, parentCondition, result);
     }
 
     async resolveChildren (query, parentCondition, result) {
-        const ids = await query.column(this.key);
+        const ids = await query.column(this._key);
         if (!ids.length) {
             return result;
         }
         result.push(...ids);
-        parentCondition[this.parentName] = ids;
+        parentCondition[this._parentName] = ids;
         return this.resolveChildren(query, parentCondition, result);
     }
 };

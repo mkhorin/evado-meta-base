@@ -47,7 +47,8 @@ module.exports = class ViewAttr extends Base {
     }
 
     initCommon () {
-        this.title = MetaHelper.createLabel(this);
+        this.label = MetaHelper.createLabel(this);
+        this.title = this.label;
         this.hint = this.data.hint;
         this.extHint = this.data.extHint;
         this.options = this.data.options || {};
@@ -275,7 +276,7 @@ module.exports = class ViewAttr extends Base {
 
     spawnCalc (data) {
         if (!data || !data.Class) {
-            return new Calc({attr: this, data});
+            return new AttrCalc({attr: this, data});
         }
         try {
             const module = this.getMeta().module;
@@ -283,7 +284,7 @@ module.exports = class ViewAttr extends Base {
             return ClassHelper.spawn(config, {attr: this, module});
         } catch (err) {
             this.log('error', 'Invalid calc configuration', err);
-            return new Calc({attr: this});
+            return new AttrCalc({attr: this});
         }
     }
 
@@ -412,6 +413,6 @@ const NestedHelper = require('areto/helper/NestedHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const ActionBinder = require('./ActionBinder');
 const Enum = require('./Enum');
-const Calc = require('../calc/Calc');
+const AttrCalc = require('../calc/AttrCalc');
 const TypeHelper = require('../helper/TypeHelper');
 const Validator = require('../validator/Validator');

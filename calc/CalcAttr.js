@@ -3,23 +3,40 @@
  */
 'use strict';
 
-// ["$out", ".refAttrName.attrName"]
-// ["$out", ".refAttrName.refAttrName.$key"] // return ID
-// ["$out", ".refAttrName.refAttrName.$title"]  // return title
+// ["$attr", "attrName"]
+// ["$attr", "refAttrName.attrName"]
 
-const Base = require('areto/base/Base');
+// ".attrName"
+// ".refAttrName.attrName"
+// ".refAttrName.refAttrName.$key" // return ID
+// ".refAttrName.refAttrName.$title"  // return title
 
-module.exports = class CalcRelation extends Base {
+const Base = require('./CalcToken');
 
-    constructor (config) {
-        super(config);
-        this.chain = this.getAttrChain(this.data.substring(1));
+module.exports = class CalcAttr extends Base {
+
+    prepareResolvingMethod () {
+        return this.data.length > 2
+            ? this.prepareNestedAttr()
+            : this.prepareAttr();
     }
 
-    getAttrChain (data) {
+    prepareAttr () {
+        let name = this.data[1];
+        name = name === '$key' ? this.calc.attr.class.getKey() : name;
+        this._attrName = name;
+        return this.resolveAttr;
+    }
+
+    prepareNestedAttr () {
+        this._chain = this.getAttrChain(this.data.slice(1));
+        this._token = this.calc.createToken(this.getQueryData());
+        return this.resolveNestedAttr;
+    }
+
+    getAttrChain (names) {
         let chain = [];
         let metaClass = this.calc.attr.class;
-        let names = data.split('.');
         for (let name of names) {
             if (name === '$key') {
                 chain.push(metaClass.getKey());
@@ -34,7 +51,7 @@ module.exports = class CalcRelation extends Base {
             chain.push(attr);
         }
         if (chain.length !== names.length) {
-            return this.log('error', `Invalid data: ${this.data}`);
+            return this.log('error', 'Invalid data');
         }
         const attr = chain[chain.length - 1];
         if (attr.relation) {
@@ -44,34 +61,38 @@ module.exports = class CalcRelation extends Base {
     }
 
     getQueryData () {
-        const attr = this.chain[1];
+        const attr = this._chain[1];
         if (!attr) {
             return null;
         }
-        const name = this.chain[0];
+        const name = this._chain[0];
         const title = name === '$title';
         const rel = attr.relation;
-        const method = title ? (rel.multiple ? 'titles' : 'title') : (rel.multiple ? 'column' : 'scalar');
+        const method = title
+            ? (rel.multiple ? 'titles' : 'title')
+            : (rel.multiple ? 'column' : 'scalar');
         const select = title ? null : {key: name};
         const value = this.getNestedQueryData(1) || `.${rel.linkAttrName}`;
         return ['$query', method, rel.refClass.id, select, {[rel.refAttrName]: value}];
     }
 
     getNestedQueryData (index) {
-        const parent = this.chain[index + 1];
+        const parent = this._chain[index + 1];
         if (!parent) {
             return null;
         }
         const rel = parent.relation;
         const method = rel.multiple ? 'column' : 'scalar';
-        const key = this.chain[index].relation.linkAttrName;
+        const key = this._chain[index].relation.linkAttrName;
         const value = this.getNestedQueryData(index + 1) || `.${rel.linkAttrName}`;
         return ['$query', method, rel.refClass.id, {key}, {[rel.refAttrName]: value}];
     }
 
-    log () {
-        CommonHelper.log(this.calc, this.constructor.name, ...arguments);
+    resolveAttr (params) {
+        return params.model.get(this._attrName);
+    }
+
+    resolveNestedAttr () {
+        return this._token.resolve(...arguments);
     }
 };
-
-const CommonHelper = require('areto/helper/CommonHelper');
