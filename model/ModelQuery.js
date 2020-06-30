@@ -221,21 +221,27 @@ module.exports = class ModelQuery extends Base {
 
     resolveAttrTitle (models) {
         for (const attr of this.view.headerAttrs) {
-            attr.header.resolveAll(models);
+            for (const model of models) {
+                model.header.resolveAttr(attr);
+            }
         }
     }
 
     resolveReadOnlyTitle (models) {
         for (const attr of this.view.headerAttrs) {
             if (attr.isReadOnly()) {
-                attr.header.resolveAll(models);
+                for (const model of models) {
+                    model.header.resolveAttr(attr);
+                }
             }
         }
     }
 
     resolveTitle (models) {
         if (this.view.header) {
-            return this.view.header.resolveAll(models);
+            for (const model of models) {
+                model.header.resolve();
+            }
         }
     }
 

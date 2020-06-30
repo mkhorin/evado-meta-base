@@ -10,18 +10,17 @@ const Base = require('./Header');
 
 module.exports = class AttrHeader extends Base {
 
+    init () {
+        this.name = this.owner.name;
+        super.init();
+    }
+
     prepareData (data) {
         data = this.replaceSelfAttr(data);
         return super.prepareData(data);
     }
 
     replaceSelfAttr (text) {
-        return typeof text === 'string'
-            ? text.replace('$self', this.owner.name)
-            : text;
-    }
-
-    resolve (model) {
-        model.header.data[this.owner.name] = this._token.resolve(model);
+        return typeof text === 'string' ? text.replace('$self', this.name) : text;
     }
 };

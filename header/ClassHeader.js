@@ -6,10 +6,4 @@
 const Base = require('./Header');
 
 module.exports = class ClassHeader extends Base {
-
-    resolve (model) {
-        if (model.header.value === undefined) {
-            model.header.value = this._token.resolve(model);
-        }
-    }
 };

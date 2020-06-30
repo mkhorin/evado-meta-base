@@ -59,7 +59,7 @@ module.exports = class Model extends Base {
     }
 
     getEscapedTitle () {
-        return EscapeHelper.escapeTags(this.header);
+        return EscapeHelper.escapeTags(this.getTitle());
     }
 
     getTitle () {
@@ -203,7 +203,14 @@ module.exports = class Model extends Base {
         if (attr.embeddedModel) {
             return this.related.getTitle(attr);
         }
+        if (attr.enum) {
+            return attr.enum.getText(this.get(attr));
+        }
         const value = this.header.get(attr);
+        if (attr.isState()) {
+            const state = this.class.getState(value);
+            return state ? state.title : value;
+        }
         if (value instanceof Date) {
             return value.toISOString();
         }
@@ -249,7 +256,12 @@ module.exports = class Model extends Base {
         return Behavior.execute('afterDefaultValues', this);
     }
 
-    async resolveCalc () {
+    async resolveCalcValue (name) {
+        this.set(name, await this.view.getAttr(name).calc.resolve(this));
+        return this.get(name);
+    }
+
+    async resolveCalcValues () {
         for (const attr of this.view.calcAttrs) {
             this.set(attr, await attr.calc.resolve(this));
         }
