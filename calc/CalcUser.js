@@ -3,6 +3,11 @@
  */
 'use strict';
 
+// ["$user"] // current user ID
+// ["$user.attrName"] // current user attribute
+// ["$user.methodName"] // current user method
+// ["$user.meta.base.className"] // find object by {user: currentUserId}
+
 const Base = require('./CalcToken');
 
 module.exports = class CalcUser extends Base {
@@ -12,23 +17,41 @@ module.exports = class CalcUser extends Base {
         if (!items.length) {
             return this.resolveUser;
         }
-        if (items[0] !== 'meta') {
-            this.log('error', 'Invalid user data');
-            return this.resolveStatic;
+        const item = items[0];
+        if (item === 'meta') {
+            return this.prepareDataFinder(items);
         }
+        const User = this.calc.view.meta.hub.User;
+        if (typeof User.prototype[item] === 'function') {
+            this._userMethod = item;
+            return this.resolveUserMethod;
+        }
+        this._userAttr = item;
+        return this.resolveUserAttr;
+    }
+
+    prepareDataFinder (items) {
         this._dataFinder = this.calc.view.meta.hub.createDataFinder(items.slice(1));
-        if (!this._dataFinder) {
-            this.log('error', 'Invalid data finder');
-            return this.resolveStatic;
+        if (this._dataFinder) {
+            return this.resolveDataFinder;
         }
-        return this.resolveUserData;
+        this.log('error', `Invalid data finder: ${items.join('.')}`);
+        return this.resolveStatic;
     }
 
     resolveUser (data) {
         return data.user.getId();
     }
 
-    resolveUserData (data) {
+    resolveUserAttr (data) {
+        return data.user.get(this._userAttr);
+    }
+
+    resolveUserMethod (data) {
+        return data.user[this._userMethod]();
+    }
+
+    resolveDataFinder (data) {
         return this._dataFinder.execute({
             condition: {user: data.user.getId()}
         });

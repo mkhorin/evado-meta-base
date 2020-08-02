@@ -20,6 +20,7 @@ module.exports = class Validator extends Base {
                 enum: './EnumValidator',
                 exist: './ExistValidator',
                 expression: './ExpressionValidator',
+                json: './JsonValidator',
                 number: './NumberValidator',
                 range: './RangeValidator',
                 regex: './RegexValidator',
@@ -120,6 +121,7 @@ module.exports = class Validator extends Base {
             case TypeHelper.TYPES.BOOLEAN: return this.createValidator('boolean', name);
             case TypeHelper.TYPES.DATE: return this.createValidator('date', name);
             case TypeHelper.TYPES.FLOAT: return this.createValidator('number', name);
+            case TypeHelper.TYPES.JSON: return this.createValidator('json', name);
             case TypeHelper.TYPES.USER: return this.createValidator('user', name);
         }
         return null;

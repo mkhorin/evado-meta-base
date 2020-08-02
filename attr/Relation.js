@@ -49,7 +49,7 @@ module.exports = class Relation extends Base {
         try {
             this.filter = RelationFilter.create(this.data.filter, this);
         } catch (err) {
-            this.attr.log('error', 'Create filter', err);
+            this.attr.log('error', 'Create filter failed', err);
         }
     }
 

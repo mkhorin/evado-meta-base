@@ -1,5 +1,5 @@
 # Evado Metadata
 
-### Evado Platform metadata processing component
+### Evado Framework metadata processing component
 
-[Evado Platform](https://github.com/mkhorin/evado)
+[Evado Framework](https://github.com/mkhorin/evado)

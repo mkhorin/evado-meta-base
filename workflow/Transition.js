@@ -58,37 +58,37 @@ module.exports = class Transition extends Base {
     }
 
     createCondition () {
-        const data = this.data.condition;
-        if (data) {
-            this.condition = data.Class
-                ? this.class.meta.resolveSpawn(data)
-                : data;
+        try {
+            this._condition = Condition.prepareConfiguration(this.data.condition, this.class);
+        } catch (err) {
+            this.log('error', 'Invalid condition configuration', err);
         }
     }
 
     resolveCondition (model) {
-        if (!this.condition) {
-            return true;
-        }
-        if (this.condition.Class) {
-            const condition = model.spawn(this.condition, {transition: this});
-            return condition.resolve(model);
-        }
-        return model.findSelf().and(this.condition).count();
+        return this._condition
+            ? (new this._condition.Class(this._condition)).resolve(model)
+            : true;
     }
 
     createTransitConfig () {
-        this.config = this.class.meta.resolveSpawn(Transit, this.data.config);
-        if (!this.config) {
-            this.class.log('error', 'Invalid transit configuration');
+        this._config = this.class.meta.resolveSpawn(Transit, this.data.config);
+        if (!this._config) {
+            this.log('error', 'Invalid transit configuration');
         }
     }
 
     createTransit (model) {
-        return model.spawn(this.config, {transition: this, model});
+        return model.spawn(this._config, {transition: this, model});
+    }
+
+    log () {
+        CommonHelper.log(this.class.meta, `${this.constructor.name}: ${this.id}`, ...arguments);
     }
 };
 
+const CommonHelper = require('areto/helper/CommonHelper');
+const Condition = require('../filter/Condition');
 const MetaHelper = require('../helper/MetaHelper');
 const NestedHelper = require('areto/helper/NestedHelper');
 const Transit = require('./Transit');

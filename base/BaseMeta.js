@@ -22,8 +22,14 @@ module.exports = class BaseMeta extends Base {
         return this.classMap[id] instanceof Class ? this.classMap[id] : null;
     }
 
-    getView (id) { // view.class
-        return typeof id === 'string' ? this.getViewByClass(...id.split('.')) : null;
+    getView (id) { // view.class || class
+        if (typeof id !== 'string') {
+            return null;
+        }
+        const index = id.indexOf('.');
+        return index !== -1 
+            ? this.getViewByClass(id.substring(0, index), id.substring(index + 1)) 
+            : this.getClass(id);
     }
 
     getAttr (id) { // attr.view.class || attr.class
@@ -127,7 +133,7 @@ module.exports = class BaseMeta extends Base {
 
     async createIndexes () {
         for (const metaClass of this.classes) {
-            await metaClass.indexing.create();
+            await metaClass.createIndexes();
         }
     }
 
@@ -141,7 +147,7 @@ module.exports = class BaseMeta extends Base {
 
     async afterDataImport () {
         for (const metaClass of this.classes) {
-            await metaClass.indexing.create();
+            await metaClass.createIndexes();
             await AutoIncrementBehavior.normalize(metaClass);
         }
     }

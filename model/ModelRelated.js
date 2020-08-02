@@ -55,7 +55,7 @@ module.exports = class ModelRelated extends Base {
 
     getRelation (attr) {
         attr = this.model.view.resolveAttr(attr);
-        const query = attr.eagerView.find(this.getQueryConfig());
+        const query = attr.eagerView.find(this.getQueryConfig()).withReadData();
         return attr.relation.setQueryByModel(query, this.model);
     }
 
@@ -67,9 +67,25 @@ module.exports = class ModelRelated extends Base {
         attr = this.model.view.resolveAttr(attr);
         const query = await this.getRelation(attr);
         const models = await query.all();
-        const relative = attr.relation.multiple ? models : models[0];
-        this.set(attr, relative);
-        return relative;
+        const result = attr.relation.multiple ? models : models[0];
+        this.set(attr, result);
+        return result;
+    }
+
+    async resolveEagers () {
+        for (const attr of this.model.view.eagerAttrs) {
+            await this.resolve(attr);
+        }
+    }
+
+    async resolveEmbeddedModels () {
+        for (const attrs of this.model.view.eagerEmbeddedModels) {
+            const values = MetaHelper.getModelValues(this.model, attrs);
+            if (values.length) {
+                const data = await attrs[0].embeddedModel.findById(values).indexByKey().all();
+                MetaHelper.setModelRelated(data, this.model, attrs);
+            }
+        }
     }
 
     async onUpdateModel () {
@@ -167,6 +183,7 @@ module.exports = class ModelRelated extends Base {
                 await this.resolveLinks(data, view);
                 await this.resolveByRelated('unlinks', data, view.class, attr);
                 await this.resolveByRelated('deletes', data, view.class, attr);
+                await this.resolveSingleBackRefUnlink(attr, data);
                 this.resolveRefAttr(attr, data);
             }
         }
@@ -174,7 +191,7 @@ module.exports = class ModelRelated extends Base {
 
     filterAttrChanges (attr, data) {
         const commands = attr.commandMap;
-        if (data.links.length && commands.add !== true) {
+        if (data.links.length && commands.add !== true && commands.create !== true) {
             data.links = [];
         }
         if (data.unlinks.length && commands.remove !== true) {
@@ -182,6 +199,18 @@ module.exports = class ModelRelated extends Base {
         }
         if (data.deletes.length && commands.delete !== true) {
             data.deletes = [];
+        }
+    }
+
+    async resolveSingleBackRefUnlink (attr, data) {
+        if (attr.relation.multiple || attr.isRef() || !data.links.length || data.unlinks.length || data.deletes.length) {
+            return false;
+        }
+        const model = await this.resolve(attr);
+        if (model) {
+            attr.commandMap.delete && !attr.commandMap.remove
+                ? data.deletes.push(model)
+                : data.unlinks.push(model);
         }
     }
 
@@ -430,4 +459,5 @@ module.exports = class ModelRelated extends Base {
 const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const MongoHelper = require('areto/helper/MongoHelper');
+const MetaHelper = require('../helper/MetaHelper');
 const Model = require('./Model');

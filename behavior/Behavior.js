@@ -76,6 +76,10 @@ module.exports = class Behavior extends Base {
         view.afterFindBehaviors = this.getBehaviorsByMethod('afterFind', view);
     }
 
+    static setAfterPopulateBehaviors (view) {
+        view.afterPopulateBehaviors = this.getBehaviorsByMethod('afterPopulate', view);
+    }
+
     static getBehaviorsByMethod (name, view) {
         if (view.behaviors) {
             const result = view.behaviors.filter(behavior => behavior.Class.prototype[name] instanceof Function);
@@ -123,8 +127,24 @@ module.exports = class Behavior extends Base {
 
     module = this.owner.module;
 
+    get () {
+        return this.owner.get(...arguments);
+    }
+
+    getRelated () {
+        return this.owner.related.resolve(...arguments);
+    }
+
+    set () {
+        return this.owner.set(...arguments);
+    }
+
     getMeta () {
-        return this.owner.getMeta();
+        return this.owner.class.meta;
+    }
+
+    getMetaClass (name) {
+        return this.owner.class.meta.getClass(name);
     }
 
     getClassAttr () {
@@ -136,10 +156,11 @@ module.exports = class Behavior extends Base {
     }
 
     emitEvent (name, data) {
-        return this.owner.getMeta().emitEvent(name, {model: this.owner, ...data});
+        return this.getMeta().emitEvent(`model.${name}`, {model: this.owner, ...data});
     }
 
     // afterDefaultValues
+    // afterPopulate
     // afterFind
 
     // beforeValidate
@@ -165,8 +186,8 @@ module.exports = class Behavior extends Base {
 
     // beforeTransit
     
-    afterTransit () {        
-        return this.emitEvent('afterTransit');
+    afterTransit (transition) {
+        return this.emitEvent('afterTransit', {transition});
     }
 
     dropData () {

@@ -8,6 +8,7 @@ const Base = require('./Group');
 module.exports = class Grouping extends Base {
 
     init () {
+        this.data = {};
         this.id = `_root.${this.view.id}`;
     }
 

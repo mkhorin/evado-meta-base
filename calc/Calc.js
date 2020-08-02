@@ -16,8 +16,11 @@
 // ["$class", "className"] // class title
 // ["$state", "stateName"] // state title
 // ["$user"] // current user ID
+// ["$user.attrName"] // current user attribute
+// ["$user.methodName"] // current user method
 // ["$user.meta.base.className"] // find object by {user: currentUserId}
 // ["$query", ...] // see CalcQuery
+// ["$count", "viewName.className", [condition]]
 // ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
 
 // SHORT STRING EXPRESSION
@@ -74,6 +77,7 @@ module.exports = class Calc extends Base {
         if (Array.isArray(data)) {
             switch (data[0]) {
                 case '$condition': return CalcCondition;
+                case '$count': return CalcCount;
                 case '$custom': return this.getCustomTokenClass(data[1]);
                 case '$dependency': return CalcDependency;
                 case '$query': return CalcQuery;
@@ -106,4 +110,5 @@ const CalcToken = require('./CalcToken');
 const CalcDependency = require('./CalcDependency');
 const CalcCondition = require('./CalcCondition');
 const CalcQuery = require('./CalcQuery');
+const CalcCount = require('./CalcCount');
 const CalcUser = require('./CalcUser');

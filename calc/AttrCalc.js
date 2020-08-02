@@ -48,12 +48,6 @@ module.exports = class AttrCalc extends Base {
             : value;
     }
 
-    async resolveAll (models) {
-        for (const model of models) {
-            model.set(this.attr, await this.resolve(model));
-        }
-    }
-
     resolveToken (model) {
         return this.token.resolve({
             view: model.view,

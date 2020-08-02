@@ -7,13 +7,6 @@ const Base = require('areto/base/Base');
 
 module.exports = class Enum extends Base {
 
-    static create (attr) {
-        const data = attr.data.enums;
-        return Array.isArray(data) && data.length
-            ? new Enum({attr, data})
-            : attr.classAttr.enum;
-    }
-
     constructor (config) {
         super(config);
         this.createSets();

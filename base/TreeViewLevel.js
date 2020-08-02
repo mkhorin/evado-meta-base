@@ -32,7 +32,7 @@ module.exports = class TreeViewLevel extends Base {
             return this.treeView.log('error', `Invalid attribute: ${this.data.refAttr}`);
         }
         this.refClass = this.refAttr.relation.refClass;
-        this.refView = this.refClass.getView(this.data.view) || this.refAttr.getListView();
+        this.refView = this.refClass.getView(this.data.view) || this.refAttr.listView;
     }
 };
 

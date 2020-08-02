@@ -27,6 +27,7 @@ module.exports = class Class extends Base {
         this.class = this;
         this.name = this.data.name;
         this.id = this.name;
+        this.viewName = '';
         this.parent = this.data.parent;
         this.viewMap = {};
         this.views = [];
@@ -60,10 +61,6 @@ module.exports = class Class extends Base {
 
     getTable () {
         return this.table;
-    }
-
-    getViewId () {
-        return '.' + this.id;
     }
 
     getKey () {
@@ -113,7 +110,7 @@ module.exports = class Class extends Base {
         this.setTable();
         this.setTranslationKey();
         this.setChildren();
-        this.setFilter();
+        this.setClassCondition();
         super.prepare();
     }
 
@@ -146,14 +143,15 @@ module.exports = class Class extends Base {
         }
     }
 
-    setFilter () {
-        const names = this.getDescendants()
-            .filter(item => !item.isAbstract())
-            .map(item => item.name);
+    setClassCondition () {
+        if (!this.parent) {
+            return null;
+        }
+        const names = this.getDescendants().filter(item => !item.isAbstract()).map(item => item.name);
         if (!this.isAbstract()) {
             names.push(this.name);
         }
-        this.filter = names.length
+        this.condition = names.length
             ? {[this.CLASS_ATTR]: names.length > 1 ? names : names[0]}
             : ['FALSE'];
     }
@@ -180,7 +178,11 @@ module.exports = class Class extends Base {
     }
 
     createIndexing () {
-        return new ClassIndexing({class: this});
+        return this.parent ? null : new ClassIndexing({class: this});
+    }
+
+    createIndexes () {
+        return this.indexing ? this.indexing.create() : null;
     }
 
     createHeader () {
@@ -218,6 +220,7 @@ module.exports = class Class extends Base {
         this.prepareFileBehavior();
         this.prepareHistoryBehavior();
         Behavior.setAfterFindBehaviors(this);
+        Behavior.setAfterPopulateBehaviors(this);
         Behavior.sort(this);
         this.views.forEach(view => view.prepareBehaviors());
     }
@@ -316,6 +319,7 @@ module.exports = class Class extends Base {
         if (this.parent) {
             this.inheritViews(this.parent.views);
         }
+        this.forbiddenView = this.viewMap[this.data.forbiddenView];
         this.views.map(view => view.prepare());
     }
 

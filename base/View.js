@@ -16,6 +16,7 @@ module.exports = class View extends Base {
         this.name = this.data.name;
         this.basename = this.name.split('-').pop();
         this.id = `${this.name}.${this.class.id}`;
+        this.viewName = this.name;
         this.templateDir = `_view/${this.class.name}/${this.name}/`;
         this.parentTemplateDir = MetaHelper.addClosingChar(this.data.templateRoot, '/');
         this.viewModel = `_view/${this.class.name}/${this.name}`;
@@ -30,16 +31,16 @@ module.exports = class View extends Base {
         return this === this.class;
     }
 
+    isReadOnly () {
+        return this.data.readOnly;
+    }
+
     getId () {
         return this.id;
     }
 
     getMeta () {
         return this.class.meta;
-    }
-
-    getViewId () {
-        return this.id;
     }
 
     getName () {
@@ -87,6 +88,9 @@ module.exports = class View extends Base {
         this.createGroups();
         this.prepareRules();
         this.prepareOrder();
+        this.creationView = this.class.getView(this.data.creationView) || this.class;
+        this.editView = this.class.getView(this.data.editView) || this.class;
+        this.forbiddenView = this.class.forbiddenView;
     }
 
     createHeader () {
@@ -305,6 +309,7 @@ module.exports = class View extends Base {
         Behavior.createConfigurations(this);
         Behavior.appendClassBehaviors(this);
         Behavior.setAfterFindBehaviors(this);
+        Behavior.setAfterPopulateBehaviors(this);
         Behavior.sort(this);
     }
 
@@ -364,19 +369,14 @@ module.exports = class View extends Base {
 
     createModel (params) {
         const config = this.class.modelConfig;
-        if (!config) {
-            return new Model({
-                view: this,
-                module: this.meta.module,
-                ...params
-            });
-        }
-        return new config.Class({
-            ...config,
+        params = {
             view: this,
             module: this.meta.module,
             ...params
-        });
+        };
+        return config
+            ? new config.Class({...config, ...params})
+            : new Model(params);
     }
 
     // LOG

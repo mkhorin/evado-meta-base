@@ -64,10 +64,28 @@ module.exports = class Group extends Base {
         this.attrs = this.forceGetAttrs();
         this.groups = this.forceGetGroups();
         this.children = this.attrs.concat(this.groups);
+        this.setReadOnlyAttrs();
+        this.setRequiredAttrs();
         this.createActionBinder();
         MetaHelper.sortByDataOrderNumber(this.attrs);
         MetaHelper.sortByDataOrderNumber(this.groups);
         MetaHelper.sortByDataOrderNumber(this.children);
+    }
+
+    setReadOnlyAttrs () {
+        if (this.data.readOnly) {
+            for (const attr of this.getAllAttrs()) {
+                attr.readOnly = true;
+            }
+        }
+    }
+
+    setRequiredAttrs () {
+        if (this.data.required) {
+            for (const attr of this.getAllAttrs()) {
+                attr.required = true;
+            }
+        }
     }
 
     createActionBinder () {

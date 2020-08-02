@@ -34,6 +34,16 @@ module.exports = class Model extends Base {
         return this._isNew;
     }
 
+    isReadOnlyState () {
+        if (this.view.isReadOnly()) {
+            return true;
+        }
+        const state = this.getState();
+        if (state) {
+            return state.isReadOnly();
+        }
+    }
+
     getMeta () {
         return this.class.meta;
     }
@@ -50,12 +60,8 @@ module.exports = class Model extends Base {
         return ['!=', this.class.getKey(), this.getId()];
     }
 
-    getViewMetaId () {
-        return `${this.getId() || ''}.${this.view.getViewId()}`;
-    }
-
-    getClassMetaId () {
-        return `${this.getId() || ''}.${this.class.id}`;
+    getMetaId () {
+        return `${this.getId() || ''}.${this.view.viewName}.${this.class.name}`;
     }
 
     getEscapedTitle () {
@@ -95,7 +101,7 @@ module.exports = class Model extends Base {
     }
 
     toString () {
-        return this.getViewMetaId();
+        return this.getMetaId();
     }
 
     toJSON () {
@@ -300,6 +306,14 @@ module.exports = class Model extends Base {
         for (const attr of this.view.attrs) {
             if (attr.canLoad()) {
                 this.set(attr, sample.get(attr));
+            }
+        }
+    }
+
+    resolveReadOnlyAttrTitles () {
+        for (const attr of this.view.headerAttrs) {
+            if (this.readOnly || attr.isReadOnly()) {
+                this.header.resolveAttr(attr);
             }
         }
     }
@@ -514,11 +528,6 @@ module.exports = class Model extends Base {
 
     isTransiting () {
         return !!this.getTransitionName();
-    }
-
-    isReadOnlyState () {
-        const state = this.getState();
-        return state && state.isReadOnly();
     }
 
     getState () {

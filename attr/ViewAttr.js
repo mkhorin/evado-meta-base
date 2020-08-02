@@ -61,7 +61,7 @@ module.exports = class ViewAttr extends Base {
         this.searchDepth = this.resolveSearchDepth();
         this.eagerDepth = this.resolveEagerDepth();
         this.escaping = this.data.escape && (this.isString() || this.isText() || this.isRelation());
-        this.readOnly = this.data.readOnly === true;
+        this.readOnly = this.data.readOnly === true || this.view.isReadOnly();
         this.required = this.data.required === true;
         this.unique = this.data.unique === true;
         this.sortable = this.data.sortable === true;
@@ -73,6 +73,10 @@ module.exports = class ViewAttr extends Base {
 
     isCalc () {
         return this.type === TypeHelper.TYPES.CALC;
+    }
+
+    isClassAttr () {
+        return this === this.classAttr;
     }
 
     isDate () {
@@ -307,7 +311,7 @@ module.exports = class ViewAttr extends Base {
         if (this.relation && this.relation.refClass) {
             this.listView = this.getRefView('listView', 'list');
             this.selectListView = this.relation.refClass.getView(this.data.selectListView) || this.listView;
-            this.eagerView = this.getRefView('eagerView');
+            this.eagerView = this.getRefView('eagerView', 'eager');
         }
     }
 
@@ -335,12 +339,22 @@ module.exports = class ViewAttr extends Base {
 
     prepare () {
         // define data dependent on attributes of other classes
-        this.enum = Enum.create(this);
+        this.createEnum();
         this.createActionBinder();
         this.setParent();
         this.prepareBehaviors();
         this.prepareRules();
         this.prepareCommands();
+        this.setTranslatable();
+    }
+
+    createEnum () {
+        if (!this.options.disableEnums) {
+            const data = this.data.enums;
+            this.enum = Array.isArray(data) && data.length
+                ? new Enum({attr: this, data})
+                : this.classAttr.enum;
+        }
     }
 
     createActionBinder () {
@@ -382,6 +396,10 @@ module.exports = class ViewAttr extends Base {
 
     resolveSearchDepth () {
         return MetaHelper.resolveInteger(this.data.searchDepth, this.DEFAULT_SEARCH_DEPTH, this.MAX_SEARCH_DEPTH);
+    }
+
+    setTranslatable () {
+        this.translatable = this.isState() || !!this.enum;
     }
 
     // SEARCH

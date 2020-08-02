@@ -11,7 +11,7 @@ module.exports = class ModelQuery extends Base {
         super(config);
         this._db = this.view.class.getDb();
         this._from = this.view.class.table;
-        this._where = this.view.class.filter;
+        this._where = this.view.class.condition;
         this._order = this.view.order;
         this._raw = null;
         this._relatedDepth = 0;
@@ -62,6 +62,14 @@ module.exports = class ModelQuery extends Base {
         return this;
     }
 
+    withFormData (value = true) {
+        this._withCalc = value;
+        this._withRelated = value;
+        this._withStateView = value;
+        this._withTitle = value;
+        return this;
+    }
+
     withListData (value = true) {
         this._withAttrTitle = value;
         this._withCalc = value;
@@ -70,8 +78,8 @@ module.exports = class ModelQuery extends Base {
     }
 
     withReadData (value = true) {
+        this._withAttrTitle = value;
         this._withCalc = value;
-        this._withReadOnlyTitle = value;
         this._withRelated = value;
         this._withTitle = value;
         return this;
@@ -84,11 +92,6 @@ module.exports = class ModelQuery extends Base {
 
     withAttrTitle (value = true) {
         this._withAttrTitle = value;
-        return this;
-    }
-
-    withReadOnlyTitle (value = true) {
-        this._withReadOnlyTitle = value;
         return this;
     }
 
@@ -110,7 +113,6 @@ module.exports = class ModelQuery extends Base {
     copyParams (query) {
         this._withAttrTitle = query._withAttrTitle;
         this._withCalc = query._withCalc;
-        this._withReadOnlyTitle = query._withReadOnlyTitle;
         this._withRelated = query._withRelated;
         this._withStateView = query._withStateView;
         this._withTitle = query._withTitle;
@@ -150,6 +152,9 @@ module.exports = class ModelQuery extends Base {
             model.related.depth = this._relatedDepth;
             models.push(model);
         }
+        if (this.view.afterPopulateBehaviors) {
+            await this.executeAfterPopulateBehaviors(models);
+        }
         if (this._withStateView) {
             this.view = models[0].view; // model view resolved by state
         }
@@ -167,9 +172,6 @@ module.exports = class ModelQuery extends Base {
         }
         if (this._withAttrTitle) {
             await this.resolveAttrTitle(models);
-        }
-        if (this._withReadOnlyTitle && !this._withAttrTitle) {
-            await this.resolveReadOnlyTitle(models);
         }
         if (this._withTitle) {
             await this.resolveTitle(models);
@@ -215,7 +217,9 @@ module.exports = class ModelQuery extends Base {
 
     async resolveCalc (models) {
         for (const attr of this.view.calcAttrs) {
-            await attr.calc.resolveAll(models);
+            for (const model of models) {
+                model.set(attr, await attr.calc.resolve(model));
+            }
         }
     }
 
@@ -223,16 +227,6 @@ module.exports = class ModelQuery extends Base {
         for (const attr of this.view.headerAttrs) {
             for (const model of models) {
                 model.header.resolveAttr(attr);
-            }
-        }
-    }
-
-    resolveReadOnlyTitle (models) {
-        for (const attr of this.view.headerAttrs) {
-            if (attr.isReadOnly()) {
-                for (const model of models) {
-                    model.header.resolveAttr(attr);
-                }
             }
         }
     }
@@ -247,10 +241,12 @@ module.exports = class ModelQuery extends Base {
 
     async resolveEmbeddedModels (models) {
         for (const attrs of this.view.eagerEmbeddedModels) {
-            const values = MetaHelper.getModelValues(models, attrs);
+            const values = MetaHelper.getModelsValues(models, attrs);
             if (values.length) {
                 const data = await attrs[0].embeddedModel.findById(values).indexByKey().all();
-                MetaHelper.setModelRelated(data, models, attrs);
+                for (const model of models) {
+                    MetaHelper.setModelRelated(data, model, attrs);
+                }
             }
         }
     }
@@ -265,6 +261,12 @@ module.exports = class ModelQuery extends Base {
 
     filterRelatedModels () {
         return this._relatedFilter && this._relatedFilter(this);
+    }
+
+    async executeAfterPopulateBehaviors (models) {
+        for (const model of models) {
+            await Behavior.execute('afterPopulate', model);
+        }
     }
 
     async executeAfterFindBehaviors (models) {

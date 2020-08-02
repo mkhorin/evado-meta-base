@@ -26,21 +26,19 @@ module.exports = class MetaHelper extends Base {
         return result;
     }
 
-    static setModelRelated (data, models, attrs) {
+    static setModelRelated (data, model, attrs) {
         for (const attr of attrs) {
-            for (const model of models) {
-                const value = model.get(attr);
-                if (Array.isArray(value)) {
-                    const values = [];
-                    for (const val of value) {
-                        if (data[val]) {
-                            values.push(data[val]);
-                        }
+            const value = model.get(attr);
+            if (Array.isArray(value)) {
+                const values = [];
+                for (const val of value) {
+                    if (data[val]) {
+                        values.push(data[val]);
                     }
-                    model.related.set(attr, values);
-                } else if (value) {
-                    model.related.set(attr, data[value]);
                 }
+                model.related.set(attr, values);
+            } else if (value) {
+                model.related.set(attr, data[value]);
             }
         }
     }

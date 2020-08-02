@@ -37,16 +37,27 @@ module.exports = class ClassIndexing extends Base {
 
     getIndexList () {
         const indexes = [];
-        if (Array.isArray(this.class.data.indexes)) {
-            indexes.push(...this.class.data.indexes);
+        const descendants = this.class.getDescendants();
+        for (const metaClass of descendants) {
+            indexes.push(...this.getIndexListByClass(metaClass));
         }
-        for (const attr of this.class.attrs) {
+        if (descendants.length) {
+            indexes.push([{[this.class.CLASS_ATTR]: 1}]);
+        }
+        return indexes;
+    }
+
+    getIndexListByClass (metaClass) {
+        const indexes = [];
+        if (Array.isArray(metaClass.data.indexes)) {
+            indexes.push(...metaClass.data.indexes);
+        }
+        for (const attr of metaClass.attrs) {
             const index = this.getAttrIndex(attr);
             if (index) {
                 indexes.push(index);
             }
         }
-        indexes.push([{[this.class.CLASS_ATTR]: 1}]);
         return indexes;
     }
 

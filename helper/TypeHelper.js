@@ -16,6 +16,7 @@ module.exports = class TypeHelper extends Base {
                 DATE: 'date',
                 FILE: 'file',
                 FLOAT: 'float',
+                JSON: 'json',
                 ID: 'id',
                 INTEGER: 'integer',
                 REF: 'ref',

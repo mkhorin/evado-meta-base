@@ -12,9 +12,7 @@ module.exports = class Transit extends Base {
     }
 
     async execute () {
-
         // place transit code here
-
         return this.getResultState();
     }
 };
