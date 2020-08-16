@@ -26,6 +26,14 @@ module.exports = class Model extends Base {
         this.header = new ModelHeader({model: this});
     }
 
+    isCreator (id) {
+        return !this._isNew && JSON.stringify(id) === JSON.stringify(this.getCreator());
+    }
+
+    isEditor (id) {
+        return !this._isNew && JSON.stringify(id) === JSON.stringify(this.getEditor());
+    }
+
     isId (id) {
         return !this._isNew && JSON.stringify(id) === JSON.stringify(this.getId());
     }

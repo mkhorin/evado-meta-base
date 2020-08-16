@@ -7,8 +7,8 @@ const Base = require('./Validator');
 
 module.exports = class ExpressionValidator extends Base {
 
-    getInvalidExpressionMessage () {
-        return this.createMessage(this.invalidExpressionMessage, 'Invalid expression');
+    getInvalidMessage () {
+        return this.createMessage(this.invalidMessage, 'Invalid expression');
     }
 
     getMessage (requiredValue) {
@@ -19,25 +19,26 @@ module.exports = class ExpressionValidator extends Base {
     }
 
     async validateAttr (name, model) {
-        let config = this.expression;
+        const value = await this.resolveExpression(this.expression, name, model);
+        if (!CommonHelper.isEqual(value, model.get(name))) {
+            this.addError(model, name, this.getMessage(value));
+        }
+    }
+
+    resolveExpression (config, name, model) {
         if (typeof config.Class === 'string') {
             config = model.class.meta.resolveSpawn(config);
         }
         if (!config) {
-            return this.addError(model, name, this.getInvalidExpressionMessage());
+            return this.addError(model, name, this.getInvalidMessage());
         }
-        let attr = model.class.getAttr(name);
-        let value = null;
+        const attr = model.class.getAttr(name);
         if (config.Class) {
             const expression = model.spawn(config, {attr});
-            value = await expression.resolve(model);
-        } else {
-            const calc = attr.spawnCalc(config);
-            value = await calc.resolve(model);
+            return expression.resolve(model);
         }
-        if (!CommonHelper.isEqual(value, model.get(name))) {
-            this.addError(model, name, this.getMessage(value));
-        }
+        const calc = attr.spawnCalc(config);
+        return calc.resolve(model);
     }
 };
 

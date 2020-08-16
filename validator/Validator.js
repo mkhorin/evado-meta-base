@@ -15,6 +15,7 @@ module.exports = class Validator extends Base {
             BUILTIN: {
                 actionBinder: './ActionBinderValidator',
                 boolean: './BooleanValidator',
+                condition: './ConditionValidator',
                 date: './DateValidator',
                 email: './EmailValidator',
                 enum: './EnumValidator',

@@ -13,6 +13,8 @@ module.exports = class BaseMeta extends Base {
             source: {Class: require('../source/FileSource')},
             autoIncrementTable: 'ds_autoIncrement',
             dataTablePrefix: 'd_',
+            DataHistoryModel: {Class: require('evado/model/DataHistory')},
+            UserModel: {Class: require('evado/model/User')},
             ...config
         });
         this.createSource(this.source);
@@ -114,9 +116,9 @@ module.exports = class BaseMeta extends Base {
             'prepareKey',
             'prepareFilter',
             'createHeader',
+            'createStates',
             'createDefaultValues',
             'createCalc',
-            'createStates',
             'createTransitions',
             'createTreeView',
             'prepareBehaviors'

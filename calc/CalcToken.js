@@ -8,6 +8,13 @@ const OPERATION_MAP = {
     '$-': 'resolveSubtraction',
     '$*': 'resolveMultiplication',
     '$/': 'resolveDivision',
+    '$=': 'resolveEqual',
+    '$!=': 'resolveNotEqual',
+    '$>': 'resolveGreater',
+    '$>=': 'resolveGreaterOrEqual',
+    '$<': 'resolveLess',
+    '$and': 'resolveAnd',
+    '$or': 'resolveOr',
     '$class': 'resolveClass',
     '$raw': 'resolveRaw',
     '$state': 'resolveState',
@@ -170,6 +177,49 @@ module.exports = class CalcToken extends Base {
             result /= values[i];
         }
         return result;
+    }
+
+    resolveEqual (values) {
+        const value = JSON.stringify(values[0]);
+        for (let i = 1; i < values.length; ++i) {
+            if (value !== JSON.stringify(values[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    resolveNotEqual () {
+        return !this.resolveEqual(...arguments);
+    }
+
+    resolveGreater (values) {
+        return values[0] > values[1];
+    }
+
+    resolveGreaterOrEqual (values) {
+        return values[0] >= values[1];
+    }
+
+    resolveLess (values) {
+        return values[0] < values[1];
+    }
+
+    resolveLessOrEqual (values) {
+        return values[0] <= values[1];
+    }
+
+    resolveAnd (values) {
+        for (const value of values) {
+            if (!value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    resolveOr (values) {
+        return !this.resolveAnd(...arguments);
     }
 
     resolveClass ([name], {view}) {
