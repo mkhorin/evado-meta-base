@@ -131,6 +131,10 @@ module.exports = class ViewAttr extends Base {
         return this.viewType === TypeHelper.VIEW_TYPES.STATE;
     }
 
+    isStringView () {
+        return this.viewType === TypeHelper.TYPES.STRING;
+    }
+
     isTime () {
         return this.viewType === TypeHelper.VIEW_TYPES.TIME;
     }
