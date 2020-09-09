@@ -36,7 +36,7 @@ module.exports = class RelationFilter extends Base {
         const initial = query.getWhere();
         for (const model of models) {
             query.where(initial);
-            await this.apply({query, model});
+            await this.apply(query, model);
             query.setRelatedDepth(model.related.depth + 1);
             await query.filterRelatedModels();
             const items = await query.all();
