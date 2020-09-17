@@ -44,7 +44,7 @@ module.exports = class ExistValidator extends Base {
         if (!target) {
             throw new Error(`Target class not found: ${this.targetClass}`);
         }
-        const query = target.find();
+        const query = target.createQuery();
         let names = this.targetAttr || [attrName];
         if (!Array.isArray(names)) {
             names = [names];

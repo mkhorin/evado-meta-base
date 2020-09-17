@@ -47,13 +47,13 @@ module.exports = class AutoIncrementBehavior extends Base {
     }
 
     getExtremeValue () {
-        return this.owner.class.find().order({
+        return this.owner.class.createQuery().order({
             [this.attrName]: this.step > 0 ? -1 : 1
         }).scalar(this.attrName);
     }
 
     getNextValue (value) {
-        return Number.isInteger(value) ? (value + this.step) : this.start;
+        return Number.isSafeInteger(value) ? (value + this.step) : this.start;
     }
 
     getTable () {

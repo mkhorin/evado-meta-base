@@ -63,7 +63,7 @@ module.exports = class CalcDependency extends Base {
         }
         let view = attr.eagerView;
         let config = model.related.getQueryConfig();
-        let models = await view.findById(value, config).all();
+        let models = await view.createQuery(config).byId(value).all();
         let multiple = attr.relation.multiple;
         for (const name of this._names) {
             if (!models.length) {

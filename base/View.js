@@ -327,24 +327,28 @@ module.exports = class View extends Base {
 
     // MODEL
 
-    findByCreator (creator, config) {
-        return this.find(config).and({[this.CREATOR_ATTR]: creator});
-    }
-
-    findByEditor (editor, config) {
-        return this.find(config).and({[this.EDITOR_ATTR]: editor});
-    }
-
-    findById (id, config) {
-        return this.find(config).and(this.class.getIdCondition(id));
-    }
-
-    findByState (state, config) {
-        return this.find(config).and({[this.STATE_ATTR]: state});
-    }
-
-    find (config) {
+    createQuery (config) {
         return new ModelQuery({view: this, ...config});
+    }
+
+    find () {
+        return this.createQuery().and(...arguments);
+    }
+
+    findByCreator (id) {
+        return this.createQuery().byCreator(id);
+    }
+
+    findByEditor (id) {
+        return this.createQuery().byEditor(id);
+    }
+
+    findById (id) {
+        return this.createQuery().byId(id);
+    }
+
+    findByState (id) {
+        return this.createQuery().byState(id);
     }
 
     getModelClass (data) {

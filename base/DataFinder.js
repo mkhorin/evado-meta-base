@@ -7,7 +7,7 @@ const Base = require('evado/component/base/DataFinder');
 
 module.exports = class DataFinder extends Base {
 
-    find () {
-        return this.view.find(...arguments);
+    createQuery () {
+        return this.view.createQuery(...arguments);
     }
 };

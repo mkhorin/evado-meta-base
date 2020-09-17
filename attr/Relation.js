@@ -67,7 +67,7 @@ module.exports = class Relation extends Base {
 
     findByRefAttr (value) {
         value = TypeHelper.cast(value, this.getRefAttrType());
-        return this.refClass.find().and({[this.refAttrName]: value});
+        return this.refClass.find({[this.refAttrName]: value});
     }
 
     setQueryByModel (query, model) {
@@ -94,7 +94,7 @@ module.exports = class Relation extends Base {
         const viaClass = this.refClass.meta.getClass(via.refClass);
         const viaAttrName = via.refAttr || viaClass.getKey();
         const viaLinkAttrName = via.linkAttr || viaClass.getKey();
-        const values = await viaClass.find().and({[viaAttrName]: value}).column(viaLinkAttrName);
+        const values = await viaClass.find({[viaAttrName]: value}).column(viaLinkAttrName);
         return via.via ? this.resolveVia(via.via, values) : values;
     }
 
@@ -125,11 +125,10 @@ module.exports = class Relation extends Base {
         const viaClass = this.refClass.meta.getClass(via.refClass);
         const viaAttrName = via.refAttr || viaClass.getKey();
         const viaLinkAttrName = via.linkAttr || viaClass.getKey();
-        const query = viaClass.find().raw().and({[viaAttrName]: buckets.values});
-        const docs = await query.select({
+        const docs = await viaClass.find({[viaAttrName]: buckets.values}).select({
             [viaAttrName]: 1,
             [viaLinkAttrName]: 1
-        }).all();
+        }).raw().all();
         MetaHelper.rebuildBuckets(buckets, docs, viaLinkAttrName, viaAttrName);
         return via.via ? this.resolveViaBuckets(via.via, buckets) : buckets;
     }

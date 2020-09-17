@@ -21,6 +21,8 @@ module.exports = class CalcCondition extends Base {
         if (this.data && typeof this.data === 'object') {
             return this.prepareHash();
         }
+        this.log('error', 'Invalid condition');
+        this.data = ['FALSE'];
         return this.resolveStatic;
     }
 

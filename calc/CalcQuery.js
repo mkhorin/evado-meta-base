@@ -56,7 +56,7 @@ module.exports = class CalcQuery extends Base {
     }
     
     createQuery () {
-        const query = this._view.find();
+        const query = this._view.createQuery();
         if (this._params.limit) {
             query.limit(this._params.limit);
         }

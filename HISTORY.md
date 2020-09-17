@@ -1,3 +1,17 @@
+## 1.8.0
+
+* base/View
+    - extract query creation method
+* behavior/Behavior
+    - move event emitting to model    
+* calc/CalcToken
+    - add master value
+* filter/RelationFilter
+    - fix format of arguments
+* model/Model
+    - clear errors before deleting 
+    - add master model getter
+
 ## 1.7.0
 
 * calc/CalcToken

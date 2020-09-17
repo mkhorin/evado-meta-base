@@ -31,7 +31,7 @@ module.exports = class CalcDescendants extends Base {
         if (model.isNew()) {
             return result;
         }
-        const query = this._view.find();
+        const query = this._view.createQuery();
         query.module = model.module;
         if (this._condition) {
             query.and(await this._condition.resolve(model));

@@ -18,6 +18,22 @@ module.exports = class ModelQuery extends Base {
         this._maxRelatedDepth = 1;
     }
 
+    byCreator (id) {
+        return this.and({[this.view.class.CREATOR_ATTR]: id});
+    }
+
+    byEditor (id) {
+        return this.and({[this.view.class.EDITOR_ATTR]: id});
+    }
+
+    byId (id) {
+        return this.and(this.view.class.getIdCondition(id));
+    }
+
+    byState (id) {
+        return this.and({[this.view.class.STATE_ATTR]: id});
+    }
+
     id () {
         return this.scalar(this.view.getKey());
     }
@@ -190,7 +206,7 @@ module.exports = class ModelQuery extends Base {
             if (this._relatedDepth === 0) {
                 this._maxRelatedDepth = attr.eagerDepth;
             }
-            const query = attr.eagerView.find().copyParams(this);
+            const query = attr.eagerView.createQuery().copyParams(this);
             await attr.relation.setRelatedToAll(query, models);
         }
     }
@@ -207,7 +223,7 @@ module.exports = class ModelQuery extends Base {
                 : value.view
                     ? attr.getRefClass().getView(value.view)
                     : attr.getRefClass();
-            const query = view.find().copyParams(this);
+            const query = view.createQuery().copyParams(this);
             if (value.handler) {
                 value.handler(query);
             }

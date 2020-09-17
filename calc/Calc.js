@@ -15,6 +15,7 @@
 // ["$round", ".attrName", precision]
 // ["$class", "className"] // class title
 // ["$state", "stateName"] // state title
+// ["$master", "attrName"]
 // ["$user"] // current user ID
 // ["$user.attrName"] // current user attribute
 // ["$user.methodName"] // current user method

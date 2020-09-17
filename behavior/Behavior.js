@@ -82,7 +82,7 @@ module.exports = class Behavior extends Base {
 
     static getBehaviorsByMethod (name, view) {
         if (view.behaviors) {
-            const result = view.behaviors.filter(behavior => behavior.Class.prototype[name] instanceof Function);
+            const result = view.behaviors.filter(behavior => typeof behavior.Class.prototype[name] === 'function');
             return result.length ? result : null;
         }
     }
@@ -110,7 +110,7 @@ module.exports = class Behavior extends Base {
     static async execute (method, model, ...args) {
         model.ensureBehaviors();
         for (const behavior of model.behaviors) {
-            if (behavior[method] instanceof Function) {
+            if (typeof behavior[method] === 'function') {
                 await behavior[method](...args);
             }
         }
@@ -155,8 +155,7 @@ module.exports = class Behavior extends Base {
         return this.owner.view.getAttr(this.attrName);
     }
 
-    emitEvent (name, data) {
-        return this.getMeta().emitEvent(`model.${name}`, {model: this.owner, ...data});
+    dropData () {
     }
 
     // afterDefaultValues
@@ -167,31 +166,16 @@ module.exports = class Behavior extends Base {
     // afterValidate
 
     // beforeInsert
-
-    afterInsert () {
-        return this.emitEvent('afterInsert');
-    }
+    // afterInsert
 
     // beforeUpdate
-
-    afterUpdate () {
-        return this.emitEvent('afterUpdate');
-    }
+    // afterUpdate
 
     // beforeDelete
-
-    afterDelete () {
-        return this.emitEvent('afterDelete');
-    }
+    // afterDelete
 
     // beforeTransit
-    
-    afterTransit (transition) {
-        return this.emitEvent('afterTransit', {transition});
-    }
-
-    dropData () {
-    }
+    // afterTransit
 };
 module.exports.init();
 

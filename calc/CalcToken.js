@@ -19,6 +19,7 @@ const OPERATION_MAP = {
     '$raw': 'resolveRaw',
     '$state': 'resolveState',
     '$now': 'resolveNow',
+    '$master': 'resolveMaster',
     '$currentMonth': 'resolveCurrentMonth',
     '$currentYear': 'resolveCurrentYear',
     '$nextMonth': 'resolveNextMonth',
@@ -29,6 +30,7 @@ const OPERATION_MAP = {
 const PREPARATION_MAP = {
     '$join': 'prepareJoin',
     '$map': 'prepareMap',
+    '$master': 'prepareMaster',
     '$method': 'prepareMethod',
     '$model': 'prepareModel',
     '$moment': 'prepareMoment',
@@ -102,6 +104,11 @@ module.exports = class CalcToken extends Base {
         this._method = this.executeMethod.bind(this, items[0]);
         this._operands = this.createOperands(items.slice(1));
         return this.resolveOperation;
+    }
+
+    prepareMaster (items) {
+        this._attrName = items[0];
+        return this._attrName ? this.resolveMasterValue : this.resolveMaster;
     }
 
     prepareMethod (items) {
@@ -237,6 +244,16 @@ module.exports = class CalcToken extends Base {
         return [].concat(...values.map(value => {
             return Array.isArray(value) ? value.map(this._method) : this._method(value);
         }));
+    }
+
+    resolveMaster ({model}) {
+        const master = model.getMasterModel();
+        return master ? master.getId() : this.data;
+    }
+
+    resolveMasterValue ({model}) {
+        const master = model.getMasterModel();
+        return master ? master.get(this._attrName) : this.data;
     }
 
     resolveMethod ([value]) {

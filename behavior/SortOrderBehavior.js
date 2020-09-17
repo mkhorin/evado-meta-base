@@ -27,7 +27,7 @@ module.exports = class SortOrderBehavior extends Base {
 
     async setNextNumber () {
         let value = await this.getExtremeNumber();
-        if (Number.isInteger(value)) {
+        if (Number.isSafeInteger(value)) {
             value += this.step;
         } else {
             value = this.start;
@@ -36,7 +36,7 @@ module.exports = class SortOrderBehavior extends Base {
     }
 
     getExtremeNumber () {
-        return this.owner.class.find().order({
+        return this.owner.class.createQuery().order({
             [this.attrName]: this.step > 0 ? -1 : 1
         }).scalar(this.attrName);
     }
@@ -47,7 +47,7 @@ module.exports = class SortOrderBehavior extends Base {
             user: this.user  
         };
         for (const id of Object.keys(data)) {
-            const model = await view.findById(id, config).one();
+            const model = await view.createQuery(config).byId(id).one();
             if (model) {                
                 model.set(this.attrName, data[id]);
                 await model.forceSave();

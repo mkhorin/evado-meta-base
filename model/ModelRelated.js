@@ -55,7 +55,7 @@ module.exports = class ModelRelated extends Base {
 
     getRelation (attr) {
         attr = this.model.view.resolveAttr(attr);
-        const query = attr.eagerView.find(this.getQueryConfig()).withReadData();
+        const query = attr.eagerView.createQuery(this.getQueryConfig()).withReadData();
         return attr.relation.setQueryByModel(query, this.model);
     }
 
@@ -132,7 +132,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     async deleteRelated (attr) {
-        const query = attr.view.find(this.getQueryConfig());
+        const query = attr.view.createQuery(this.getQueryConfig());
         const value = this.model.get(attr.relation.refAttrName);
         const models = await query.and({[attr.relation.linkAttrName]: value}).all();
         return this.model.constructor.delete(models);
@@ -224,13 +224,13 @@ module.exports = class ModelRelated extends Base {
 
     async resolveLinks (changes, view) {
         if (changes.links.length) {
-            changes.links = await view.findById(changes.links, this.getQueryConfig()).all();
+            changes.links = await view.createQuery(this.getQueryConfig()).byId(changes.links).all();
         }
     }
 
     async resolveByRelated (key, changes, view, attr) {
         if (changes[key].length) {
-            const query = view.findById(changes[key], this.getQueryConfig());
+            const query = view.createQuery(this.getQueryConfig()).byId(changes[key]);
             await attr.relation.setQueryByModel(query, this.model);
             changes[key] = await query.all();
         }
@@ -338,7 +338,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     async checkRefExist (relation, doc) {
-        const query = this.model.class.find().and({
+        const query = this.model.class.find({
             [relation.linkAttrName]: doc[relation.refAttrName]
         });
         const ids = await query.limit(2).column(this.model.class.getKey());
@@ -346,7 +346,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     checkBackRefExist (relation, doc) {
-        const query = relation.refClass.find().and({
+        const query = relation.refClass.find({
             [relation.refAttrName]: this.model.get(relation.linkAttrName)
         });
         const ids = query.limit(2).column(relation.refClass.getKey());
@@ -380,7 +380,7 @@ module.exports = class ModelRelated extends Base {
         if (this._linkedMap.hasOwnProperty(attr.name)) {
             return this._linkedMap[attr.name];
         }
-        const query = attr.relation.refClass.find(this.getQueryConfig());
+        const query = attr.relation.refClass.createQuery(this.getQueryConfig());
         await attr.relation.setQueryByModel(query, this.model);
         const docs = await query.raw().all();
         const data = this._changes[attr.name];
@@ -409,7 +409,7 @@ module.exports = class ModelRelated extends Base {
     async updateOrder (attr, data) {
         const refClass = attr.relation.refClass;
         const refKey = refClass.getKey();
-        const query = refClass.find();
+        const query = refClass.createQuery();
         await attr.relation.setQueryByDoc(query, this.model.getValues());
         const orderKey = this.getOrderKey(attr);
         const items = await query.select([refKey, orderKey]).raw().all();
@@ -423,7 +423,9 @@ module.exports = class ModelRelated extends Base {
         names = Array.isArray(names) ? names : [];
         if (!names.includes(attr.name)) {
             names.push(attr.name);
-            await this.model.class.findById(this.model.getId()).update({[refClass.RELATION_SORT_ATTR]: names});
+            await this.model.class.findById(this.model.getId()).update({
+                [refClass.RELATION_SORT_ATTR]: names
+            });
         }
     }
 

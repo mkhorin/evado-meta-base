@@ -18,7 +18,7 @@ module.exports = class BackRefUserFilter extends Base {
     async apply (query) {
         const user = query.controller.user.getId();
         const attr = query.view.class.getAttr(this.attr);
-        const ids = await attr.relation.refClass.find().and({[this.userAttr]: user}).column(this.attr);
+        const ids = await attr.relation.refClass.find({[this.userAttr]: user}).column(this.attr);
         return query.and({[query.view.getKey()]: ids});
     }
 };

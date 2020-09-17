@@ -366,7 +366,7 @@ module.exports = class Class extends Base {
         data = this.filterValues(data);
         data[this.CLASS_ATTR] = this.name;
         data[this.CREATED_AT_ATTR] = new Date;
-        return this.find().insert(data);
+        return this.createQuery().insert(data);
     }
 
     update (id, data) {

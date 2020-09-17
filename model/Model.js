@@ -42,16 +42,6 @@ module.exports = class Model extends Base {
         return this._isNew;
     }
 
-    isReadOnlyState () {
-        if (this.view.isReadOnly()) {
-            return true;
-        }
-        const state = this.getState();
-        if (state) {
-            return state.isReadOnly();
-        }
-    }
-
     getMeta () {
         return this.class.meta;
     }
@@ -281,6 +271,10 @@ module.exports = class Model extends Base {
         }
     }
 
+    getMasterModel () {
+        return this.controller.meta.master.model;
+    }
+
     setUser (user) {
         this.user = user;
     }
@@ -292,10 +286,10 @@ module.exports = class Model extends Base {
     }
 
     findSelf () {
-        return this.class.findById(this.getId(), {
+        return this.class.createQuery({
             module: this.module,
             user: this.user
-        });
+        }).byId(this.getId());
     }
 
     createSelf (params) {
@@ -324,6 +318,10 @@ module.exports = class Model extends Base {
                 this.header.resolveAttr(attr);
             }
         }
+    }
+
+    emit (event, data) {
+        return this.class.meta.emit(event, {model: this, ...data});
     }
 
     // BEHAVIORS
@@ -425,6 +423,7 @@ module.exports = class Model extends Base {
     async afterInsert () {
         await this.afterSave(true);
         await Behavior.execute('afterInsert', this);
+        await this.emit(`create.${this.class.name}`);
         this._isNew = false;
     }
 
@@ -445,6 +444,7 @@ module.exports = class Model extends Base {
     async afterUpdate () {
         await this.afterSave();
         await Behavior.execute('afterUpdate', this);
+        await this.emit(`update.${this.class.name}`);
     }
 
     async beforeSave () {
@@ -459,6 +459,7 @@ module.exports = class Model extends Base {
     // DELETE
 
     async delete () {
+        this.clearErrors();
         await this.beforeDelete();
         if (!this.hasError()) {
             await this.findSelf().delete();
@@ -466,13 +467,14 @@ module.exports = class Model extends Base {
         }
     }
 
-    beforeDelete () {
-        return Behavior.execute('beforeDelete', this);
+    async beforeDelete () {
+        await Behavior.execute('beforeDelete', this);
     }
 
     async afterDelete () {
         await this.related.onDeleteModel();
-        return Behavior.execute('afterDelete', this);
+        await Behavior.execute('afterDelete', this);
+        await this.emit(`delete.${this.class.name}`);
     }
 
     // ERRORS
@@ -534,6 +536,16 @@ module.exports = class Model extends Base {
 
     // WORKFLOW
 
+    isReadOnlyState () {
+        if (this.view.isReadOnly()) {
+            return true;
+        }
+        const state = this.getState();
+        if (state) {
+            return state.isReadOnly();
+        }
+    }
+
     isTransiting () {
         return !!this.getTransitionName();
     }
@@ -580,7 +592,7 @@ module.exports = class Model extends Base {
         try {
             await this.updateTransiting(transition.name);
             const transit = transition.createTransit(this);
-            await Behavior.execute('beforeTransit', this, transit);
+            await this.beforeTransit(transit);
             if (this.hasError()) {
                 return this.updateTransiting(null);
             }
@@ -595,10 +607,19 @@ module.exports = class Model extends Base {
         }
         try {
             await this.updateTransiting(null);
-            await Behavior.execute('afterTransit', this, transition);
+            await this.afterTransit(transition);
         } catch (err) {
-            this.log('error', `After transit failed: ${transition.name}`, err);
+            this.log('error', `Failed after transit: ${transition.name}`, err);
         }
+    }
+
+    beforeTransit (transit) {
+        return Behavior.execute('beforeTransit', this, transit);
+    }
+
+    async afterTransit (transition) {
+        await Behavior.execute('afterTransit', this, transition);
+        await this.emit(`transit.${this.class.name}.${transition.name}`, {transition});
     }
 
     updateTransiting (value) {
@@ -613,64 +634,8 @@ module.exports = class Model extends Base {
 
     // OUTPUT
 
-    output (security = this.security) {
-        const access = security && security.attrAccess;
-        const result = {};
-        const forbidden = this.forbiddenReadAttrs;
-        for (const attr of this.view.attrs) {
-            if ((!access || access.canRead(attr.name)) && (!forbidden || !forbidden.includes(attr.name))) {
-                result[attr.name] = this.outputAttr(attr, result);
-            } else if (result._forbidden) {
-                result._forbidden.push(attr.name);
-            } else {
-                result._forbidden = [attr.name];
-            }
-        }
-        result._id = this.getId();
-        result._metaClass = this.class.name;
-        result._title = this.getTitle();
-        return result;
-    }
-
-    outputAttr (attr, result) {
-        if (attr.relation) {
-            return this.outputRelationAttr(attr);
-        }
-        if (attr.embeddedModel) {
-            this.setOutputAttrTitle(this.related.getTitle(attr), attr, result);
-            return this.get(attr);
-        }
-        if (attr.enum) {
-            const value = this.get(attr);
-            this.setOutputAttrTitle(attr.enum.getText(value), attr, result);
-            return value;
-        }
-        if (attr.isState()) {
-            const value = this.get(attr);
-            const state = this.class.getState(value);
-            if (state) {
-                this.setOutputAttrTitle(state.title, attr, result);
-            }
-            return value;
-        }
-        const value = this.header.get(attr);
-        return value instanceof Date ? value.toISOString() : value;
-    }
-
-    outputRelationAttr (attr) {
-        const related = this.related.get(attr);
-        if (!Array.isArray(related)) {
-            return related ? related.output() : this.get(attr);
-        }
-        const result = [];
-        for (const model of related) {
-            result.push(model.output());
-        }
-        return result;
-    }
-
-    setOutputAttrTitle (value, attr, result) {
-        result[`${attr.name}_title`] = value;
+    output (config) {
+        return (new ModelOutput({model: this, ...config})).output();
     }
 };
 
@@ -683,4 +648,5 @@ const Validator = require('../validator/Validator');
 const FileBehavior = require('../behavior/FileBehavior');
 const ModelRelated = require('./ModelRelated');
 const ModelHeader = require('./ModelHeader');
+const ModelOutput = require('./ModelOutput');
 const TypeHelper = require('../helper/TypeHelper');
