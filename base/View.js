@@ -123,6 +123,9 @@ module.exports = class View extends Base {
     }
 
     createAttr (data) {
+        if (!this.class.hasAttr(data.name)) {
+            return this.log('error', `Class attribute not found: ${data.name}`);
+        }
         return this.createAttrInternal(data, {
             Class: ViewAttr,
             view: this,
@@ -138,7 +141,9 @@ module.exports = class View extends Base {
             return this.log('error', `Attribute already exists: ${data.name}`);
         }
         config.data = data;
-        return this.attrMap[data.name] = this.spawn(config);
+        const attr = this.spawn(config);
+        this.attrMap[data.name] = attr;
+        return attr;
     }
 
     appendAttr (attr) {
