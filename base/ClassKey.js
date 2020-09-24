@@ -45,6 +45,11 @@ module.exports = class ClassKey extends Base {
         return value ? {[this.name]: value} : null;
     }
 
+    getNotCondition (value) {
+        value = this.normalize(value);
+        return value ? ['NOT ID', this.name, value] : null;
+    }
+
     normalize (value) {
         switch (this.type) {
             case TypeHelper.TYPES.ID: {

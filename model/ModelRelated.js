@@ -53,9 +53,10 @@ module.exports = class ModelRelated extends Base {
         };
     }
 
-    getRelation (attr) {
+    getRelation (attr, view) {
         attr = this.model.view.resolveAttr(attr);
-        const query = attr.eagerView.createQuery(this.getQueryConfig()).withReadData();
+        view = view || attr.eagerView;
+        const query = view.createQuery(this.getQueryConfig()).withReadData();
         return attr.relation.setQueryByModel(query, this.model);
     }
 

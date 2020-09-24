@@ -34,6 +34,10 @@ module.exports = class ModelQuery extends Base {
         return this.and({[this.view.class.STATE_ATTR]: id});
     }
 
+    exceptId (id) {
+        return this.and(this.view.class.key.getNotCondition(id));
+    }
+
     id () {
         return this.scalar(this.view.getKey());
     }
