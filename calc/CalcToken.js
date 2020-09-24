@@ -28,12 +28,16 @@ const OPERATION_MAP = {
     '$previousYear': 'resolvePreviousYear'
 };
 const PREPARATION_MAP = {
+    '$duration': 'prepareDuration',
+    '$durationTime': 'prepareDurationTime',
     '$join': 'prepareJoin',
     '$map': 'prepareMap',
     '$master': 'prepareMaster',
     '$method': 'prepareMethod',
     '$model': 'prepareModel',
     '$moment': 'prepareMoment',
+    '$placeholder': 'preparePlaceholder',
+    '$replace': 'prepareReplace',
     '$round': 'prepareRound'
 };
 const Base = require('areto/base/Base');
@@ -78,8 +82,8 @@ module.exports = class CalcToken extends Base {
         return this.resolveOperation;
     }
 
-    createOperands (items) {
-        return items.map(this.createOperand, this).filter(operand => operand);
+    createOperands (data) {
+        return data.map(this.createOperand, this).filter(operand => operand);
     }
 
     createOperand () {
@@ -90,52 +94,90 @@ module.exports = class CalcToken extends Base {
         return value && typeof value[name] === 'function' ? value[name]() : value;
     }
 
+    log (type, message, data = this.data) {
+        CommonHelper.log(this.calc, this.constructor.name, type, message, data);
+    }
+
     // PREPARE
 
-    prepareJoin (items) {
+    prepareDuration (data) {
+        this._operation = this.resolveDuration;
+        this._operands = this.createOperands([data[0]]);
+        this._units = data[1] || 'seconds';
+        this._method = data[2] || 'humanize';
+        this._arguments = data.slice(3);
+        return this.resolveOperation;
+    }
+
+    prepareDurationTime (data) {
+        this._operation = this.resolveDurationTime;
+        this._operands = this.createOperands([data[0]]);
+        this._units = data[1] || 'seconds';
+        this._format = data[2] || 'HH:mm:ss';
+        return this.resolveOperation;
+    }
+
+    prepareJoin (data) {
         this._operation = this.resolveJoin;
-        this._separator = items[0];
-        this._operands = this.createOperands(items.slice(1));
+        this._separator = data[0];
+        this._operands = this.createOperands(data.slice(1));
         return this.resolveOperation;
     }
 
-    prepareMap (items) {
+    prepareMap (data) {
         this._operation = this.resolveMap;
-        this._method = this.executeMethod.bind(this, items[0]);
-        this._operands = this.createOperands(items.slice(1));
+        this._method = this.executeMethod.bind(this, data[0]);
+        this._operands = this.createOperands(data.slice(1));
         return this.resolveOperation;
     }
 
-    prepareMaster (items) {
-        this._attrName = items[0];
+    prepareMaster (data) {
+        this._attrName = data[0];
         return this._attrName ? this.resolveMasterValue : this.resolveMaster;
     }
 
-    prepareMethod (items) {
+    prepareMethod (data) {
         this._operation = this.resolveMethod;
-        this._method = items[0];
-        this._operands = this.createOperands([items[1]]);
-        this._arguments = items.slice(2);
+        this._method = data[0];
+        this._operands = this.createOperands([data[1]]);
+        this._arguments = data.slice(2);
         return this.resolveOperation;
     }
 
-    prepareMoment (items) {
+    prepareMoment (data) {
         this._operation = this.resolveMoment;
-        this._operands = this.createOperands([items[0]]);
-        this._method = items[1];
-        this._arguments = items.slice(2);
+        this._operands = this.createOperands([data[0]]);
+        this._method = data[1];
+        this._arguments = data.slice(2);
         return this.resolveOperation;
     }
 
-    prepareModel (items) {
-        this._attrName = items[0];
+    prepareModel (data) {
+        this._attrName = data[0];
         return this._attrName ? this.resolveModelValue : this.resolveModel;
     }
 
-    prepareRound (items) {
+    preparePlaceholder (data) {
+        this._placeholder = data[0];
+        this._operation = this.resolvePlaceholder;
+        this._operands = this.createOperands([data[1]]);
+        return this.resolveOperation;
+    }
+
+    prepareReplace (data) {
+        this._source = data[0];
+        this._target = data[1];
+        this._operation = Array.isArray(this._source)
+            ? this.resolveReplaceByArray
+            : this.resolveReplace;
+        this._operands = this.createOperands([data[2]]);
+        return this.resolveOperation;
+    }
+
+    prepareRound (data) {
         this._operation = this.resolveRound;
-        this._operands = this.createOperands([items[0]]);
-        this._precision = items[1];
+        this._operands = this.createOperands([data[0]]);
+        this._precision = data[1];
         return this.resolveOperation;
     }
 
@@ -270,14 +312,44 @@ module.exports = class CalcToken extends Base {
         return model instanceof Model ? model.get(this._attrName) : this.data;
     }
 
+    resolveDuration ([value]) {
+        if (!value && value !== 0) {
+            return value;
+        }
+        value = moment.duration(value, this._units).locale(this.calc.language);
+        return typeof value[this._method] === 'function'
+            ? value[this._method](...this._arguments)
+            : value;
+    }
+
+    resolveDurationTime ([value]) {
+        if (!value && value !== 0) {
+            return value;
+        }
+        value = moment.duration(value, this._units).asMilliseconds();
+        return moment.utc(value).format(this._format);
+    }
+
     resolveMoment ([value]) {
         if (!value) {
             return value;
         }
-        value = moment(value);
+        value = moment(value).locale(this.calc.language);
         return typeof value[this._method] === 'function'
             ? value[this._method](...this._arguments)
             : value;
+    }
+
+    resolvePlaceholder ([value]) {
+        return value === undefined || value === null || value === '' ? this._placeholder : value;
+    }
+
+    resolveReplace ([value]) {
+        return value === this._source ? this._target : value;
+    }
+
+    resolveReplaceByArray ([value]) {
+        return this._source.includes(value) ? this._target : value;
     }
 
     resolveRaw () {
@@ -285,7 +357,7 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveRound ([value]) {
-        return MathHelper.round(value, this._precision);
+        return Number.isFinite(value) ? MathHelper.round(value, this._precision) : value;
     }
 
     resolveState ([name], {view}) {
@@ -322,10 +394,6 @@ module.exports = class CalcToken extends Base {
 
     resolvePreviousYear () {
         return new Date(new Date().getFullYear() - 1, 0, 1);
-    }
-
-    log (type, message, data = this.data) {
-        CommonHelper.log(this.calc, this.constructor.name, type, message, data);
     }
 };
 

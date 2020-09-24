@@ -9,7 +9,9 @@
 // ["$join", "separator", ".towns", ... ]
 // ["$map", "toUpperCase", ".towns", ...]
 // ["$method", "toLowerCase", "value", ...arguments] // execute value method
+// ["$model", "attrName"]
 // ["$moment", "$now", "format", "MM-DD"]
+// ["$duration", "value", "seconds", "humanize"]
 // ["$now"] // current datetime
 // ["$raw", "$user"] // output as is
 // ["$round", ".attrName", precision]
@@ -20,6 +22,9 @@
 // ["$user.attrName"] // current user attribute
 // ["$user.methodName"] // current user method
 // ["$user.meta.base.className"] // find object by {user: currentUserId}
+// ["$placeholder", "empty", "value"] // empty instead of null/undefined/'' value
+// ["$replace", "source", "target", "value"] // if value is source then replace with target
+// ["$related", ...] // see CalcRelated
 // ["$query", ...] // see CalcQuery
 // ["$count", "viewName.className", [condition]]
 // ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
@@ -30,6 +35,8 @@
 // "$now"
 // "$moment.$now.format.MM-DD"
 // "$user"
+
+// see CalcToken for operations
 
 const Base = require('areto/base/Base');
 
@@ -49,6 +56,7 @@ module.exports = class Calc extends Base {
     }
 
     init () {
+        this.language = this.view.meta.getLanguage();
         this.token = this.createToken(this.data);
         this.resolve = this.resolveToken;
     }
@@ -82,6 +90,7 @@ module.exports = class Calc extends Base {
                 case '$count': return CalcCount;
                 case '$custom': return this.getCustomTokenClass(data[1]);
                 case '$dependency': return CalcDependency;
+                case '$related': return CalcRelated;
                 case '$query': return CalcQuery;
                 case '$user': return CalcUser;
             }
@@ -93,7 +102,7 @@ module.exports = class Calc extends Base {
         try {
             return ClassHelper.resolveSpawn(data, this.view.meta.module);
         } catch (err) {
-            this.log('error', 'Invalid custom calc configuration', err);
+            this.log('error', 'Invalid custom configuration', err);
         }
     }
 
@@ -112,5 +121,6 @@ const CalcToken = require('./CalcToken');
 const CalcDependency = require('./CalcDependency');
 const CalcCondition = require('./CalcCondition');
 const CalcQuery = require('./CalcQuery');
+const CalcRelated = require('./CalcRelated');
 const CalcCount = require('./CalcCount');
 const CalcUser = require('./CalcUser');
