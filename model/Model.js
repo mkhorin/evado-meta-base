@@ -124,6 +124,25 @@ module.exports = class Model extends Base {
         }
     }
 
+    async getNested (key) {
+        const index = key.indexOf('.');
+        if (index === -1) {
+            const attr = this.class.getAttr(key);
+            return attr && attr.relation ? this.resolve(key) : this.get(key);
+        }
+        const related = await this.related.resolve(key.substring(0, index));
+        key = key.substring(index + 1);
+        if (!Array.isArray(related)) {
+            return related ? related.getNested(key) : null;
+        }
+        const result = [];
+        for (const model of related) {
+            const value = await model.getNested(key);
+            Array.isArray(value) ? result.push(...value) : value ? result.push(value) : null;
+        }
+        return result;
+    }
+
     set (attr, value) {
         this._valueMap[attr.name || attr] = value;
     }
