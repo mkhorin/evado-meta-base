@@ -70,13 +70,16 @@ module.exports = class CalcDependency extends Base {
                 break;
             }
             attr = view.resolveAttr(name);
+            if (!attr) {
+                return this.log('error', `Attribute not found: ${name}.${view.id}`);
+            }
             if (!attr.relation) {
                 return this.log('error', `Not relation attribute: ${attr.id}`);
             }
             const result = [];
             for (const model of models) {
                 const value = await model.related.resolve(attr);
-                Array.isArray(value) ? result.push(...value) : result.push(value);
+                Array.isArray(value) ? result.push(...value) : value ? result.push(value) : null;
             }
             multiple = attr.relation.multiple ? true : multiple;
             view = attr.eagerView;

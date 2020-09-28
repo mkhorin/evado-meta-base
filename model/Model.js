@@ -118,27 +118,22 @@ module.exports = class Model extends Base {
     }
 
     get (attr) {
-        attr = attr.name || attr;
-        if (Object.prototype.hasOwnProperty.call(this._valueMap, attr)) {
-            return this._valueMap[attr];
-        }
+        return this.has(attr) ? this._valueMap[attr.name || attr] : undefined;
     }
 
-    async getNested (key) {
-        const index = key.indexOf('.');
+    async getNestedValue (key) {
+        const index = key.lastIndexOf('.');
         if (index === -1) {
-            const attr = this.class.getAttr(key);
-            return attr && attr.relation ? this.resolve(key) : this.get(key);
+            return this.get(key);
         }
-        const related = await this.related.resolve(key.substring(0, index));
+        const related = await this.related.getNestedData(key.substring(0, index));
         key = key.substring(index + 1);
         if (!Array.isArray(related)) {
-            return related ? related.getNested(key) : null;
+            return related ? related.get(key) : undefined;
         }
         const result = [];
         for (const model of related) {
-            const value = await model.getNested(key);
-            Array.isArray(value) ? result.push(...value) : value ? result.push(value) : null;
+            result.push(model.get(key));
         }
         return result;
     }

@@ -112,7 +112,7 @@ module.exports = class Token extends Base {
             if (attr.relation || attr.embeddedModel) {
                 target = Array.isArray(target)
                     ? this.getRelatedByModels(target, attr)
-                    : this.formatValue(target.related, attr);
+                    : target.related.get(attr);
                 if (!target) {
                     return Array.isArray(model)
                         ? this.getValueByModels(model)

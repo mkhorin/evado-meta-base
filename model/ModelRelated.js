@@ -36,6 +36,24 @@ module.exports = class ModelRelated extends Base {
         this._data[attr.name || attr].push(value);
     }
 
+    async getNestedData (key) {
+        const index = key.indexOf('.');
+        if (index === -1) {
+            return this.has(key) ? this._data[key] : this.forceResolve(key);
+        }
+        const data = await this.resolve(key.substring(0, index));
+        key = key.substring(index + 1);
+        if (!Array.isArray(data)) {
+            return data ? data.related.getNestedData(key) : null;
+        }
+        const result = [];
+        for (const model of data) {
+            const value = await model.related.getNestedData(key);
+            Array.isArray(value) ? result.push(...value) : value ? result.push(value) : false;
+        }
+        return result;
+    }
+
     getTitle (attr) {
         const value = this.get(attr);
         return Array.isArray(value)
@@ -54,23 +72,37 @@ module.exports = class ModelRelated extends Base {
     }
 
     getRelation (attr, view) {
-        attr = this.model.view.resolveAttr(attr);
+        attr = this.resolveRelationAttr(attr);
         view = view || attr.eagerView;
         const query = view.createQuery(this.getQueryConfig()).withReadData();
         return attr.relation.setQueryByModel(query, this.model);
     }
 
     resolve (attr) {
-        return this.has(attr) ? this.get(attr) : this.forceResolve(attr);
+        return this.has(attr)
+            ? this._data[attr.name || attr]
+            : this.forceResolve(attr);
     }
 
     async forceResolve (attr) {
-        attr = this.model.view.resolveAttr(attr);
-        const query = await this.getRelation(attr);
-        const models = await query.all();
+        attr = this.resolveRelationAttr(attr);
+        const query = attr.eagerView.createQuery(this.getQueryConfig()).withReadData();
+        const modelQuery = await attr.relation.setQueryByModel(query, this.model);
+        const models = await modelQuery.all();
         const result = attr.relation.multiple ? models : models[0];
         this.set(attr, result);
         return result;
+    }
+
+    resolveRelationAttr (name) {
+        const attr = this.model.view.resolveAttr(name);
+        if (!attr) {
+            throw new Error(`Attribute not found: ${name}.${this.model.class.id}`);
+        }
+        if (!attr.relation) {
+            throw new Error(`Not relation attribute: ${attr.id}`);
+        }
+        return attr;
     }
 
     async resolveEagers () {
