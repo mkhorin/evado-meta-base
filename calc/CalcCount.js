@@ -20,6 +20,6 @@ module.exports = class CalcCount extends Base {
     }
 
     createQuery () {
-        return this._view.createQuery(...arguments);
+        return this._view.createQuery();
     }
 };
