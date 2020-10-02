@@ -19,6 +19,7 @@ const OPERATION_MAP = {
     '$raw': 'resolveRaw',
     '$state': 'resolveState',
     '$now': 'resolveNow',
+    '$null': 'resolveNull',
     '$master': 'resolveMaster',
     '$currentMonth': 'resolveCurrentMonth',
     '$currentYear': 'resolveCurrentYear',
@@ -367,6 +368,10 @@ module.exports = class CalcToken extends Base {
 
     resolveNow () {
         return new Date;
+    }
+
+    resolveNull () {
+        return null;
     }
 
     resolveCurrentMonth () {
