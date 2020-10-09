@@ -65,6 +65,7 @@ module.exports = class ViewAttr extends Base {
         this.required = this.data.required === true;
         this.unique = this.data.unique === true;
         this.sortable = this.data.sortable === true;
+        this.template = this.options.template || this.viewType;
     }
 
     isBoolean () {
@@ -264,6 +265,10 @@ module.exports = class ViewAttr extends Base {
             case 'localDate': return 'date';
             case 'localDatetime': return 'datetime';
         }
+    }
+
+    getTemplate () {
+        return this.template;
     }
 
     toString () {
