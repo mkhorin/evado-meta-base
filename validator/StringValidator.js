@@ -12,6 +12,7 @@ module.exports = class StringValidator extends Base {
             length: null,
             min: null,
             max: null,
+            shrinking: false, // replace multiple spaces with one
             ...config
         });
     }
@@ -30,6 +31,16 @@ module.exports = class StringValidator extends Base {
 
     getNotEqualMessage () {
         return this.createMessage(this.notEqual, 'Value should contain {length} chr.', {length: this.length});
+    }
+
+    async validateAttr (name, model) {
+        if (this.shrinking) {
+            const value = model.get(name);
+            if (typeof value === 'string') {
+                model.set(name, value.replace(/(\s)+/g, '$1'));
+            }
+        }
+        return super.validateAttr(...arguments);
     }
 
     validateValue (value) {
