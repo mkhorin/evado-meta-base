@@ -196,7 +196,7 @@ module.exports = class View extends Base {
             };
             if (config.data) {
                 attr.header = new AttrHeader(config);
-            } else if (attr.classAttr && attr.classAttr.header) {
+            } else if (attr.classAttr?.header) {
                 attr.header = attr.classAttr.header;
             } else if (attr.relation) {
                 config.data = '.$self';
@@ -360,20 +360,20 @@ module.exports = class View extends Base {
         return this.meta.getClass(data[this.class.CLASS_ATTR]) || this.class;
     }
 
-    getModelView (metaClass) {
-        return this.isClass() ? metaClass : (metaClass.getView(this.name) || metaClass);
+    getModelView (cls) {
+        return this.isClass() ? cls : (cls.getView(this.name) || cls);
     }
 
     createModelByState (data, params) {
-        const metaClass = this.getModelClass(data);
-        const state = metaClass.getState(data[this.class.STATE_ATTR]);
-        const view = (state && state.view) || this.getModelView(metaClass);
+        const cls = this.getModelClass(data);
+        const state = cls.getState(data[this.class.STATE_ATTR]);
+        const view = state?.view || this.getModelView(cls);
         return view.createModel(params);
     }
 
     createModelByData (data, params) {
-        const metaClass = this.getModelClass(data);
-        return this.getModelView(metaClass).createModel(params);
+        const cls = this.getModelClass(data);
+        return this.getModelView(cls).createModel(params);
     }
 
     createModel (params) {

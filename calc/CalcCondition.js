@@ -1,13 +1,15 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Eamples of calculated expressions
+ *
+ * {"attrName": "value"}
+ * {"attrName": ".attrName"}
+ * ["!=", "attrName", "value"]
+ * {"$key": ".attrName"} - $key - alias for primary key name
+ * {"attrName": ".$key"}
  */
 'use strict';
-
-// {"attrName": "value"}
-// {"attrName": ".attrName"}
-// ["!=", "attrName", "value"]
-// {"$key": ".attrName"} // $key - alias for primary key name
-// {"attrName": ".$key"}
 
 const Base = require('./CalcToken');
 

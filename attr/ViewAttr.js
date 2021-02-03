@@ -89,7 +89,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     isFileBehavior () {
-        return this.class.FileBehaviorConfig && this.class.FileBehaviorConfig.attrName === this.name;
+        return this.class.FileBehaviorConfig?.attrName === this.name;
     }
 
     isGroup () {
@@ -144,7 +144,7 @@ module.exports = class ViewAttr extends Base {
         return this.viewType === TypeHelper.VIEW_TYPES.THUMBNAIL;
     }
 
-    isUTC () { // universal date
+    isUTC () { //
         return this.viewType === TypeHelper.VIEW_TYPES.DATE
             || this.viewType === TypeHelper.VIEW_TYPES.DATETIME;
     }
@@ -317,7 +317,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     setRelationViews () {
-        if (this.relation && this.relation.refClass) {
+        if (this.relation?.refClass) {
             this.listView = this.getRefView('listView', 'list');
             this.selectListView = this.relation.refClass.getView(this.data.selectListView) || this.listView;
             this.eagerView = this.getRefView('eagerView', 'eager');
@@ -346,8 +346,10 @@ module.exports = class ViewAttr extends Base {
         }
     }
 
+    /**
+     * Define data dependent on attributes of other classes
+     */
     prepare () {
-        // define data dependent on attributes of other classes
         this.createEnum();
         this.createActionBinder();
         this.setParent();
@@ -377,7 +379,7 @@ module.exports = class ViewAttr extends Base {
         const parent = this.class.getParent();
         if (parent) {
             const view = parent.getView(this.view.name);
-            const attr = view ? view.getAttr(this.name) : null;
+            const attr = view?.getAttr(this.name);
             this.parent = attr || parent.getAttr(this.name);
         }
     }

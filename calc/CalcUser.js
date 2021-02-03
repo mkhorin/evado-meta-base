@@ -1,12 +1,12 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * ["$user"] - current user ID
+ * ["$user.attrName"] - current user attribute
+ * ["$user.methodName"] - current user method
+ * ["$user.meta.base.className"] - find object by {user: currentUserId}
  */
 'use strict';
-
-// ["$user"] // current user ID
-// ["$user.attrName"] // current user attribute
-// ["$user.methodName"] // current user method
-// ["$user.meta.base.className"] // find object by {user: currentUserId}
 
 const Base = require('./CalcToken');
 
@@ -53,7 +53,9 @@ module.exports = class CalcUser extends Base {
 
     resolveDataFinder (data) {
         return this._dataFinder.execute({
-            condition: {user: data.user.getId()}
+            condition: {
+                user: data.user.getId()
+            }
         });
     }
 };

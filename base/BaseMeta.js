@@ -10,21 +10,30 @@ module.exports = class BaseMeta extends Base {
     constructor (config) {
         super({
             name: 'base',
-            source: {Class: require('../source/FileSource')},
+            source: {
+                Class: require('../source/FileSource')
+            },
             autoIncrementTable: 'ds_autoIncrement',
             dataTablePrefix: 'd_',
-            DataHistoryModel: {Class: require('evado/model/DataHistory')},
-            UserModel: {Class: require('evado/model/User')},
+            DataHistoryModel: {
+                Class: require('evado/model/DataHistory')
+            },
+            UserModel: {
+                Class: require('evado/model/User')
+            },
             ...config
         });
         this.createSource(this.source);
     }
 
-    getClass (id) { // class
+    getClass (id) {
         return this.classMap[id] instanceof Class ? this.classMap[id] : null;
     }
 
-    getView (id) { // view.class || class
+    /**
+     * @param id - view.class || class
+     */
+    getView (id) {
         if (typeof id !== 'string') {
             return null;
         }
@@ -34,33 +43,35 @@ module.exports = class BaseMeta extends Base {
             : this.getClass(id);
     }
 
-    getAttr (id) { // attr.view.class || attr.class
+    /**
+     * @param id - attr.view.class or attr.class
+     */
+    getAttr (id) {
         if (typeof id === 'string') {
             const names = id.split('.');
-            return names.length === 3 ? this.getAttrByView(...names) : this.getAttrByClass(...names);
+            return names.length === 3
+                ? this.getAttrByView(...names)
+                : this.getAttrByClass(...names);
         }
     }
 
     getViewByClass (viewName, className) {
-        const metaClass = this.getClass(className);
-        return metaClass ? metaClass.getView(viewName) : null;
+        return this.getClass(className)?.getView(viewName);
     }
 
     getAttrByClass (attrName, className) {
-        const metaClass = this.getClass(className);
-        return metaClass ? metaClass.getAttr(attrName) : null;
+        return this.getClass(className)?.getAttr(attrName);
     }
 
     getAttrByView (attrName, viewName, className) {
-        const view = this.getViewByClass(viewName, className);
-        return view ? view.getAttr(attrName) : null;
+        return this.getViewByClass(viewName, className)?.getAttr(attrName);
     }
 
     getDataTables () {
         const result = [];
-        for (const metaClass of this.classes) {
-            if (!metaClass.getParent()) {
-                result.push(metaClass.getTable());
+        for (const cls of this.classes) {
+            if (!cls.getParent()) {
+                result.push(cls.getTable());
             }
         }
         return result;
@@ -94,15 +105,16 @@ module.exports = class BaseMeta extends Base {
         this.classes.push(this.classMap[data.name]);
     }
 
-    prepareClasses () { // assign inherited properties
+    prepareClasses () {
+        // assign inherited properties
         this.classes = ArrayHelper.sortHierarchy(this.classes, 'name', 'parent');
         this.classes.forEach(item => item.prepare());
     }
 
     createViews () {
         for (const data of this.data.view) {
-            const metaClass = this.getClass(data.class);
-            metaClass ? metaClass.createView(data)
+            const cls = this.getClass(data.class);
+            cls ? cls.createView(data)
                 : this.log('error', `View: ${data.name}: Unknown class: ${data.class}`);
         }
     }
@@ -127,30 +139,30 @@ module.exports = class BaseMeta extends Base {
 
     processClassMethods (methods) {
         for (const method of methods) {
-            for (const metaClass of this.classes) {
-                metaClass[method]();
+            for (const cls of this.classes) {
+                cls[method]();
             }
         }
     }
 
     async createIndexes () {
-        for (const metaClass of this.classes) {
-            await metaClass.createIndexes();
+        for (const cls of this.classes) {
+            await cls.createIndexes();
         }
     }
 
     async dropData () {
-        for (const metaClass of this.classes) {
-            await metaClass.dropData();
+        for (const cls of this.classes) {
+            await cls.dropData();
         }
         await this.dropTablesByPrefix(this.dataTablePrefix);
         await this.getDb().drop(this.autoIncrementTable);
     }
 
     async afterDataImport () {
-        for (const metaClass of this.classes) {
-            await metaClass.createIndexes();
-            await AutoIncrementBehavior.normalize(metaClass);
+        for (const cls of this.classes) {
+            await cls.createIndexes();
+            await AutoIncrementBehavior.normalize(cls);
         }
     }
 
@@ -159,17 +171,17 @@ module.exports = class BaseMeta extends Base {
     }
 
     createDataFinder (items, params) {
-        if (!Array.isArray(items)) {
+        if (typeof items === 'string') {
             items = items.split('.');
         }
-        const metaClass = this.getClass(items[0]);
-        if (!metaClass) {
+        const cls = this.getClass(items[0]);
+        if (!cls) {
             return null;
         }
         return this.spawn({
             Class: DataFinder,
             field: items[1],
-            view: metaClass,
+            view: cls,
             ...params
         });
     }

@@ -273,8 +273,8 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveClass ([name], {view}) {
-        const metaClass = view.meta.getClass(name);
-        return metaClass ? metaClass.title : name;
+        const cls = view.meta.getClass(name);
+        return cls ? cls.title : name;
     }
 
     resolveJoin (values) {

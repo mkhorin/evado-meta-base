@@ -57,12 +57,9 @@ module.exports = class Relation extends Base {
         if (this.data.linkAttr) {
             return this.data.linkAttr;
         }
-        if (this.attr.isRef()) {
-            return this.attr.name;
-        }
-        return this.refAttr && this.refAttr.data && this.refAttr.data.refAttr
-            ? this.refAttr.data.refAttr
-            : this.refClass.getKey();
+        return this.attr.isRef()
+            ? this.attr.name
+            : this.refAttr?.data?.refAttr || this.refClass.getKey();
     }
 
     findByRefAttr (value) {

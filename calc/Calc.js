@@ -1,42 +1,43 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Examples of calculated expressions
+ * See CalcToken for operations
+ *
+ * ["$+", ".attrName", 22, ...]
+ * ["$*", ".attrName", ["$-", 33, ".attrName"]]
+ * ["$class", "._class"] - resolve class title
+ * ["$join", "separator", ".towns", ...]
+ * ["$map", "toUpperCase", ".towns", ...]
+ * ["$method", "toLowerCase", "value", ...arguments] - execute value method
+ * ["$model", "attrName"]
+ * ["$moment", "$now", "format", "MM-DD"]
+ * ["$duration", "value", "seconds", "humanize"]
+ * ["$now"] - current datetime
+ * ["$raw", "$user"] - output as is
+ * ["$round", ".attrName", precision]
+ * ["$class", "className"] - class title
+ * ["$state", "stateName"] - state title
+ * ["$master", "attrName"]
+ * ["$user"] - current user ID
+ * ["$user.attrName"] - current user attribute
+ * ["$user.methodName"] - current user method
+ * ["$user.meta.base.className"] - find object by {user: currentUserId}
+ * ["$placeholder", "empty", "value"] - empty instead of null/undefined/'' value
+ * ["$replace", "source", "target", "value"] - if value is source then replace with target
+ * ["$related", ...] - see CalcRelated
+ * ["$query", ...] - see CalcQuery
+ * ["$count", "viewName.className", [condition]]
+ * ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
+ *
+ * Shortcut expressions
+ *
+ * "$class.className"
+ * "$now"
+ * "$moment.$now.format.MM-DD"
+ * "$user"
  */
 'use strict';
-
-// ["$+", ".attrName", 22, ...]
-// ["$*", ".attrName", ["$-", 33, ".attrName"]]
-// ["$class", "._class"] // resolve class title
-// ["$join", "separator", ".towns", ... ]
-// ["$map", "toUpperCase", ".towns", ...]
-// ["$method", "toLowerCase", "value", ...arguments] // execute value method
-// ["$model", "attrName"]
-// ["$moment", "$now", "format", "MM-DD"]
-// ["$duration", "value", "seconds", "humanize"]
-// ["$now"] // current datetime
-// ["$raw", "$user"] // output as is
-// ["$round", ".attrName", precision]
-// ["$class", "className"] // class title
-// ["$state", "stateName"] // state title
-// ["$master", "attrName"]
-// ["$user"] // current user ID
-// ["$user.attrName"] // current user attribute
-// ["$user.methodName"] // current user method
-// ["$user.meta.base.className"] // find object by {user: currentUserId}
-// ["$placeholder", "empty", "value"] // empty instead of null/undefined/'' value
-// ["$replace", "source", "target", "value"] // if value is source then replace with target
-// ["$related", ...] // see CalcRelated
-// ["$query", ...] // see CalcQuery
-// ["$count", "viewName.className", [condition]]
-// ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
-
-// SHORT STRING EXPRESSION
-
-// "$class.className"
-// "$now"
-// "$moment.$now.format.MM-DD"
-// "$user"
-
-// see CalcToken for operations
 
 const Base = require('areto/base/Base');
 

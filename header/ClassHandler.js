@@ -20,7 +20,7 @@ module.exports = class ClassHandler extends Base {
 
     resolveToken (model) {
         const name = this._token.resolve(model);
-        const metaClass = model.class.meta.getClass(name);
-        return metaClass ? metaClass.title : name;
+        const cls = model.class.meta.getClass(name);
+        return cls ? cls.title : name;
     }
 };

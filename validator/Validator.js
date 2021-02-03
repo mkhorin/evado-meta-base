@@ -1,12 +1,12 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * attr rules: [{name: "name", param1: ...}]
+ * view rules: [{name: "name", attrs: "attr", param1: ...}]
  */
 'use strict';
 
 const Base = require('areto/base/Base');
-
-// attr rules: [{ name: "name", param1: ... }]
-// view rules: [{ name: "name", attrs: "attr", param1: ... }]
 
 module.exports = class Validator extends Base {
 

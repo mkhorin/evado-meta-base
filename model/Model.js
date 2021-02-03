@@ -95,7 +95,7 @@ module.exports = class Model extends Base {
     }
 
     getUserId () {
-        return this.user ? this.user.getId() : null;
+        return this.user?.getId();
     }
 
     toString () {
@@ -104,7 +104,7 @@ module.exports = class Model extends Base {
 
     toJSON () {
         const id = this.getId();
-        return id && id.toJSON ? id.toJSON() : id;
+        return typeof id?.toJSON === 'function' ? id.toJSON() : id;
     }
 
     log () {
@@ -213,7 +213,7 @@ module.exports = class Model extends Base {
             attr = this.view.getAttr(attr);
         }
         if (!attr) {
-            return undefined;
+            return;
         }
         if (this.hasDisplayValue(attr)) {
             return this._displayValueMap[attr.name];
@@ -610,7 +610,7 @@ module.exports = class Model extends Base {
             if (this.hasError()) {
                 return this.updateTransiting(null);
             }
-            const state = await transit.execute();
+            const state = await transit.start();
             await this.updateState(state);
             this.log('info', `Transit done: ${transition.name}`);
         } catch (err) {

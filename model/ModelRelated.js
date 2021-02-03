@@ -303,8 +303,8 @@ module.exports = class ModelRelated extends Base {
         for (const attr of this.model.view.backRefAttrs) {
             const data = this.getChanges(attr);
             if (data) {
-                attr.relation.refAttr && attr.relation.refAttr.relation
-                    ? await this.changeRelationBackRef(attr, data) // backref to ref attr
+                attr.relation.refAttr?.relation
+                    ? await this.changeRelationBackRef(attr, data) // backref to reference attr
                     : await this.changeBackRef(attr, data); // backref to simple attr
             }
         }
@@ -352,7 +352,7 @@ module.exports = class ModelRelated extends Base {
         return models;
     }
 
-    // EXIST
+    // EXISTS
 
     async checkExists (attr) {
         if (attr.relation.multiple) {
@@ -478,7 +478,7 @@ module.exports = class ModelRelated extends Base {
         if (Array.isArray(names)) {
             for (const name of names) {
                 const attr = this.model.class.getAttr(name);
-                if (attr && attr.relation) {
+                if (attr?.relation) {
                     await this.unsetOrderField(attr.relation.refClass, attr);
                 }
             }

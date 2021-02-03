@@ -7,7 +7,10 @@ const Base = require('./Behavior');
 
 module.exports = class AssignedValueBehavior extends Base {
 
-    afterInsert () { // need to save backref changes
+    /**
+     * After save backref changes
+     */
+    afterInsert () {
         if (this.onCreate) {
             return this.execute();
         }

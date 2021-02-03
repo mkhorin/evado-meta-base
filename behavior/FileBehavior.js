@@ -34,8 +34,7 @@ module.exports = class FileBehavior extends Base {
     }
 
     static isImage (model) {
-        const mime = model.get(this.MIME_ATTR);
-        return mime && mime.indexOf('image') === 0;
+        return model.get(this.MIME_ATTR)?.indexOf('image') === 0;
     }
 
     static getName (model) {

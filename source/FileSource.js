@@ -42,11 +42,11 @@ module.exports = class FileSource extends Base {
         }
     }
 
-    async loadClassViews (metaClass, dir) {
+    async loadClassViews (cls, dir) {
         const files = await FileHelper.readDirectory(dir);
         for (const file of FileHelper.filterJsonFiles(files)) {
             const data = await FileHelper.readJsonFile(path.join(dir, file));
-            data.class = metaClass;
+            data.class = cls;
             data.name = FileHelper.getBasename(file);
             this._data.view.push(data);
         }

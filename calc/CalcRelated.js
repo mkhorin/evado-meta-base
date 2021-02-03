@@ -1,15 +1,16 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Examples of calculated expressions
+ *
+ * ["$related", "operation", "refAttr", ...] - see CalcQuery for operations
+ * ["$related", "operation", "refAttr/viewName", ...]
+ * ["$related", "models", "refAttr", {"attr": "attrName"}]
+ * ["$related", "models", "refAttr/viewName", {"attr": "attrName"}]
+ * ["$related", "models", "refAttr.nestedRefAttr", {"unique": true}]
+ * ["$related", "models", "refAttr/viewName.nestedRefAttr", {"unique": true}]
  */
 'use strict';
-
-// ["$related", "operation", "refAttr", ...] // see CalcQuery for operations
-// ["$related", "operation", "refAttr/viewName", ...]
-
-// ["$related", "models", "refAttr", {"attr": "attrName"}]
-// ["$related", "models", "refAttr/viewName", {"attr": "attrName"}]
-// ["$related", "models", "refAttr.nestedRefAttr", {"unique": true}]
-// ["$related", "models", "refAttr/viewName.nestedRefAttr", {"unique": true}]
 
 const RELATED_OPERATIONS = [
     'model',

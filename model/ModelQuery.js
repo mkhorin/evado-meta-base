@@ -280,7 +280,7 @@ module.exports = class ModelQuery extends Base {
     }
 
     filterRelatedModels () {
-        return this._relatedFilter && this._relatedFilter(this);
+        return this._relatedFilter?.(this);
     }
 
     async executeAfterPopulateBehaviors (models) {

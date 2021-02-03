@@ -26,7 +26,7 @@ module.exports = class TreeView extends Base {
 
     getRecursiveLevel () {
         const level = this.levels[this.levels.length - 1];
-        return level && level.data.recursive ? level : null;
+        return level?.data.recursive ? level : null;
     }
 
     createLevels (items) {

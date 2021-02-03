@@ -32,8 +32,7 @@ module.exports = class ClassAttr extends Base {
     }
 
     setParent () {
-        const parent = this.class.getParent();
-        this.parent = parent ? parent.getAttr(this.name) : null;
+        this.parent = this.class.getParent()?.getAttr(this.name);
     }
 
     createRelation () {

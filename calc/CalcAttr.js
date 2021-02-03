@@ -1,15 +1,16 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Examples of calculated expressions
+ *
+ * ["$attr", "attrName"]
+ * ["$attr", "refAttrName.attrName"]
+ * ".attrName"
+ * ".refAttrName.attrName"
+ * ".refAttrName.refAttrName.$key" - get ID
+ * ".refAttrName.refAttrName.$title" - get title
  */
 'use strict';
-
-// ["$attr", "attrName"]
-// ["$attr", "refAttrName.attrName"]
-
-// ".attrName"
-// ".refAttrName.attrName"
-// ".refAttrName.refAttrName.$key" // return ID
-// ".refAttrName.refAttrName.$title"  // return title
 
 const Base = require('./CalcToken');
 
@@ -36,18 +37,18 @@ module.exports = class CalcAttr extends Base {
 
     getAttrChain (names) {
         let chain = [];
-        let metaClass = this.calc.attr.class;
+        let cls = this.calc.attr.class;
         for (let name of names) {
             if (name === '$key') {
-                chain.push(metaClass.getKey());
+                chain.push(cls.getKey());
                 break;
             }
-            const attr = metaClass.getAttr(name);
+            const attr = cls.getAttr(name);
             if (!attr || !attr.relation) {
                 chain.push(name);
                 break;
             }
-            metaClass = attr.relation.refClass;
+            cls = attr.relation.refClass;
             chain.push(attr);
         }
         if (chain.length !== names.length) {

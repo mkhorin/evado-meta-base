@@ -9,7 +9,7 @@ module.exports = class ModelOutput extends Base {
 
     output () {
         const security = this.security || this.model.security;
-        const access = security && security.attrAccess;
+        const access = security?.attrAccess;
         const result = {};
         const forbidden = this.model.forbiddenReadAttrs;
         for (const attr of this.model.view.attrs) {
@@ -22,7 +22,7 @@ module.exports = class ModelOutput extends Base {
             }
         }
         result._id = this.model.getId();
-        result._metaClass = this.model.class.name;
+        result._class = this.model.class.name;
         result._title = this.model.getTitle();
         return result;
     }

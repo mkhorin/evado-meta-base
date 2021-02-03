@@ -47,8 +47,8 @@ module.exports = class Class extends Base {
         return this.data.abstract;
     }
 
-    hasAncestor (metaClass) {
-        return this.parent ? (this.parent === metaClass || this.parent.hasAncestor(metaClass)) : false;
+    hasAncestor (cls) {
+        return this.parent ? (this.parent === cls || this.parent.hasAncestor(cls)) : false;
     }
 
     getMeta () {
@@ -91,8 +91,7 @@ module.exports = class Class extends Base {
     }
 
     getAttrByView (viewName, attrName) {
-        const view = this.getView(viewName);
-        return view ? view.getAttr(attrName) : null;
+        return this.getView(viewName)?.getAttr(attrName);
     }
 
     createModelConfig () {
@@ -182,7 +181,7 @@ module.exports = class Class extends Base {
     }
 
     createIndexes () {
-        return this.indexing ? this.indexing.create() : null;
+        return this.indexing?.create();
     }
 
     createHeader () {
@@ -414,8 +413,8 @@ module.exports = class Class extends Base {
 
     getAttrsOnAction (action) {
         const nulls = [], cascades = [];
-        for (const metaClass of this.meta.classes) {
-            for (const attr of metaClass.attrs) {
+        for (const cls of this.meta.classes) {
+            for (const attr of cls.attrs) {
                 if (attr.relation && (attr.relation.refClass === this || this.hasAncestor(attr.relation.refClass))) {
                     switch (attr.relation[action]) {
                         case 'null': nulls.push(attr); break;
@@ -441,7 +440,7 @@ module.exports = class Class extends Base {
 
     getRealDescendants () {
         if (!this._realDescendants) {
-            this._realDescendants = this.getDescendants().filter(metaClass => !metaClass.isAbstract());
+            this._realDescendants = this.getDescendants().filter(cls => !cls.isAbstract());
         }
         return this._realDescendants;
     }
@@ -449,9 +448,9 @@ module.exports = class Class extends Base {
     getDescendants () {
         if (!this._descendants) {
             this._descendants = [];
-            for (const metaClass of this.meta.classes) {
-                if (metaClass.data.parent === this.name) {
-                    this._descendants.push(metaClass, ...metaClass.getDescendants());
+            for (const cls of this.meta.classes) {
+                if (cls.data.parent === this.name) {
+                    this._descendants.push(cls, ...cls.getDescendants());
                 }
             }
         }

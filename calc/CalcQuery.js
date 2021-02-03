@@ -1,20 +1,22 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Examples of calculated expressions
+ *
+ * ["$query", "count", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
+ * ["$query", "count", "viewName.className", {}, {"$key": ".attrName"}] - $key - alias for primary key
+ * ["$query", "count", "viewName.className", {}, {"backRefAttrName": ".$key"}]
+ * ["$query", "column", "className", {"key": "attrName", "order": {"attrName": 1}}]
+ * ["$query", "scalar", "className", {"key": "attrName", "order": {"attrName": -1}}]
+ * ["$query", "ids", "className", {"order": {"attrName": -1}}]
+ * ["$query", "id", "className", {"order": {"attrName": -1}}]
+ * ["$query", "id", "className", {}, {"userAttrName": "$user"}] - $user - current user
+ * ["$query", "model", "className", null, [condition]]
+ * ["$query", "models", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
+ * ["$query", "title", "className", null, [condition]] - model title
+ * ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
  */
 'use strict';
-
-// ["$query", "count", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
-// ["$query", "count", "viewName.className", {}, {"$key": ".attrName"}] // $key - alias for primary key
-// ["$query", "count", "viewName.className", {}, {"backRefAttrName": ".$key"}]
-// ["$query", "column", "className", {"key": "attrName", "order": {"attrName": 1}}]
-// ["$query", "scalar", "className", {"key": "attrName", "order": {"attrName": -1}}]
-// ["$query", "ids", "className", {"order": {"attrName": -1}}]
-// ["$query", "id", "className", {"order": {"attrName": -1}}]
-// ["$query", "id", "className", {}, {"userAttrName": "$user"}] // $user - current user
-// ["$query", "model", "className", null, [condition]]
-// ["$query", "models", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
-// ["$query", "title", "className", null, [condition]] // model title
-// ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
 
 const Base = require('./CalcToken');
 
@@ -133,7 +135,7 @@ module.exports = class CalcQuery extends Base {
 
     async resolveTitle (query) {
         const model = await query.withTitle().one();
-        return model ? model.getTitle() : null;
+        return model?.getTitle();
     }
 
     async resolveTitles (query) {

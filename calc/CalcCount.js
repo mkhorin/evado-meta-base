@@ -1,9 +1,9 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * ["$count", "viewName.className", [condition]]
  */
 'use strict';
-
-// ["$count", "viewName.className", [condition]]
 
 const Base = require('./CalcQuery');
 

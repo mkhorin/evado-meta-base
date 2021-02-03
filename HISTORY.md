@@ -1,3 +1,11 @@
+## 2.0.0
+
+* use optional chaining
+* validator/RangeValidator
+    - rename range property to values
+* validator/StringValidator
+    - shrink spaces
+
 ## 1.8.0
 
 * base/View

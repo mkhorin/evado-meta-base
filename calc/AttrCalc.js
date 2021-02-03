@@ -1,15 +1,19 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * Examples of calculated expressions
+ *
+ * ["$attr", "attrName"]
+ * ["$attr", "refAttrName", "attrName"]
+ * ["$attr", "$key"] - get primary key
+ * ["$descendants", "parentAttrName", [condition]] - get descendant ids by parent
+ *
+ * Shortcut expressions
+ *
+ * ".attrName"
+ * ".refAttrName.attrName"
  */
 'use strict';
-
-// ["$attr", "attrName"]
-// ["$attr", "refAttrName", "attrName"]
-// ["$attr", "$key"] // primary key
-// ["$descendants", "parentAttrName", [condition]] // get descendant ids by parent
-
-// ".attrName"
-// ".refAttrName.attrName"
 
 const Base = require('./Calc');
 

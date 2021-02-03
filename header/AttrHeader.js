@@ -1,10 +1,10 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
+ *
+ * [".$self"] - alias for current attribute name
+ * [".$self.nestedAttrName"]
  */
 'use strict';
-
-// [".$self"] // alias for current attribute name
-// [".$self.nestedAttrName"]
 
 const Base = require('./Header');
 

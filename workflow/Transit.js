@@ -7,7 +7,7 @@ const Base = require('areto/base/Base');
 
 module.exports = class Transit extends Base {
 
-    run () {
+    execute () {
         // place code here
     }
 
@@ -15,8 +15,8 @@ module.exports = class Transit extends Base {
         return this.transition.getFinalStateName();
     }
 
-    async execute () {
-        await this.run();
+    async start () {
+        await this.execute();
         return this.getResultState();
     }
 };

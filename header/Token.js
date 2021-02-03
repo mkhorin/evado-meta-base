@@ -80,7 +80,7 @@ module.exports = class Token extends Base {
                 attrs.push(name);
                 break;
             }
-            refClass = attr.relation && attr.relation.refClass;
+            refClass = attr.relation?.refClass;
             if (i + 1 < names.length && !refClass && !attr.embeddedModel) {
                 this.log('error', `Attribute has no reference class: ${attr.id}`);
                 return false;

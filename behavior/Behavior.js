@@ -143,7 +143,7 @@ module.exports = class Behavior extends Base {
         return this.owner.class.meta;
     }
 
-    getMetaClass (name) {
+    getMetadataClass (name) {
         return this.owner.class.meta.getClass(name);
     }
 

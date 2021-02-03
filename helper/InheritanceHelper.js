@@ -93,7 +93,7 @@ module.exports = class InheritanceHelper extends Base {
 
     static assignParents (children, map) {
         for (const key of Object.keys(children)) {
-            const parent = map[key] && map[key].data.parent;
+            const parent = map[key]?.data.parent;
             if (parent && !Object.prototype.hasOwnProperty.call(children, parent)) {
                 Object.assign(children, this.assignParents({[map[key].data.parent]: true}, map));
             }

@@ -19,7 +19,7 @@ module.exports = class ActionBinder extends Base {
     }
 
     createAction (name) {
-        if (this.data && this.data[name]) {
+        if (this.data?.[name]) {
             this._actionMap[name] = new Action({
                 name,
                 data: this.data[name],
