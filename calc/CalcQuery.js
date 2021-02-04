@@ -44,7 +44,7 @@ module.exports = class CalcQuery extends Base {
 
     getOperation (name) {
         if (typeof name === 'string') {
-            name = `resolve${StringHelper.toFirstUpperCase(name)}`;
+            name = `resolve${StringHelper.capitalize(name)}`;
         }
         return typeof this[name] !== 'function'
             ? this.log('error', `Operation not found: ${name}`)

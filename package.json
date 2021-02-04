@@ -1,6 +1,6 @@
 {
   "name": "evado-meta-base",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Evado Framework metadata processing component",
   "author": {
     "name": "Maxim Khorin",

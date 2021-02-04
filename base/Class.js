@@ -302,7 +302,7 @@ module.exports = class Class extends Base {
         return this.viewMap[name] instanceof View ? this.viewMap[name] : null;
     }
 
-    getViewByPrefix (prefix, name) {
+    getViewWithPrefix (prefix, name) {
         return this.getView(`${prefix}-${name}`) || this.getView(name);
     }
 
