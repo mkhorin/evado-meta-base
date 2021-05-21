@@ -6,11 +6,4 @@
 const Base = require('areto/base/Base');
 
 module.exports = class BaseSource extends Base {
-   
-    clear () {
-        this._data = {
-            class: [],
-            view: []
-        };
-    }
 };

@@ -19,11 +19,11 @@ module.exports = class DatabaseSource extends Base {
     }
 
     async load () {
-        this.clear();
+        const result = {};
         for (const key of Object.keys(this.tables)) {
-            this._data[key] = await this.db.find(this.tables[key]);
+            result[key] = await this.db.find(this.tables[key]);
         }      
-        return this._data;
+        return result;
     }
 
     insert (table, data) {
