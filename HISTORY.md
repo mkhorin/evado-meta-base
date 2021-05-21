@@ -1,3 +1,10 @@
+## 2.1.0
+
+* base/Class
+    - add hierarchical class versions
+* source/BaseSource
+    - fix data sources   
+
 ## 2.0.0
 
 * use optional chaining
