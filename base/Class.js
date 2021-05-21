@@ -48,7 +48,9 @@ module.exports = class Class extends Base {
     }
 
     hasAncestor (cls) {
-        return this.parent ? (this.parent === cls || this.parent.hasAncestor(cls)) : false;
+        return this.parent
+            ? this.parent === cls || this.parent.hasAncestor(cls)
+            : false;
     }
 
     getMeta () {
@@ -65,6 +67,10 @@ module.exports = class Class extends Base {
 
     getKey () {
         return this.key.name;
+    }
+
+    getLastVersion () {
+        return this.version ? this.version.target : this;
     }
 
     getParent () {
@@ -109,7 +115,7 @@ module.exports = class Class extends Base {
         this.setTable();
         this.setTranslationKey();
         this.setChildren();
-        this.setClassCondition();
+        this.createCondition();
         super.prepare();
     }
 
@@ -142,17 +148,9 @@ module.exports = class Class extends Base {
         }
     }
 
-    setClassCondition () {
-        if (!this.parent) {
-            return null;
-        }
-        const names = this.getDescendants().filter(item => !item.isAbstract()).map(item => item.name);
-        if (!this.isAbstract()) {
-            names.push(this.name);
-        }
-        this.condition = names.length
-            ? {[this.CLASS_ATTR]: names.length > 1 ? names : names[0]}
-            : ['FALSE'];
+    createCondition () {
+        this.condition = new ClassCondition({class: this});
+        this.condition.resolveInheritance();
     }
 
     createRelations () {
@@ -212,6 +210,14 @@ module.exports = class Class extends Base {
         this.views.forEach(view => view.prepareFilter());
     }
 
+    createVersion () {
+        this.version = ClassVersion.create(this);
+    }
+
+    prepareVersion () {
+        this.version?.prepare();
+    }
+
     // BEHAVIOR
 
     prepareBehaviors () {
@@ -244,24 +250,25 @@ module.exports = class Class extends Base {
         this.stateMap = {};
         if (Array.isArray(this.data.states)) {
             for (const data of this.data.states) {
-                const state = new State({class: this, data});
-                if (state.isDefault()) {
-                    this.defaultState = state;
-                }
-                this.stateMap[data.name] = state;
+                this.createState(data);
             }
         }
         this.states = Object.values(this.stateMap);
+    }
+
+    createState (data) {
+        const state = new State({class: this, data});
+        if (state.isDefault()) {
+            this.defaultState = state;
+        }
+        this.stateMap[data.name] = state;
     }
 
     createTransitions () {
         const data = {};
         if (Array.isArray(this.data.transitions)) {
             for (const item of this.data.transitions) {
-                data[item.name] = new Transition({
-                    class: this, 
-                    data: item
-                });
+                data[item.name] = this.createTransition(item);
             }    
         }        
         this.transitions = MetaHelper.sortByDataOrderNumber(Object.values(data));
@@ -270,6 +277,10 @@ module.exports = class Class extends Base {
         for (const state of this.states) {
             state.resolveDeadEnd(this.transitions);
         }
+    }
+
+    createTransition (data) {
+        return new Transition({class: this, data});
     }
 
     indexStateTransitions (key, nullStateKey) {
@@ -472,9 +483,11 @@ const Behavior = require('../behavior/Behavior');
 const FileBehavior = require('../behavior/FileBehavior');
 const HistoryBehavior = require('../behavior/DataHistoryBehavior');
 const ClassAttr = require('../attr/ClassAttr');
+const ClassCondition = require('./ClassCondition');
 const ClassHeader = require('../header/ClassHeader');
 const ClassKey = require('./ClassKey');
 const ClassIndexing = require('./ClassIndexing');
+const ClassVersion = require('./ClassVersion');
 const View = require('./View');
 const State = require('../workflow/State');
 const Transition = require('../workflow/Transition');

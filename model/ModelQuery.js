@@ -11,7 +11,7 @@ module.exports = class ModelQuery extends Base {
         super(config);
         this._db = this.view.class.getDb();
         this._from = this.view.class.table;
-        this._where = this.view.class.condition;
+        this._where = this.view.class.condition.where;
         this._order = this.view.order;
         this._raw = null;
         this._relatedDepth = 0;

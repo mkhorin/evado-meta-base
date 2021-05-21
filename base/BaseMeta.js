@@ -26,8 +26,8 @@ module.exports = class BaseMeta extends Base {
         this.createSource(this.source);
     }
 
-    getClass (id) {
-        return this.classMap[id] instanceof Class ? this.classMap[id] : null;
+    getClass (name) {
+        return this.classMap[name] instanceof Class ? this.classMap[name] : null;
     }
 
     /**
@@ -119,8 +119,8 @@ module.exports = class BaseMeta extends Base {
         }
     }
 
-    createDeferredBinding () {
-        return this.processClassMethods([
+    async createDeferredBinding () {
+        await this.processClassMethods([
             'prepareViews',
             'prepareAttrs',
             'createRelations',
@@ -133,7 +133,9 @@ module.exports = class BaseMeta extends Base {
             'createCalc',
             'createTransitions',
             'createTreeView',
-            'prepareBehaviors'
+            'prepareBehaviors',
+            'createVersion',
+            'prepareVersion'
         ]);
     }
 
