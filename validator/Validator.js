@@ -29,6 +29,7 @@ module.exports = class Validator extends Base {
                 relationCounter: './RelationCounterValidator',
                 required: './RequiredValidator',
                 string: './StringValidator',
+                totalFileSize: './TotalFileSizeValidator',
                 unique: './UniqueValidator',
                 user: './UserValidator'
             },
@@ -132,24 +133,13 @@ module.exports = class Validator extends Base {
         const validators = [];
         if (Array.isArray(rules)) {
             for (const rule of rules) {
-                const names = this.filterValidatedAttrNames(rule.attrs, view);
-                if (names.length) {
-                    validators.push(this.createValidator(rule.type, names, rule));
-                }
+                const names = Array.isArray(rule.attrs)
+                    ? rule.attrs.filter(name => view.hasAttr(name))
+                    : null;
+                validators.push(this.createValidator(rule.type, names, rule));
             }
         }
         return validators;
-    }
-
-    static filterValidatedAttrNames (names, view) {
-        const result = [];
-        for (const name of names) {
-            const attr = view.getAttr(name);
-            if (attr) {
-                result.push(name);
-            }
-        }
-        return result;
     }
 
     static createAttrValidators (attr) {
@@ -205,8 +195,12 @@ module.exports = class Validator extends Base {
                     await this.validateAttr(name, model);
                 }
             }
-        } else if (this.attrs && !this.isSkippedAttr(this.attrs, model)) {             
-            await this.validateAttr(this.attrs, model);
+        } else if (this.attrs) {
+            if (!this.isSkippedAttr(this.attrs, model)) {
+                await this.validateAttr(this.attrs, model);
+            }
+        } else if (!this.skipOnAnyError || !model.hasError()) {
+            await this.validateModel(model);
         }
     }
 
@@ -229,8 +223,10 @@ module.exports = class Validator extends Base {
         }
     }
 
+    validateModel () {
+    }
+
     validateValue () {
-        throw new Error('Need to override');
     }
 
     isEmptyValue (value) {
