@@ -7,6 +7,13 @@ const Base = require('./Validator');
 
 module.exports = class EnumValidator extends Base {
 
+    constructor (config) {
+        super({
+            defaultMessageSource: 'app',
+            ...config
+        });
+    }
+
     getMessage () {
         return this.createMessage(this.message, 'Invalid enum value');
     }

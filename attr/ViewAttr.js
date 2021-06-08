@@ -88,10 +88,6 @@ module.exports = class ViewAttr extends Base {
         return this.type === TypeHelper.TYPES.FILE;
     }
 
-    isFileBehavior () {
-        return this.class.FileBehaviorConfig?.attrName === this.name;
-    }
-
     isGroup () {
         return false;
     }
@@ -357,7 +353,6 @@ module.exports = class ViewAttr extends Base {
         this.createEnum();
         this.createActionBinder();
         this.setParent();
-        this.prepareBehaviors();
         this.prepareRules();
         this.prepareCommands();
         this.setTranslatable();
@@ -385,14 +380,6 @@ module.exports = class ViewAttr extends Base {
             const view = parent.getView(this.view.name);
             const attr = view?.getAttr(this.name);
             this.parent = attr || parent.getAttr(this.name);
-        }
-    }
-
-    prepareBehaviors () {
-        if (Array.isArray(this.data.behaviors)) {
-            for (const data of this.data.behaviors) {
-                this.view.addAttrBehavior(this, data);
-            }
         }
     }
 

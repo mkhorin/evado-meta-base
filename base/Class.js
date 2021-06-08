@@ -220,28 +220,10 @@ module.exports = class Class extends Base {
 
     // BEHAVIOR
 
-    prepareBehaviors () {
-        Behavior.createConfigurations(this);
-        this.prepareFileBehavior();
-        this.prepareHistoryBehavior();
-        Behavior.setAfterFindBehaviors(this);
-        Behavior.setAfterPopulateBehaviors(this);
-        Behavior.sort(this);
-        this.views.forEach(view => view.prepareBehaviors());
-    }
-
-    prepareFileBehavior () {
-        if (this.fileAttrs.length === 1) {
-            const config = this.getBehaviorByClass(FileBehavior);
-            this.FileBehaviorConfig = config || Behavior.appendConfiguration(this, {Class: FileBehavior});
-            this.FileBehaviorConfig.attrName = this.fileAttrs[0].name;
-        }
-    }
-
-    prepareHistoryBehavior () {
-        if (this.historyAttrs.length && !this.getBehaviorByClass(HistoryBehavior)) {
-            Behavior.appendConfiguration(this, {Class: HistoryBehavior});
-        }
+    createBehaviors () {
+        this.behaviors = new ClassBehaviors({owner: this});
+        this.behaviors.init();
+        this.views.forEach(view => view.createBehaviors());
     }
 
     // WORKFLOW
@@ -399,9 +381,9 @@ module.exports = class Class extends Base {
 
     async dropData () {
         await this.getDb().drop(this.table);
-        await Behavior.dropData(this);
+        await this.behaviors.dropData();
         for (const view of this.views) {
-            await Behavior.dropData(view);
+            await view.behaviors.dropData();
         }
         this.log('info', 'Data deleted');
     }
@@ -479,10 +461,8 @@ module.exports.init();
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
-const Behavior = require('../behavior/Behavior');
-const FileBehavior = require('../behavior/FileBehavior');
-const HistoryBehavior = require('../behavior/DataHistoryBehavior');
 const ClassAttr = require('../attr/ClassAttr');
+const ClassBehaviors = require('./ClassBehaviors');
 const ClassCondition = require('./ClassCondition');
 const ClassHeader = require('../header/ClassHeader');
 const ClassKey = require('./ClassKey');

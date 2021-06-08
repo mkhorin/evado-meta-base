@@ -15,21 +15,25 @@ module.exports = class RelationCounterValidator extends Base {
     }
 
     getTooFewMessage () {
-        return this.createMessage(this.tooFew, 'Relation should contain at least {min} objects.', {min: this.min});
+        return this.createMessage(this.tooFew, 'Relation should contain at least {min} objects', {
+            min: this.min
+        });
     }
 
     getTooManyMessage () {
-        return this.createMessage(this.tooMany, 'Relation should contain at most {max} objects', {max: this.max});
+        return this.createMessage(this.tooMany, 'Relation should contain at most {max} objects', {
+            max: this.max
+        });
     }
 
     async validateAttr (name, model) {
         const attr = model.view.getAttr(name);
         const docs = await model.related.getLinkedDocs(attr);
         if (this.min && docs.length < this.min) {
-            this.addError(model, name, this.getTooFewMessage());
+            return this.addError(model, name, this.getTooFewMessage());
         }
         if (this.max && docs.length > this.max) {
-            this.addError(model, name, this.getTooManyMessage());
+            return this.addError(model, name, this.getTooManyMessage());
         }
     }
 };

@@ -26,6 +26,10 @@ module.exports = class Model extends Base {
         this.header = new ModelHeader({model: this});
     }
 
+    hasHistory () {
+        return !this._isNew && this.view.behaviors.historyItem;
+    }
+
     isCreator (id) {
         return !this._isNew && JSON.stringify(id) === JSON.stringify(this.getCreator());
     }
@@ -84,10 +88,6 @@ module.exports = class Model extends Base {
 
     getUpdateDate () {
         return this._valueMap[this.class.UPDATED_AT_ATTR];
-    }
-
-    hasHistory () {
-        return !this._isNew && this.view.historyAttrs.length;
     }
 
     getClass () {
@@ -244,20 +244,17 @@ module.exports = class Model extends Base {
     }
 
     getOldValue (attr) {
-        attr = attr.name || attr;
-        if (Object.prototype.hasOwnProperty.call(this._oldValueMap, attr)) {
-            return this._oldValueMap[attr];
-        }
+        return this.hasOldValue(attr) ? this._oldValueMap[attr.name || attr] : undefined;
     }
 
     restoreOldValue (attr) {
-        attr = attr.name || attr;
-        if (Object.prototype.hasOwnProperty.call(this._oldValueMap, attr)) {
-            this._valueMap[attr] = this._oldValueMap[attr];
+        const name = attr.name || attr;
+        if (this.hasOldValue(attr)) {
+            this._valueMap[name] = this._oldValueMap[name];
         } else {
-            delete this._valueMap[attr];
+            delete this._valueMap[name];
         }
-        this.related.unsetChanges(attr);
+        this.related.unsetChanges(name);
     }
 
     setOldValues () {
@@ -300,10 +297,7 @@ module.exports = class Model extends Base {
     }
 
     findSelf () {
-        return this.class.createQuery({
-            module: this.module,
-            user: this.user
-        }).byId(this.getId());
+        return this.class.createQuery(this.getSpawnConfig()).byId(this.getId());
     }
 
     createSelf (params) {
@@ -311,11 +305,15 @@ module.exports = class Model extends Base {
     }
 
     createByView (view, params) {
-        return view.createModel({
+        return view.createModel(this.getSpawnConfig(params));
+    }
+
+    getSpawnConfig (params) {
+        return {
             module: this.module,
             user: this.user,
             ...params
-        });
+        };
     }
 
     clone (sample) {
@@ -338,21 +336,35 @@ module.exports = class Model extends Base {
         return this.class.meta.emit(event, {model: this, ...data});
     }
 
-    // BEHAVIORS
-
-    getFileBehavior () {
-        return this.getBehaviorsByClass(FileBehavior)[0];
-    }
+    // BEHAVIOR
 
     getBehaviorsByClass (Class) {
         this.ensureBehaviors();
-        return ArrayHelper.filterByClassProperty(this.behaviors, Class);
+        const result = [];
+        for (const behavior of this.behaviors) {
+            if (behavior instanceof Class) {
+                result.push(behavior);
+            }
+        }
+        return result;
     }
 
     ensureBehaviors () {
         if (!this.behaviors) {
             Behavior.createModelBehaviors(this);
         }
+    }
+
+    createFileBehavior () {
+        return this.view.behaviors.fileItem
+            ? this.createBehavior(this.view.behaviors.fileItem)
+            : null;
+    }
+
+    createSignatureBehavior () {
+        return !this._isNew && this.view.behaviors.signatureItem
+            ? this.createBehavior(this.view.behaviors.signatureItem)
+            : null;
     }
 
     createBehavior (config) {
@@ -443,15 +455,18 @@ module.exports = class Model extends Base {
 
     async update () {
         await this.beforeUpdate();
-        await this.class.update(this.getId(), this._valueMap);
+        await this.directUpdate();
         await this.afterUpdate();
         this.setOldValues();
+    }
+
+    directUpdate () {
+        return this.class.update(this.getId(), this._valueMap);
     }
 
     async beforeUpdate () {
         await this.beforeSave();
         await Behavior.execute('beforeUpdate', this);
-        this.unset(this.class.CREATOR_ATTR);
         this.set(this.class.EDITOR_ATTR, this.getUserId());
     }
 
@@ -653,13 +668,11 @@ module.exports = class Model extends Base {
     }
 };
 
-const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const EscapeHelper = require('areto/helper/EscapeHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const Behavior = require('../behavior/Behavior');
 const Validator = require('../validator/Validator');
-const FileBehavior = require('../behavior/FileBehavior');
 const ModelRelated = require('./ModelRelated');
 const ModelHeader = require('./ModelHeader');
 const ModelOutput = require('./ModelOutput');

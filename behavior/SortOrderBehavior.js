@@ -36,9 +36,10 @@ module.exports = class SortOrderBehavior extends Base {
     }
 
     getExtremeNumber () {
-        return this.owner.class.createQuery().order({
-            [this.attrName]: this.step > 0 ? -1 : 1
-        }).scalar(this.attrName);
+        const direction = this.step > 0 ? -1 : 1;
+        return this.owner.class.createQuery()
+            .order({[this.attrName]: direction})
+            .scalar(this.attrName);
     }
 
     async update (data, view) {

@@ -378,12 +378,12 @@ module.exports = class ModelRelated extends Base {
         return this.isExistingId(this.model.getId(), ids);
     }
 
-    checkBackRefExist (relation, doc) {
+    checkBackRefExist (relation, item) {
         const query = relation.refClass.find({
             [relation.refAttrName]: this.model.get(relation.linkAttrName)
         });
         const ids = query.limit(2).column(relation.refClass.getKey());
-        return this.isExistingId(doc[relation.refAttrName], ids);
+        return this.isExistingId(item[relation.refAttrName], ids);
     }
 
     isExistingId (id, ids) {
@@ -415,12 +415,12 @@ module.exports = class ModelRelated extends Base {
         }
         const query = attr.relation.refClass.createQuery(this.getQueryConfig());
         await attr.relation.setQueryByModel(query, this.model);
-        const docs = await query.raw().all();
+        const items = await query.raw().all();
         const data = this._changes[attr.name];
         const result = {};
         const refKey = attr.relation.refClass.getKey();
-        for (const doc of docs) {
-            result[doc[refKey]] = doc;
+        for (const item of items) {
+            result[item[refKey]] = item;
         }
         if (data) {
             for (const model of data.links) {

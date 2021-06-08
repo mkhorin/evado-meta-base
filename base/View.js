@@ -91,6 +91,7 @@ module.exports = class View extends Base {
         this.creationView = this.class.getView(this.data.creationView) || this.class;
         this.editView = this.class.getView(this.data.editView) || this.class;
         this.forbiddenView = this.class.forbiddenView;
+
     }
 
     createHeader () {
@@ -104,7 +105,6 @@ module.exports = class View extends Base {
         MetaHelper.sortByOrderNumber(attrs);
         this.attrMap = {};
         this.attrs = [];
-        this.attrBehaviors = [];
         this.fileAttrs = [];
         this.calcAttrs = [];
         this.defaultValueAttrs = [];
@@ -112,6 +112,7 @@ module.exports = class View extends Base {
         this.commonSearchAttrs = []; // search attributes for common grid search
         this.selectSearchAttrs = []; // search attributes for select2
         this.historyAttrs = [];
+        this.signedAttrs = [];
         this.refAttrs = [];
         this.backRefAttrs = [];
         this.eagerAttrs = [];
@@ -184,6 +185,9 @@ module.exports = class View extends Base {
         }
         if (attr.data.history) {
             this.historyAttrs.push(attr);
+        }
+        if (attr.data.signed) {
+            this.signedAttrs.push(attr);
         }
     }
 
@@ -272,7 +276,7 @@ module.exports = class View extends Base {
 
     prepareFilter () {
         try {
-            this._filter = ObjectFilter.prepareConfiguration(this.data.filter, this);
+            this._filter = ObjectFilter.prepareConfig(this.data.filter, this);
         } catch (err) {
             this.log('error', 'Invalid filter configuration', err);
         }
@@ -293,29 +297,9 @@ module.exports = class View extends Base {
 
     // BEHAVIOR
 
-    addAttrBehavior (attr, data) {
-        data.attrName = attr.name;
-        this.attrBehaviors.push(data);
-    }
-
-    getBehaviorsByClassAndAttr (Class, attr) {
-        return this.getBehaviorsByClass(Class).filter(data => data.attrName === attr);
-    }
-
-    getBehaviorByClass (Class) {
-        return this.getBehaviorsByClass(Class)[0];
-    }
-
-    getBehaviorsByClass (Class) {
-        return ArrayHelper.filterByClassProperty(this.behaviors, Class);
-    }
-
-    prepareBehaviors () {
-        Behavior.createConfigurations(this);
-        Behavior.appendClassBehaviors(this);
-        Behavior.setAfterFindBehaviors(this);
-        Behavior.setAfterPopulateBehaviors(this);
-        Behavior.sort(this);
+    createBehaviors () {
+        this.behaviors = new ViewBehaviors({owner: this});
+        this.behaviors.init();
     }
 
     // TREE VIEW
@@ -396,7 +380,6 @@ module.exports = class View extends Base {
 };
 module.exports.init();
 
-const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const NestedHelper = require('areto/helper/NestedHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
@@ -408,7 +391,7 @@ const ObjectFilter = require('../filter/ObjectFilter');
 const Model = require('../model/Model');
 const ModelQuery = require('../model/ModelQuery');
 const Grouping = require('./Grouping');
-const Behavior = require('../behavior/Behavior');
 const ClassHeader = require('../header/ClassHeader');
 const Validator = require('../validator/Validator');
+const ViewBehaviors = require('./ViewBehaviors');
 const TreeView = require('./TreeView');

@@ -84,7 +84,7 @@ module.exports = class BaseMeta extends Base {
         this.createClasses();
         this.prepareClasses();
         this.createViews();
-        this.createDeferredBinding();
+        await this.createDeferredBinding();
         await this.createIndexes();
         /*if (this.Inspector) {
             await this.Inspector.execute(this);
@@ -98,11 +98,12 @@ module.exports = class BaseMeta extends Base {
     }
 
     createClass (data) {
-        if (this.getClass(data.name)) {
-            return this.log('error', `Class already exists: ${data.name}`);
+        const name = data.name;
+        if (this.getClass(name)) {
+            return this.log('error', `Class already exists: ${name}`);
         }
-        this.classMap[data.name] = new Class({meta: this, data});
-        this.classes.push(this.classMap[data.name]);
+        this.classMap[name] = new Class({meta: this, data});
+        this.classes.push(this.classMap[name]);
     }
 
     prepareClasses () {
@@ -133,16 +134,16 @@ module.exports = class BaseMeta extends Base {
             'createCalc',
             'createTransitions',
             'createTreeView',
-            'prepareBehaviors',
+            'createBehaviors',
             'createVersion',
             'prepareVersion'
         ]);
     }
 
-    processClassMethods (methods) {
+    async processClassMethods (methods) {
         for (const method of methods) {
             for (const cls of this.classes) {
-                cls[method]();
+                await cls[method]();
             }
         }
     }

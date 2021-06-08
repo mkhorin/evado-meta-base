@@ -1,3 +1,19 @@
+## 3.0.0
+
+* base/ClassBehaviors
+    - refactor behavior component
+* behavior/FileBehavior
+    - override raw file model
+    - store file hash     
+* behavior/S3Behavior
+    - add S3 storage behavior
+* behavior/SignatureBehavior
+    - add digital signature behavior        
+* validator/TotalFileSizeValidator
+    - add total file size validation to relation
+* validator/Validator
+    - validate entire model without target attributes
+
 ## 2.1.0
 
 * base/Class

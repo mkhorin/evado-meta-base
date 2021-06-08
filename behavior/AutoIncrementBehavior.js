@@ -8,12 +8,11 @@ const Base = require('./Behavior');
 module.exports = class AutoIncrementBehavior extends Base {
 
     static async normalize (view) {
-        if (Array.isArray(view.behaviors)) {
+        const configs = view.behaviors.getAllByClass(this);
+        if (configs.length) {
             const owner = view.createModel();
-            for (const config of view.behaviors) {
-                if (config.Class === this) {
-                    await ClassHelper.spawn(config, {owner}).normalize();
-                }
+            for (const config of configs) {
+                await ClassHelper.spawn(config, {owner}).normalize();
             }
         }
     }

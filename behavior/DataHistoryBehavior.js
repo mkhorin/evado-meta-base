@@ -7,22 +7,30 @@ const Base = require('./Behavior');
 
 module.exports = class DataHistoryBehavior extends Base {
 
+    static getDefaultConfig (view) {
+        if (!view.historyAttrs.length) {
+            return null;
+        }
+        return {
+            Class: this,
+            type: 'history'
+        };
+    }
+
     getHistoryModel () {
         const Class = this.owner.getMeta().DataHistoryModel;
-        return Class ? this.owner.spawn(Class, {owner: this.owner}) : null;
+        return Class
+            ? this.owner.spawn(Class, {owner: this.owner})
+            : null;
     }
 
     beforeUpdate () {
         const data = this.getData();
-        if (data) {
-            const model = this.getHistoryModel();
-            return model ? model.append(data) : null;
-        }
+        return data ? this.getHistoryModel()?.append(data) : null;
     }
 
     afterDelete () {
-        const model = this.getHistoryModel();
-        return model ? model.findByOwner().delete() : null;
+        return this.getHistoryModel()?.findByOwner().delete();
     }
 
     getData () {
@@ -34,7 +42,7 @@ module.exports = class DataHistoryBehavior extends Base {
                     data[attr.name] = changes;
                 }
             } else if (this.owner.isValueChanged(attr)) {
-                data[attr.name] = this.owner.getOldValue(attr);
+                data[attr.name] = this.getOldValue(attr);
             }
         }
         return Object.values(data).length ? data : null;
@@ -42,6 +50,6 @@ module.exports = class DataHistoryBehavior extends Base {
 
     dropData () {
         const model = this.getHistoryModel();
-        return model ? model.getDb().drop(model.getTable()) : null;
+        return model?.getDb().drop(model.getTable());
     }
 };

@@ -7,10 +7,6 @@ const Base = require('./Validator');
 
 module.exports = class ExpressionValidator extends Base {
 
-    getInvalidMessage () {
-        return this.createMessage(this.invalidMessage, 'Invalid expression');
-    }
-
     getMessage (requiredValue) {
         if (typeof requiredValue !== 'string') {
             requiredValue = JSON.stringify(requiredValue);
@@ -30,7 +26,7 @@ module.exports = class ExpressionValidator extends Base {
             config = model.class.meta.resolveSpawn(config);
         }
         if (!config) {
-            return this.addError(model, name, this.getInvalidMessage());
+            return this.addError(model, name, this.createMessage('Invalid expression'));
         }
         const attr = model.class.getAttr(name);
         if (config.Class) {

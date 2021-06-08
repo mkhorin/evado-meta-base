@@ -10,8 +10,8 @@ module.exports = class RegexValidator extends Base {
     static getConstants () {
         return {
             PATTERNS: {
-                reservedFileNameChars: /[<>:"\/\\|?*\x00-\x1F]/g,
-                reservedWindowsFileName: /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i
+                reservedFilenameChars: /[<>:"\/\\|?*\x00-\x1F]/g,
+                reservedWindowsFilename: /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i
             }
         };
     }

@@ -9,6 +9,7 @@ module.exports = class UserValidator extends Base {
 
     constructor (config) {
         super({
+            defaultMessageSource: 'app',
             skipOnEmpty: false,
             ...config
         });

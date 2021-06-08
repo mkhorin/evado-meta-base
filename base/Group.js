@@ -32,6 +32,10 @@ module.exports = class Group extends Base {
         return this.data.active;
     }
 
+    isLoadable () {
+        return this.data.loadable;
+    }
+
     getMeta () {
         return this.class.meta;
     }

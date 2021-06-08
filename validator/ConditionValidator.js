@@ -7,6 +7,13 @@ const Base = require('./ExpressionValidator');
 
 module.exports = class ConditionValidator extends Base {
 
+    constructor (config) {
+        super({
+            defaultMessageSource: 'app',
+            ...config
+        });
+    }
+
     getInvalidMessage () {
         return this.createMessage(this.invalidMessage, 'Invalid condition');
     }

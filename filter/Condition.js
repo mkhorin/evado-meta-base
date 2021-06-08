@@ -7,7 +7,7 @@ const Base = require('areto/base/Base');
 
 module.exports = class Condition extends Base {
 
-    static prepareConfiguration (data, view) {
+    static prepareConfig (data, view) {
         if (!data) {
             return null;
         }
@@ -15,7 +15,7 @@ module.exports = class Condition extends Base {
         if (data.Class) {
             return ClassHelper.resolveSpawn(data, module, {module});
         }
-        const filter = ObjectFilter.prepareConfiguration(data, view);
+        const filter = ObjectFilter.prepareConfig(data, view);
         return {Class: this, module, filter};
     }
 

@@ -59,13 +59,6 @@ module.exports = class ClassAttr extends Base {
             : this.spawnCalc(expression);
     }
 
-    prepareBehaviors () {
-        super.prepareBehaviors();
-        if (this.data.trim && !this.isReadOnly() && (this.isString() || this.isText())) {
-            this.class.addAttrBehavior(this, {type: 'trim'});
-        }
-    }
-
     resolveHeader (docs) {
         if (this.data.asRaw || !this.relation) {
             return;

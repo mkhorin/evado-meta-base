@@ -172,7 +172,7 @@ module.exports = class ModelQuery extends Base {
             model.related.depth = this._relatedDepth;
             models.push(model);
         }
-        if (this.view.afterPopulateBehaviors) {
+        if (this.view.behaviors.afterPopulateItems.length) {
             await this.executeAfterPopulateBehaviors(models);
         }
         if (this._withStateView) {
@@ -199,7 +199,7 @@ module.exports = class ModelQuery extends Base {
         if (this.security) {
             await this.security.resolveForbiddenReadAttrs(models, this.view);
         }
-        if (this.view.afterFindBehaviors) {
+        if (this.view.behaviors.afterFindItems.length) {
             await this.executeAfterFindBehaviors(models);
         }
         return this._index ? this.indexModels(models) : models;

@@ -9,96 +9,112 @@ module.exports = class FileBehavior extends Base {
 
     static getConstants () {
         return {
-            FILE_ATTR: 'file',
             NAME_ATTR: 'name',
             SIZE_ATTR: '_size',
-            MIME_ATTR: '_mime',
-            RAW_FILE_ATTR: 'file'
+            TYPE_ATTR: '_type',
+            HASH_ATTR: '_hash',
+            RAW_CLASS: 'model/RawFile'
         };
     }
 
-    static initConfiguration (data) {
+    static prepareConfig (data, view) {
+        data.fileAttr = view.fileAttrs[0];
+        if (!data.fileAttr) {
+            return this.log(view, 'error', 'File attribute not found');
+        }
+        data.nameAttr = view.getAttr(data.nameAttr);
+        data.rawClass = data.rawClass || this.RAW_CLASS;
         data.rule = this.createValidatorRule(data);
+        return data;
     }
 
     static createValidatorRule (data) {
+        const params = this.createValidatorParams(data);
+        return params ? ['file', 'file', params] : null;
+    }
+
+    static createValidatorParams (data) {
         const params = {};
-        for (const key of ['imageOnly', 'maxSize', 'minSize', 'mimeTypes', 'extensions']) {
+        for (const key of ['imageOnly', 'maxSize', 'minSize', 'types', 'extensions']) {
             if (data[key]) {
                 params[key] = data[key];
             }
         }
-        return Object.values(params).length
-            ? [[this.RAW_FILE_ATTR], 'file', params]
-            : null;
+        return Object.values(params).length ? params : null;
     }
 
-    static isImage (model) {
-        return model.get(this.MIME_ATTR)?.indexOf('image') === 0;
-    }
-
-    static getName (model) {
-        return model.get(this.NAME_ATTR);
-    }
-
-    static getSize (model) {
-        return model.get(this.SIZE_ATTR);
-    }
 
     isImage () {
-        return this.getMime().indexOf('image') === 0;
+        return this.getMediaType()?.indexOf('image') === 0;
+    }
+
+    isThumbnails () {
+        return this.getStorage()?.isThumbnails();
     }
 
     getFilename () {
-        return this.owner.get(this.FILE_ATTR);
+        return this.get(this.fileAttr);
     }
 
     getName () {
-        return this.owner.get(this.NAME_ATTR);
+        return this.nameAttr ? this.get(this.nameAttr) : null;
     }
 
-    getMime () {
-        return this.owner.get(this.MIME_ATTR);
+    getMediaType () {
+        return this.get(this.TYPE_ATTR);
     }
 
-    getRawFile () {
-        return this.module.getClass('model/RawFile');
+    getHash () {
+        return this.get(this.HASH_ATTR);
+    }
+
+    getSize () {
+        return this.get(this.SIZE_ATTR);
+    }
+
+    getRawClass () {
+        return this.module.getClass(this.rawClass);
     }
 
     getStorage () {
-        return this.module.getFileStorage();
+        return this.module.get(this.getRawClass().STORAGE);
     }
 
     findPending (id) {
-        return this.spawn(this.getRawFile()).findPending(id, this.owner.user);
+        return this.spawn(this.getRawClass()).findPending(id, this.owner.user);
     }
 
     beforeValidate () {
-        return this.setFile();
+        const value = this.get(this.fileAttr);
+        const oldValue = this.getOldValue(this.fileAttr);
+        if (!value) {
+            return this.set(this.fileAttr, oldValue);
+        }
+        if (value !== oldValue) {
+            return this.setRawFile();
+        }
     }
 
     beforeInsert () {
-        if (this.rawFile && !this.getName()) {
-            this.owner.set(this.NAME_ATTR, this.rawFile.getName());
-        }
-        this.assignRawData();
+        this.setNameOnEmpty();
+        return this.assignRawData();
     }
 
     beforeUpdate () {
-        this.assignRawData();
+        return this.assignRawData();
     }
 
     afterInsert () {
         if (this.rawFile) {
-            return this.rawFile.directUpdate({owner: this.owner.getId()});
+            return this.updateRawOwner();
         }
     }
 
     async afterUpdate () {
         if (this.rawFile) {
             await this.deleteRawFile(); // delete current raw file
-            await this.rawFile.directUpdate({owner: this.owner.getId()}); // bind a new raw file
-            await this.getStorage().delete(this.owner.getOldValue(this.FILE_ATTR));
+            await this.updateRawOwner(); // bind a new raw file
+            await this.getStorage().deleteFile(this.getOldValue(this.fileAttr));
         }
     }
 
@@ -106,31 +122,43 @@ module.exports = class FileBehavior extends Base {
         return this.deleteRawFile();
     }
 
-    async setFile () {
-        const value = this.owner.get(this.FILE_ATTR);
-        const oldValue = this.owner.getOldValue(this.FILE_ATTR);
-        if (!value) {
-            this.owner.set(this.FILE_ATTR, oldValue);
-        } else if (value !== oldValue) {
-            this.rawFile = await this.findPending(value).one();
-            if (!this.rawFile) {
-                this.owner.addError(this.FILE_ATTR, 'File not found');
+    updateRawOwner () {
+        return this.rawFile.directUpdate({owner: this.getId()});
+    }
+
+    setNameOnEmpty () {
+        if (this.rawFile && this.nameAttr && !this.getName()) {
+            this.set(this.nameAttr, this.rawFile.getName());
+        }
+    }
+
+    async setRawFile () {
+        const id = this.get(this.fileAttr);
+        this.rawFile = await this.findPending(id).one();
+        if (!this.rawFile) {
+            this.owner.addError(this.fileAttr.name, 'File not found');
+        }
+    }
+
+    async assignRawData () {
+        if (this.rawFile) {
+            this.set(this.fileAttr, this.rawFile.getFilename());
+            this.set(this.SIZE_ATTR, this.rawFile.getSize());
+            this.set(this.TYPE_ATTR, this.rawFile.getMediaType());
+            if (this.hashing) {
+                this.set(this.HASH_ATTR, await this.calculateHash());
             }
         }
     }
 
-    assignRawData () {
-        if (this.rawFile) {
-            this.owner.set(this.FILE_ATTR, this.rawFile.getFilename());
-            this.owner.set(this.SIZE_ATTR, this.rawFile.getSize());
-            this.owner.set(this.MIME_ATTR, this.rawFile.getMime());
-        }
+    calculateHash () {
+        return this.getStorage().getHash(this.getFilename());
     }
 
     async deleteRawFile () {
-        const RawFile = this.getRawFile();
-        const models = await this.spawn(RawFile).find({owner: this.owner.getId()}).all();
-        return RawFile.delete(models);
+        const RawClass = this.getRawClass();
+        const models = await this.spawn(RawClass).find({owner: this.getId()}).all();
+        return RawClass.delete(models);
     }
 };
 module.exports.init();

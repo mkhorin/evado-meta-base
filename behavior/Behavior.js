@@ -15,93 +15,35 @@ module.exports = class Behavior extends Base {
                 file: './FileBehavior',
                 guid: './GuidBehavior',
                 history: './DataHistoryBehavior',
+                s3: './S3Behavior',
+                signature: './SignatureBehavior',
                 sortOrder: './SortOrderBehavior',
                 timestamp: './TimestampBehavior',
                 trim: './TrimBehavior',
             },
-            CUSTOM_BEHAVIOR_TYPE: 'custom'
+            CUSTOM_TYPE: 'custom'
         };
     }
 
-    static createConfigurations (view) {
-        const items = [].concat(view.attrBehaviors);
-        if (Array.isArray(view.data.behaviors)) {
-            items.push(...view.data.behaviors);
-        }
-        for (const item of items) {
-            const data = this.createConfiguration(view, item);
-            data ? this.appendConfiguration(view, data)
-                 : view.log('error', 'Invalid behavior configuration:', item);
-        }
+    static getBuiltIn (name) {
+        return this.BUILTIN.hasOwnProperty(name) ? require(this.BUILTIN[name]) : null;
     }
 
-    static initConfiguration () {
-        // override if necessary
+    static getDefaultConfig () {
+        return null;
     }
 
-    static appendConfiguration (view, data) {
-        data.Class.initConfiguration(data);
-        ObjectHelper.push(data, 'behaviors', view);
+    static prepareConfig (data) {
         return data;
     }
 
-    static createConfiguration (view, data) {
-        if (!data) {
-            return null;
-        }
-        if (this.BUILTIN.hasOwnProperty(data)) {
-            return {
-                Class: require(this.BUILTIN[data]),
-                orderNumber: 0
-            };
-        }
-        if (data.type === this.CUSTOM_BEHAVIOR_TYPE) {
-            data.config.orderNumber = data.config.orderNumber || data.orderNumber || 0;
-            return view.getMeta().resolveSpawn(data.config);
-        }
-        if (this.BUILTIN.hasOwnProperty(data.type)) {
-            data.orderNumber = data.orderNumber || 0;
-            return {...data, Class: require(this.BUILTIN[data.type])};
-        }
-    }
-
-    static appendClassBehaviors (view) {
-        if (view.class.behaviors) {
-            view.behaviors = view.behaviors || [];
-            view.behaviors.push(...view.class.behaviors);
-        }
-    }
-
-    static setAfterFindBehaviors (view) {
-        view.afterFindBehaviors = this.getBehaviorsByMethod('afterFind', view);
-    }
-
-    static setAfterPopulateBehaviors (view) {
-        view.afterPopulateBehaviors = this.getBehaviorsByMethod('afterPopulate', view);
-    }
-
-    static getBehaviorsByMethod (name, view) {
-        if (view.behaviors) {
-            const result = view.behaviors.filter(behavior => typeof behavior.Class.prototype[name] === 'function');
-            return result.length ? result : null;
-        }
-    }
-
-    static sort (view) {
-        if (view.behaviors) {
-            MetaHelper.sortByOrderNumber(view.behaviors);
-        }
+    static log (target, type, message, ...args) {
+        target.log(type, `${this.name}: ${message}`, ...args);
     }
 
     static createModelBehaviors (model) {
         model.behaviors = [];
-        if (model.view.behaviors) {
-            this.createModelBehaviorsByData(model.view.behaviors, model);
-        }
-    }
-
-    static createModelBehaviorsByData (data, model) {
-        for (const config of data) {
+        for (const config of model.view.behaviors) {
             config.owner = model;
             model.behaviors.push(new config.Class(config));
         }
@@ -116,27 +58,26 @@ module.exports = class Behavior extends Base {
         }
     }
 
-    static async dropData (view) {
-        if (Array.isArray(view.behaviors)) {
-            const owner = view.createModel();
-            for (const config of view.behaviors) {
-                await ClassHelper.spawn(config, {owner}).dropData();
-            }
-        }
-    }
-
     module = this.owner.module;
 
     get () {
         return this.owner.get(...arguments);
     }
 
-    getRelated () {
-        return this.owner.related.resolve(...arguments);
-    }
-
     set () {
         return this.owner.set(...arguments);
+    }
+
+    getId () {
+        return this.owner.getId();
+    }
+
+    getOldValue () {
+        return this.owner.getOldValue(...arguments);
+    }
+
+    getRelated () {
+        return this.owner.related.resolve(...arguments);
     }
 
     getMeta () {
@@ -155,7 +96,12 @@ module.exports = class Behavior extends Base {
         return this.owner.view.getAttr(this.attrName);
     }
 
-    dropData () {
+    getSpawnConfig () {
+        return this.owner.getSpawnConfig(...arguments);
+    }
+
+    async dropData () {
+        // override if necessary
     }
 
     // afterDefaultValues
@@ -178,7 +124,3 @@ module.exports = class Behavior extends Base {
     // afterTransit
 };
 module.exports.init();
-
-const ClassHelper = require('areto/helper/ClassHelper');
-const MetaHelper = require('../helper/MetaHelper');
-const ObjectHelper = require('areto/helper/ObjectHelper');

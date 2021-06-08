@@ -7,7 +7,7 @@ const Base = require('areto/base/Base');
 
 module.exports = class ObjectFilter extends Base {
 
-    static prepareConfiguration (data, view) {
+    static prepareConfig (data, view) {
         if (!data) {
             return null;
         }
