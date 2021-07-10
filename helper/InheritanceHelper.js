@@ -17,7 +17,7 @@ const CLASS_REPLACEMENT_MAP = {
     states: true,
     transitions: true
 };
-const EXTENTION_MAP = {
+const EXTENSION_MAP = {
     actionBinder: true
 };
 const IMMUTABLE_ARRAY_MAP = {
@@ -73,7 +73,7 @@ module.exports = class InheritanceHelper extends Base {
         for (const key of Object.keys(source)) {
             const hasSource = Object.prototype.hasOwnProperty.call(source, key);
             const hasTarget = Object.prototype.hasOwnProperty.call(target, key);
-            if (EXTENTION_MAP[key] === true) {
+            if (EXTENSION_MAP[key] === true) {
                 if (!hasTarget) {
                     target[key] = source[key];
                 } else if (hasSource && target[key]) {

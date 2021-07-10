@@ -39,10 +39,7 @@ module.exports = class TypeHelper extends Base {
     }
 
     static hasType (type) {
-        if (!this._typeList) {
-            this._typeList = Object.values(this.TYPES);
-        }
-        return this._typeList.includes(type);
+        return Object.values(this.TYPES).includes(type);
     }
 
     static cast (value, type) {
