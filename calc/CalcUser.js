@@ -1,10 +1,10 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
  *
- * ["$user"] - current user ID
- * ["$user.attrName"] - current user attribute
- * ["$user.methodName"] - current user method
- * ["$user.meta.base.className"] - find object by {user: currentUserId}
+ * ["$user"] - Current user ID
+ * ["$user.attrName"] - Current user attribute
+ * ["$user.methodName"] - Current user method
+ * ["$user.meta.base.className"] - Find object by {user: currentUserId}
  */
 'use strict';
 

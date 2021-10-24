@@ -7,8 +7,8 @@
  * ["$attr", "refAttrName.attrName"]
  * ".attrName"
  * ".refAttrName.attrName"
- * ".refAttrName.refAttrName.$key" - get ID
- * ".refAttrName.refAttrName.$title" - get title
+ * ".refAttrName.refAttrName.$key" - Get ID
+ * ".refAttrName.refAttrName.$title" - Get title
  */
 'use strict';
 
@@ -24,7 +24,7 @@ module.exports = class CalcAttr extends Base {
 
     prepareAttr () {
         let name = this.data[1];
-        name = name === '$key' ? this.calc.attr.class.getKey() : name;
+        name = name === '$key' ? this.calc.view.class.getKey() : name;
         this._attrName = name;
         return this.resolveAttr;
     }
@@ -37,7 +37,7 @@ module.exports = class CalcAttr extends Base {
 
     getAttrChain (names) {
         let chain = [];
-        let cls = this.calc.attr.class;
+        let cls = this.calc.view.class;
         for (let name of names) {
             if (name === '$key') {
                 chain.push(cls.getKey());
@@ -89,8 +89,8 @@ module.exports = class CalcAttr extends Base {
         return ['$query', method, rel.refClass.id, {key}, {[rel.refAttrName]: value}];
     }
 
-    resolveAttr (params) {
-        return params.model.get(this._attrName);
+    resolveAttr ({model}) {
+        return model.get(this._attrName);
     }
 
     resolveNestedAttr () {

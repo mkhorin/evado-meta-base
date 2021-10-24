@@ -9,24 +9,24 @@
  * ["$class", "._class"] - resolve class title
  * ["$join", "separator", ".towns", ...]
  * ["$map", "toUpperCase", ".towns", ...]
- * ["$method", "toLowerCase", "value", ...arguments] - execute value method
+ * ["$method", "toLowerCase", "value", ...arguments] - Execute value method
  * ["$model", "attrName"]
  * ["$moment", "$now", "format", "MM-DD"]
  * ["$duration", "value", "seconds", "humanize"]
- * ["$now"] - current datetime
- * ["$raw", "$user"] - output as is
+ * ["$now"] - Current datetime
+ * ["$raw", "$user"] - Output as is
  * ["$round", ".attrName", precision]
- * ["$class", "className"] - class title
- * ["$state", "stateName"] - state title
+ * ["$class", "className"] - Class title
+ * ["$state", "stateName"] - State title
  * ["$master", "attrName"]
- * ["$user"] - current user ID
- * ["$user.attrName"] - current user attribute
- * ["$user.methodName"] - current user method
- * ["$user.meta.base.className"] - find object by {user: currentUserId}
- * ["$placeholder", "empty", "value"] - empty instead of null/undefined/'' value
- * ["$replace", "source", "target", "value"] - if value is source then replace with target
- * ["$related", ...] - see CalcRelated
- * ["$query", ...] - see CalcQuery
+ * ["$user"] - Current user ID
+ * ["$user.attrName"] - Current user attribute
+ * ["$user.methodName"] - Current user method
+ * ["$user.meta.base.className"] - Find className object by {user: currentUserId}
+ * ["$placeholder", "placeholder", "value"] - Set placeholder if value is empty
+ * ["$replace", "source", "target", "value"] - If value is source then replace with target
+ * ["$related", ...] - See CalcRelated
+ * ["$query", ...] - See CalcQuery
  * ["$count", "viewName.className", [condition]]
  * ["$custom", {"Class": "component/meta/calc/CustomCalcToken"}]
  *
@@ -81,16 +81,29 @@ module.exports = class Calc extends Base {
     }
 
     normalizeData (data) {
-        return typeof data === 'string' && data.indexOf('$') === 0 ? data.split('.') : data;
+        if (typeof data !== 'string') {
+            return data;
+        }
+        const first = data.charAt(0);
+        if (first === '$') {
+            return data.split('.');
+        }
+        if (first === '.' && data.length > 1) {
+            data = data.split('.');
+            data[0] = '$attr';
+        }
+        return data;
     }
 
     getTokenClass (data) {
         if (Array.isArray(data)) {
             switch (data[0]) {
+                case '$attr': return CalcAttr;
                 case '$condition': return CalcCondition;
                 case '$count': return CalcCount;
                 case '$custom': return this.getCustomTokenClass(data[1]);
                 case '$dependency': return CalcDependency;
+                case '$descendants': return CalcDescendants;
                 case '$related': return CalcRelated;
                 case '$query': return CalcQuery;
                 case '$user': return CalcUser;
@@ -118,8 +131,10 @@ module.exports = class Calc extends Base {
 
 const ClassHelper = require('areto/helper/ClassHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
+const CalcAttr = require('./CalcAttr');
 const CalcToken = require('./CalcToken');
 const CalcDependency = require('./CalcDependency');
+const CalcDescendants = require('./CalcDescendants');
 const CalcCondition = require('./CalcCondition');
 const CalcQuery = require('./CalcQuery');
 const CalcRelated = require('./CalcRelated');

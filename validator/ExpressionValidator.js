@@ -7,11 +7,11 @@ const Base = require('./Validator');
 
 module.exports = class ExpressionValidator extends Base {
 
-    getMessage (requiredValue) {
-        if (typeof requiredValue !== 'string') {
-            requiredValue = JSON.stringify(requiredValue);
+    getMessage (value) {
+        if (typeof value !== 'string') {
+            value = JSON.stringify(value);
         }
-        return this.createMessage(this.message, 'Value must be "{requiredValue}"', {requiredValue});
+        return this.createMessage(this.message, 'Value must be "{value}"', {requiredValue: value});
     }
 
     async validateAttr (name, model) {

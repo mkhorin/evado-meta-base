@@ -1,12 +1,12 @@
 /**
  * @copyright Copyright (c) 2020 Maxim Khorin (maksimovichu@gmail.com)
  *
- * Eamples of calculated expressions
+ * Samples of calculated expressions
  *
  * {"attrName": "value"}
  * {"attrName": ".attrName"}
  * ["!=", "attrName", "value"]
- * {"$key": ".attrName"} - $key - alias for primary key name
+ * {"$key": ".attrName"} - $key - alias for primary key
  * {"attrName": ".$key"}
  */
 'use strict';
@@ -18,17 +18,17 @@ module.exports = class CalcCondition extends Base {
     prepareResolvingMethod () {
         this.data = this.data[1];
         if (Array.isArray(this.data)) {
-            return this.prepareArray();
+            return this.prepareArrayData();
         }
         if (this.data && typeof this.data === 'object') {
-            return this.prepareHash();
+            return this.prepareHashData();
         }
         this.log('error', 'Invalid condition');
         this.data = ['FALSE'];
         return this.resolveStatic;
     }
 
-    prepareArray () {
+    prepareArrayData () {
         this._operator = this.data[0];
         const method = this.getPrepareMethod();
         return method.call(this, this.data.slice(1));
@@ -72,7 +72,7 @@ module.exports = class CalcCondition extends Base {
             : this.resolvePairValue;
     }
 
-    prepareHash () {
+    prepareHashData () {
         this._valueMap = {};
         for (const key of Object.keys(this.data)) {
             const field = this.normalizeFieldKey(key, this.data);

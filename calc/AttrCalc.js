@@ -5,8 +5,8 @@
  *
  * ["$attr", "attrName"]
  * ["$attr", "refAttrName", "attrName"]
- * ["$attr", "$key"] - get primary key
- * ["$descendants", "parentAttrName", [condition]] - get descendant ids by parent
+ * ["$attr", "$key"] - Get primary key
+ * ["$descendants", "parentAttrName", [condition]] - Get descendant IDs by parent
  *
  * Shortcut expressions
  *
@@ -26,23 +26,6 @@ module.exports = class AttrCalc extends Base {
             this.resolveExpression = this.resolve;
             this.resolve = this.resolveDefaultValue;
         }
-    }
-
-    normalizeData (data) {
-        if (typeof data === 'string' && data.indexOf('.') === 0) {
-            return ['$attr', ...data.split('.').slice(1)];
-        }
-        return super.normalizeData(data);
-    }
-
-    getTokenClass (data) {
-        if (Array.isArray(data)) {
-            switch (data[0]) {
-                case '$attr': return CalcAttr;
-                case '$descendants': return CalcDescendants;
-            }
-        }
-        return super.getTokenClass(data);
     }
 
     async resolveDefaultValue () {
@@ -66,5 +49,3 @@ module.exports = class AttrCalc extends Base {
 };
 
 const CommonHelper = require('areto/helper/CommonHelper');
-const CalcAttr = require('./CalcAttr');
-const CalcDescendants = require('./CalcDescendants');
