@@ -100,6 +100,10 @@ module.exports = class ViewAttr extends Base {
         return this.data.hideEmpty === true;
     }
 
+    isHistory () {
+        return this.data.history === true;
+    }
+
     isNumber () {
         return this.type === TypeHelper.TYPES.INTEGER || this.type === TypeHelper.TYPES.FLOAT;
     }

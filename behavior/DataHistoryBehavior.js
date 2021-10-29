@@ -17,23 +17,33 @@ module.exports = class DataHistoryBehavior extends Base {
         };
     }
 
-    getHistoryModel () {
-        const Class = this.owner.getMeta().DataHistoryModel;
-        return Class
-            ? this.owner.spawn(Class, {owner: this.owner})
-            : null;
+    beforeUpdate () {
+        return this.appendData(this.getSourceData());
     }
 
-    beforeUpdate () {
-        const data = this.getData();
-        return data ? this.getHistoryModel()?.append(data) : null;
+    afterTransit (data) {
+        if (this.owner.class.getStateAttr()?.isHistory()) {
+            return this.appendData(this.getStateSourceData(data));
+        }
     }
 
     afterDelete () {
         return this.getHistoryModel()?.findByOwner().delete();
     }
 
-    getData () {
+    appendData (data) {
+        if (data) {
+            return this.getHistoryModel()?.append(data);
+        }
+    }
+
+    getHistoryModel () {
+        const owner = this.owner;
+        const Class = owner.getMeta().DataHistoryModel;
+        return Class ? owner.spawn(Class, {owner}) : null;
+    }
+
+    getSourceData () {
         const data = {};
         for (const attr of this.owner.view.historyAttrs) {
             if (attr.relation) {
@@ -46,6 +56,13 @@ module.exports = class DataHistoryBehavior extends Base {
             }
         }
         return Object.values(data).length ? data : null;
+    }
+
+    getStateSourceData ({transition, startState}) {
+        return {
+            _state: startState,
+            _transition: transition.name
+        };
     }
 
     dropData () {

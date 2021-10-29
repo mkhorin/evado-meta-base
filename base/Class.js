@@ -18,7 +18,7 @@ module.exports = class Class extends Base {
             EDITOR_ATTR: '_editor',
             STATE_ATTR: '_state',
             TRANSITING_ATTR: '_transiting',
-            RELATION_SORT_ATTR: '_sort',
+            RELATION_SORTED_ATTR: '_sorted',
             RELATION_ORDER_PREFIX: '_order_'
         };
     }
@@ -83,6 +83,10 @@ module.exports = class Class extends Base {
 
     getState (name) {
         return this.stateMap[name] instanceof State ? this.stateMap[name] : null;
+    }
+
+    getStateAttr () {
+        return this.attrMap[this.STATE_ATTR];
     }
 
     getTransition (name) {
