@@ -7,12 +7,16 @@ const Base = require('./Validator');
 
 module.exports = class StringValidator extends Base {
 
+    /**
+     * @param {Object} config
+     * @param {boolean} config.shrinking - Replace multiple spaces with one
+     */
     constructor (config) {
         super({
             length: null,
             min: null,
             max: null,
-            shrinking: false, // replace multiple spaces with one
+            shrinking: false,
             ...config
         });
     }

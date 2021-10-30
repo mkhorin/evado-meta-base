@@ -82,7 +82,7 @@ module.exports = class Model extends Base {
         return this._valueMap[this.class.EDITOR_ATTR];
     }
 
-    getCreateDate () {
+    getCreationDate () {
         return this._valueMap[this.class.CREATED_AT_ATTR];
     }
 
@@ -159,13 +159,13 @@ module.exports = class Model extends Base {
         return this.related.get(attr);
     }
 
-    hasRelationOrder (attr) {
-        const order = this._valueMap[this.class.RELATION_SORT_ATTR];
+    isRelationSorted (attr) {
+        const order = this._valueMap[this.class.RELATION_SORTED_ATTR];
         return Array.isArray(order) && order.includes(attr.name || attr);
     }
 
-    getRelationOrder () {
-        return this._valueMap[this.class.RELATION_SORT_ATTR];
+    getSortedRelationNames () {
+        return this._valueMap[this.class.RELATION_SORTED_ATTR];
     }
 
     getCastedValue (name) {
@@ -597,27 +597,30 @@ module.exports = class Model extends Base {
 
     setDefaultState () {
         if (this.class.defaultState && !this.getState()) {
-            this.set(this.class.STATE_ATTR, this.class.defaultState.name);
+            this.setState(this.class.defaultState.name);
         }
     }
 
-    setState (value) {
-        this.set(this.class.STATE_ATTR, value);
+    setState (name) {
+        this.set(this.class.STATE_ATTR, name);
     }
 
-    async resolveTransitions () {
+    async resolveTransitions (name) {
         this.transitions = [];
         const transitions = this.class.getStartStateTransitions(this.getState());
         if (Array.isArray(transitions)) {
             for (const transition of transitions) {
-                if (await transition.resolveCondition(this)) {
-                    this.transitions.push(transition);
+                if (!name || transition.name === name) {
+                    if (await transition.resolveCondition(this)) {
+                        this.transitions.push(transition);
+                    }
                 }
             }
         }
     }
 
     async transit (transition) {
+        const startState = this.getStateName();
         try {
             await this.updateTransiting(transition.name);
             const transit = transition.createTransit(this);
@@ -636,7 +639,7 @@ module.exports = class Model extends Base {
         }
         try {
             await this.updateTransiting(null);
-            await this.afterTransit(transition);
+            await this.afterTransit({transition, startState});
         } catch (err) {
             this.log('error', `Failed after transit: ${transition.name}`, err);
         }
@@ -656,9 +659,9 @@ module.exports = class Model extends Base {
         return this.findSelf().update({[this.class.TRANSITING_ATTR]: value});
     }
 
-    updateState (value) {
-        this.set(this.class.STATE_ATTR, value);
-        return this.findSelf().update({[this.class.STATE_ATTR]: value});
+    updateState (name) {
+        this.setState(name);
+        return this.findSelf().update({[this.class.STATE_ATTR]: name});
     }
 
     // OUTPUT

@@ -3,7 +3,7 @@
  *
  * Examples of calculated expressions
  *
- * ["$related", "operation", "refAttr", ...] - see CalcQuery for operations
+ * ["$related", "operation", "refAttr", ...] - See CalcQuery for operations
  * ["$related", "operation", "refAttr/viewName", ...]
  * ["$related", "models", "refAttr", {"attr": "attrName"}]
  * ["$related", "models", "refAttr/viewName", {"attr": "attrName"}]

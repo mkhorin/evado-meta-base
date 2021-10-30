@@ -66,9 +66,8 @@ module.exports = class Transition extends Base {
     }
 
     resolveCondition (model) {
-        return this._condition
-            ? (new this._condition.Class(this._condition)).resolve(model)
-            : true;
+        const config = this._condition;
+        return config ? (new config.Class(config)).resolve(model) : true;
     }
 
     createTransitConfig () {
@@ -88,7 +87,7 @@ module.exports = class Transition extends Base {
 };
 
 const CommonHelper = require('areto/helper/CommonHelper');
-const Condition = require('../filter/Condition');
+const Condition = require('../condition/Condition');
 const MetaHelper = require('../helper/MetaHelper');
 const NestedHelper = require('areto/helper/NestedHelper');
 const Transit = require('./Transit');

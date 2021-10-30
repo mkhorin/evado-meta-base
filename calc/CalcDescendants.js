@@ -8,7 +8,7 @@ const Base = require('./CalcToken');
 module.exports = class CalcDescendants extends Base {
 
     prepareResolvingMethod () {
-        this._view = this.calc.attr.class;
+        this._view = this.calc.view.class;
         this._key = this._view.getKey();
         this._parentName = this.data[1];
         this._condition = this.createCondition(this.data[2]);

@@ -9,10 +9,13 @@ const Base = require('./Validator');
 
 module.exports = class TotalFileSizeValidator extends Base {
 
+    /**
+     * @param {Object} config
+     * @param {number} config.max - Max size in bytes
+     * @param {number} config.min - Min size in bytes
+     */
     constructor (config) {
         super({
-            // max: 0 // max size in bytes
-            // min: 0 // min size in bytes
             defaultMessageSource: 'app',
             ...config
         });

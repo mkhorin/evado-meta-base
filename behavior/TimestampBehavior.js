@@ -7,9 +7,14 @@ const Base = require('./Behavior');
 
 module.exports = class TimestampBehavior extends Base {
 
+    /**
+     * @param {Object} config
+     * @param {string} config.createdAttr - Null to skip
+     * @param {string} config.updateAttr - Null to skip
+     */
     constructor (config) {
         super({
-            createdAttr: 'createdAt', // or null
+            createdAttr: 'createdAt',
             updatedAttr: 'updatedAt',
             ...config
         });

@@ -7,9 +7,13 @@ const Base = require('./Validator');
 
 module.exports = class RelationValidator extends Base {
 
+    /**
+     * @param {Object} config
+     * @param {string[]} config.allow - Allow changes: ['unlinks', ...]
+     */
     constructor (config) {
         super({
-            allow: null, // allow changes ['unlinks', ...]
+            allow: null,
             deny: null,
             required: false,
             unique: null,

@@ -16,11 +16,15 @@ module.exports = class RegexValidator extends Base {
         };
     }
 
+    /**
+     * @param {Object} config
+     * @param {string} config.pattern - Regex pattern
+     * @param {string} config.flags - Regex flags
+     * @param {boolean} config.mismatch - Not match pattern
+     */
     constructor (config) {
         super({
-            // pattern: '^test',
-            // flags: 'i'
-            mismatch: false, // not match pattern
+            mismatch: false,
             ...config
         });
     }

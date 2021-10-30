@@ -163,12 +163,19 @@ module.exports = class Validator extends Base {
         throw new Error(`${this.name}: Invalid type: ${type}`);
     }
 
+    /**
+     * @param {Object} config
+     * @param {boolean} config.skipOnEmpty - Skip validation if attribute value is empty
+     * @param {boolean} config.skipOnError - Skip validation if attribute already contains error
+     * @param {boolean} config.skipOnAnyError - Skip validation if model already contains error
+     * @param {string} config.messageSource - Source of translations of custom error messages
+     * @param {string} config.defaultMessageSource - Source of translations of default error messages
+     */
     constructor (config) {
         super({
             skipOnEmpty: true,
             skipOnError: true,
             skipOnAnyError: false,
-            when: null,
             messageSource: 'app',
             defaultMessageSource: 'areto',
             ...config

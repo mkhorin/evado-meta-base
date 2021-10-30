@@ -13,7 +13,7 @@ module.exports = class GuidBehavior extends Base {
     }
 
     generate () {
-        return MongoHelper.createObjectId().toString();
+        return MongoHelper.createId().toString();
     }
 };
 

@@ -13,7 +13,7 @@
  * ["$query", "id", "className", {}, {"userAttrName": "$user"}] - $user - current user
  * ["$query", "model", "className", null, [condition]]
  * ["$query", "models", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
- * ["$query", "title", "className", null, [condition]] - model title
+ * ["$query", "title", "className", null, [condition]] - Model title
  * ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
  */
 'use strict';

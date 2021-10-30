@@ -7,9 +7,14 @@ const Base = require('./Validator');
 
 module.exports = class RangeValidator extends Base {
 
+    /**
+     * @param {Object} config
+     * @param {number[]|string[]} config.values - Range values
+     * @param {boolean} config.not - Invert validation result
+     * @param {string} config.allowArray - Validated value can be an array
+     */
     constructor (config) {
         super({
-            // values: []
             not: false,
             allowArray: false,
             ...config

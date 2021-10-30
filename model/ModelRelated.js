@@ -452,29 +452,29 @@ module.exports = class ModelRelated extends Base {
                 await query.getDb().update(query.getTable(), {[refKey]: item[refKey]}, {[orderKey]: pos});
             }
         }
-        let names = this.model.getRelationOrder();
+        let names = this.model.getSortedRelationNames();
         names = Array.isArray(names) ? names : [];
         if (!names.includes(attr.name)) {
             names.push(attr.name);
-            await this.model.class.findById(this.model.getId()).update({
-                [refClass.RELATION_SORT_ATTR]: names
+            await this.model.class.update(this.model.getId(), {
+                [refClass.RELATION_SORTED_ATTR]: names
             });
         }
     }
 
     async deleteOrder (attr) {
         await this.unsetOrderField(attr.relation.refClass, attr);
-        const names = this.model.getRelationOrder();
+        const names = this.model.getSortedRelationNames();
         if (names) {
             ArrayHelper.remove(attr.name, names);
-            await this.model.class.findById(this.model.getId()).update({
-                [this.model.class.RELATION_SORT_ATTR]: names
+            await this.model.class.update(this.model.getId(), {
+                [this.model.class.RELATION_SORTED_ATTR]: names
             });
         }
     }
 
     async deleteOrders () {
-        const names = this.model.getRelationOrder();
+        const names = this.model.getSortedRelationNames();
         if (Array.isArray(names)) {
             for (const name of names) {
                 const attr = this.model.class.getAttr(name);

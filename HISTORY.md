@@ -1,3 +1,14 @@
+## 4.0.0
+
+* behavior/DataHistoryBehavior
+    - add state history to model
+* calc/CalcToken
+    - add empty and not empty operators
+* condition/Condition
+    - fix condition solver
+* validator/NumberValidator
+    - ignore useless leading or trailing zeros
+
 ## 3.0.0
 
 * base/ClassBehaviors

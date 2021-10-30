@@ -68,7 +68,7 @@ module.exports = class Relation extends Base {
     }
 
     setQueryByModel (query, model) {
-        if (model.hasRelationOrder(this.attr)) {
+        if (model.isRelationSorted(this.attr)) {
             query.order({[model.related.getOrderKey(this.attr)]: 1});
         }
         return this.filter
