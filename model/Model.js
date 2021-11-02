@@ -262,6 +262,7 @@ module.exports = class Model extends Base {
     }
 
     async setDefaultValues () {
+        this.setDefaultState();
         this.set(this.class.CLASS_ATTR, this.class.name);
         this.set(this.class.CREATOR_ATTR, this.getUserId());
         for (const attr of this.view.defaultValueAttrs) {
@@ -443,7 +444,6 @@ module.exports = class Model extends Base {
         await this.beforeSave(true);
         await Behavior.execute('beforeInsert', this);
         this.set(this.class.CREATOR_ATTR, this.getUserId());
-        this.setDefaultState();
     }
 
     async afterInsert () {
@@ -509,7 +509,7 @@ module.exports = class Model extends Base {
     // ERRORS
 
     hasError (attrName) {
-        return attrName
+        return attrName !== undefined
             ? Object.prototype.hasOwnProperty.call(this._errorMap, attrName)
             : Object.values(this._errorMap).length > 0;
     }                   
@@ -661,7 +661,10 @@ module.exports = class Model extends Base {
 
     updateState (name) {
         this.setState(name);
-        return this.findSelf().update({[this.class.STATE_ATTR]: name});
+        return this.findSelf().update({
+            [this.class.STATE_ATTR]: name,
+            [this.class.UPDATED_AT_ATTR]: new Date
+        });
     }
 
     // OUTPUT
