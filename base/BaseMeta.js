@@ -9,12 +9,14 @@ module.exports = class BaseMeta extends Base {
 
     constructor (config) {
         super({
+            dataTablePrefix: 'd_',
             name: 'base',
             source: {
                 Class: require('../source/FileSource')
             },
-            autoIncrementTable: 'ds_autoIncrement',
-            dataTablePrefix: 'd_',
+            AutoIncrementModel: {
+                Class: require('evado/model/AutoIncrement')
+            },
             DataHistoryModel: {
                 Class: require('evado/model/DataHistory')
             },
@@ -159,7 +161,6 @@ module.exports = class BaseMeta extends Base {
             await cls.dropData();
         }
         await this.dropTablesByPrefix(this.dataTablePrefix);
-        await this.getDb().drop(this.autoIncrementTable);
     }
 
     async afterDataImport () {

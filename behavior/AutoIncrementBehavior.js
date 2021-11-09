@@ -26,13 +26,13 @@ module.exports = class AutoIncrementBehavior extends Base {
     }
 
     async afterDefaultValues () {
-        const query = this.getValueQuery();
+        const query = this.getQueryByName();
         const current = await query.scalar('value');
         this.owner.set(this.attrName, this.getNextValue(current));
     }
 
     async beforeInsert () {
-        const query = this.getValueQuery();
+        const query = this.getQueryByName();
         const current = await query.scalar('value');
         this.value = this.getNextValue(current);
         if (!this.owner.has(this.attrName)) {
@@ -55,18 +55,16 @@ module.exports = class AutoIncrementBehavior extends Base {
         return Number.isSafeInteger(value) ? (value + this.step) : this.start;
     }
 
-    getTable () {
-        return this.getMeta().autoIncrementTable;
+    getQueryByName () {
+        return this.getQuery().and({name: this.getName()});
     }
 
-    getValueQuery () {
-        return (new Query).db(this.owner.class.getDb())
-            .from(this.getTable())
-            .where({name: this.getName()});
+    getQuery () {
+        return this.spawn(this.getMeta().AutoIncrementModel).createQuery();
     }
 
     async normalize () {
-        const query = this.getValueQuery();
+        const query = this.getQueryByName();
         const currentValue = await query.scalar('value');
         const value = await this.getExtremeValue();
         if (value !== undefined && (currentValue === undefined || value > currentValue)) {
@@ -75,9 +73,8 @@ module.exports = class AutoIncrementBehavior extends Base {
     }
 
     dropData () {
-        return this.getValueQuery().delete();
+        return this.getQueryByName().delete();
     }
 };
 
 const ClassHelper = require('areto/helper/ClassHelper');
-const Query = require('areto/db/Query');
