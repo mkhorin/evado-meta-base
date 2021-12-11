@@ -363,11 +363,15 @@ module.exports = class ViewAttr extends Base {
     }
 
     createEnum () {
-        if (!this.options.disableEnums) {
-            const data = this.data.enums;
-            this.enum = Array.isArray(data) && data.length
-                ? new Enum({attr: this, data})
-                : this.classAttr.enum;
+        if (this.options.enumDisabled) {
+            return false;
+        }
+        const data = this.data.enums;
+        if (Array.isArray(data) && data.length) {
+            this.enum = new Enum({attr: this, data});
+        } else {
+            this.enum = this.classAttr.enum;
+            this.data.enums = this.classAttr.data.enums;
         }
     }
 
