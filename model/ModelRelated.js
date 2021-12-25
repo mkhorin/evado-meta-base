@@ -86,9 +86,8 @@ module.exports = class ModelRelated extends Base {
 
     async forceResolve (attr) {
         attr = this.resolveRelationAttr(attr);
-        const query = attr.eagerView.createQuery(this.getQueryConfig()).withReadData();
-        const modelQuery = await attr.relation.setQueryByModel(query, this.model);
-        const models = await modelQuery.all();
+        const query = await this.getRelationQuery(attr);
+        const models = await query.withReadData().all();
         const result = attr.relation.multiple ? models : models[0];
         this.set(attr, result);
         return result;
@@ -103,6 +102,11 @@ module.exports = class ModelRelated extends Base {
             throw new Error(`Not relation attribute: ${attr.id}`);
         }
         return attr;
+    }
+
+    getRelationQuery (attr) {
+        const query = attr.eagerView.createQuery(this.getQueryConfig());
+        return attr.relation.setQueryByModel(query, this.model);
     }
 
     async resolveEagers () {

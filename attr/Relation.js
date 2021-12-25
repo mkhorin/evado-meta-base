@@ -33,6 +33,10 @@ module.exports = class Relation extends Base {
         return this.attr.isRef();
     }
 
+    isMultiple () {
+        return this.multiple;
+    }
+
     isSortable () {
         return this.data.sortableRelation;
     }

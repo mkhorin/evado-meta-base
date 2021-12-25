@@ -232,8 +232,8 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveEmpty (values) {
-        for (const value of values.length) {
-            if (value !== null && value !== undefined && value !== '') {
+        for (const value of values) {
+            if (value !== null && value !== undefined && value !== '' && (!Array.isArray(value) || value.length)) {
                 return false;
             }
         }
