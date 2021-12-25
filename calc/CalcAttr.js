@@ -26,6 +26,16 @@ module.exports = class CalcAttr extends Base {
         let name = this.data[1];
         name = name === '$key' ? this.calc.view.class.getKey() : name;
         this._attrName = name;
+        let attr = this.calc.view.getAttr(name);
+        this._attr = attr;
+        if (attr?.isBackRef()) {
+            return attr.relation.multiple
+                ? this.resolveMultipleBackRefAttr
+                : this.resolveBackRefAttr;
+        }
+        if (attr?.isCalc()) {
+            return this.resolveCalcAttr;
+        }
         return this.resolveAttr;
     }
 
@@ -91,6 +101,22 @@ module.exports = class CalcAttr extends Base {
 
     resolveAttr ({model}) {
         return model.get(this._attrName);
+    }
+
+    async resolveBackRefAttr ({model}) {
+        const query = await model.related.getRelationQuery(this._attr);
+        return query.id();
+    }
+
+    async resolveMultipleBackRefAttr ({model}) {
+        const query = await model.related.getRelationQuery(this._attr);
+        return query.ids();
+    }
+
+    resolveCalcAttr ({model}) {
+        return model.has(this._attr)
+            ? model.get(this._attr)
+            : this._attr.calc.resolve(model);
     }
 
     resolveNestedAttr () {
