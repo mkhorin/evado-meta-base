@@ -339,7 +339,7 @@ module.exports = class Class extends Base {
     // QUERY
 
     getIdCondition (id) {
-        return this.key.getCondition(id) || ['FALSE'];
+        return this.key.getCondition(id) || ['false'];
     }
 
     filterValues (data) {

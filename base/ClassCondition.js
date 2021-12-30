@@ -26,7 +26,7 @@ module.exports = class ClassCondition extends Base {
 
     add (data) {
         if (data === false) {
-            this.where = ['FALSE'];
+            this.where = ['false'];
             return;
         }
         if (Array.isArray(this.where)) {

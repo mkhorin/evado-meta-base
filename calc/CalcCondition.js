@@ -24,7 +24,7 @@ module.exports = class CalcCondition extends Base {
             return this.prepareHashData();
         }
         this.log('error', 'Invalid condition');
-        this.data = ['FALSE'];
+        this.data = ['false'];
         return this.resolveStatic;
     }
 
@@ -35,7 +35,7 @@ module.exports = class CalcCondition extends Base {
     }
 
     getPrepareMethod () {
-        if (['AND', 'OR', 'NOR'].includes(this.data[0])) {
+        if (['and', 'or', 'not'].includes(this.data[0])) {
             return this.prepareChildren;
         }
         const length = this.data.length;

@@ -10,15 +10,15 @@ module.exports = class Action extends Base {
     static getConstants () {
         return {
             OPERATORS: {
-                'AND': 'validateAnd',
-                'OR': 'validateOr',
-                'EMPTY': 'validateEmpty',
-                'NOT EMPTY': 'validateNotEmpty',
-                'BETWEEN': 'validateBetween',
-                'NOT BETWEEN':'validateNotBetween',
-                'IN': 'validateIn',
-                'NOT IN': 'validateNotIn',
-                'REGEX': 'validateRegex',
+                'and': 'validateAnd',
+                'or': 'validateOr',
+                'empty': 'validateEmpty',
+                'notEmpty': 'validateNotEmpty',
+                'between': 'validateBetween',
+                'notBetween':'validateNotBetween',
+                'in': 'validateIn',
+                'notIn': 'validateNotIn',
+                'regex': 'validateRegex',
                 '=': 'validateEqual',
                 '!=': 'validateNotEqual',
                 '>': 'validateGreater',
@@ -43,7 +43,7 @@ module.exports = class Action extends Base {
         }
         let operator = data[0];
         if (operator && typeof operator === 'object') {
-            operator = 'AND';
+            operator = 'and';
         } else {
             data = data.slice(1);
         }

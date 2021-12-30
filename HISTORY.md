@@ -1,3 +1,7 @@
+## 4.1.0
+
+* update names of condition operators
+
 ## 4.0.0
 
 * behavior/DataHistoryBehavior

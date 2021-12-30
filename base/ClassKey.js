@@ -47,7 +47,7 @@ module.exports = class ClassKey extends Base {
 
     getNotCondition (value) {
         value = this.normalize(value);
-        return value ? ['NOT ID', this.name, value] : null;
+        return value ? ['notId', this.name, value] : null;
     }
 
     normalize (value) {

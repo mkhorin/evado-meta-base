@@ -83,7 +83,7 @@ module.exports = class Relation extends Base {
     async setQueryByDoc (query, doc) {
         let value = doc[this.linkAttrName];
         if (!doc.hasOwnProperty(this.linkAttrName) || value === undefined || value === null || value.length === 0) {
-            return query.and(['FALSE']);
+            return query.and(['false']);
         }
         if (this.via) {
             value = await this.resolveVia(this.via, value);
