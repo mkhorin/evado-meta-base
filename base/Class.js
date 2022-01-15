@@ -396,31 +396,32 @@ module.exports = class Class extends Base {
 
     getRelationAttrsOnUpdate () {
         if (!this._relationAttrsOnUpdate) {
-            this._relationAttrsOnUpdate = this.getAttrsOnAction('onUpdate', this);
+            this._relationAttrsOnUpdate = this.resolveRelationAttrsOnAction('onUpdate');
         }
         return this._relationAttrsOnUpdate;
     }
 
     getRelationAttrsOnDelete () {
         if (!this._relationAttrsOnDelete) {
-            this._relationAttrsOnDelete = this.getAttrsOnAction('onDelete', this);
+            this._relationAttrsOnDelete = this.resolveRelationAttrsOnAction('onDelete');
         }
         return this._relationAttrsOnDelete;
     }
 
-    getAttrsOnAction (action) {
-        const nulls = [], cascades = [];
+    resolveRelationAttrsOnAction (action) {
+        const nulls = [], cascades = [], locks = [];
         for (const cls of this.meta.classes) {
             for (const attr of cls.attrs) {
                 if (attr.relation && (attr.relation.refClass === this || this.hasAncestor(attr.relation.refClass))) {
                     switch (attr.relation[action]) {
                         case 'null': nulls.push(attr); break;
                         case 'cascade': cascades.push(attr); break;
+                        case 'lock': locks.push(attr); break;
                     }
                 }
             }
         }
-        return {nulls, cascades};
+        return {nulls, cascades, locks};
     }
 
     // DESCENDANTS
@@ -430,9 +431,17 @@ module.exports = class Class extends Base {
             const names = this.data.activeDescendants;
             this._activeDescendants = Array.isArray(names) && names.length
                 ? this.meta.resolveClassesByNames(names)
-                : this.getRealDescendants();
+                : this.resolveActiveDescendants();
         }
         return this._activeDescendants;
+    }
+
+    resolveActiveDescendants () {
+        const descendants = this.getRealDescendants();
+        if (!this.isAbstract()) {
+            descendants.push(this);
+        }
+        return descendants;
     }
 
     getRealDescendants () {

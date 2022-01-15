@@ -157,7 +157,26 @@ module.exports = class ModelRelated extends Base {
         }
     }
 
-    async onDeleteModel () {
+    async onBeforeDeleteModel () {
+        await this.checkLockedRelations();
+    }
+
+    async checkLockedRelations () {
+        const {locks} = this.model.class.getRelationAttrsOnDelete();
+        for (const attr of locks) {
+            const link = await this.findLinkedModels(attr).id();
+            if (link) {
+                throw new LockedLinkedObject(this.model, link, attr);
+            }
+        }
+    }
+
+    async onAfterDeleteModel () {
+        await this.updateRelationsOnDelete();
+        await this.deleteOrders();
+    }
+
+    async updateRelationsOnDelete () {
         const {nulls, cascades} = this.model.class.getRelationAttrsOnDelete();
         for (const attr of nulls) {
             await this.nullRelated(attr);
@@ -165,14 +184,17 @@ module.exports = class ModelRelated extends Base {
         for (const attr of cascades) {
             await this.deleteRelated(attr);
         }
-        return this.deleteOrders();
     }
 
     async deleteRelated (attr) {
-        const query = attr.view.createQuery(this.getQueryConfig());
-        const value = this.model.get(attr.relation.refAttrName);
-        const models = await query.and({[attr.relation.linkAttrName]: value}).all();
-        return this.model.constructor.delete(models);
+        const models = await this.findLinkedModels(attr).all();
+        await this.model.constructor.delete(models);
+    }
+
+    findLinkedModels ({view, relation}) {
+        return view.createQuery(this.getQueryConfig()).and({
+            [relation.linkAttrName]: this.model.get(relation.refAttrName)
+        });
     }
 
     // CHANGES
@@ -497,6 +519,7 @@ module.exports = class ModelRelated extends Base {
 
 const ArrayHelper = require('areto/helper/ArrayHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
+const LockedLinkedObject = require('../error/LockedLinkedObject');
 const MongoHelper = require('areto/helper/MongoHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const Model = require('./Model');

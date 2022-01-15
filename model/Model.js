@@ -497,11 +497,12 @@ module.exports = class Model extends Base {
     }
 
     async beforeDelete () {
+        await this.related.onBeforeDeleteModel();
         await Behavior.execute('beforeDelete', this);
     }
 
     async afterDelete () {
-        await this.related.onDeleteModel();
+        await this.related.onAfterDeleteModel();
         await Behavior.execute('afterDelete', this);
         await this.emit(`delete.${this.class.name}`);
     }
