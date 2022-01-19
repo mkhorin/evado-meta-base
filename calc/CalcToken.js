@@ -284,7 +284,12 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveOr (values) {
-        return !this.resolveAnd(values);
+        for (const value of values) {
+            if (value) {
+                return true;
+            }
+        }
+        return false;
     }
 
     resolveClass ([name], {view}) {
