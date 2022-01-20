@@ -39,8 +39,10 @@ module.exports = class RelationFilter extends Base {
             await this.apply(query, model);
             query.setRelatedDepth(model.related.depth + 1);
             await query.filterRelatedModels();
-            const items = await query.all();
-            model.related.set(this.attr, this.relation.multiple ? items : (items[0] || null));
+            const result = this.relation.multiple
+                ? await query.all()
+                : await query.one();
+            model.related.set(this.attr, result);
         }
         this.relation.sortRelatedModels(models);
     }

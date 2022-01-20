@@ -61,23 +61,6 @@ module.exports = class ModelRelated extends Base {
             : value ? value.getTitle() : this.model.get(attr);
     }
 
-    getQueryConfig () {
-        return {
-            controller: this.model.controller,
-            dependency: this.model.getValues(),
-            model: this.model,
-            module: this.model.module,
-            user: this.model.user
-        };
-    }
-
-    getRelation (attr, view) {
-        attr = this.resolveRelationAttr(attr);
-        view = view || attr.eagerView;
-        const query = view.createQuery(this.getQueryConfig()).withReadData();
-        return attr.relation.setQueryByModel(query, this.model);
-    }
-
     resolve (attr) {
         return this.has(attr)
             ? this._data[attr.name || attr]
@@ -86,11 +69,28 @@ module.exports = class ModelRelated extends Base {
 
     async forceResolve (attr) {
         attr = this.resolveRelationAttr(attr);
-        const query = await this.getRelationQuery(attr);
-        const models = await query.withReadData().all();
-        const result = attr.relation.multiple ? models : models[0];
+        const query = (await this.createQuery(attr)).withReadData();
+        const result = attr.relation.multiple
+            ? await query.all()
+            : await query.one();
         this.set(attr, result);
         return result;
+    }
+
+    createQuery (attr, view) {
+        attr = this.resolveRelationAttr(attr);
+        const query = (view || attr.eagerView).createQuery(this.getQueryConfig());
+        return attr.relation.setQueryByModel(query, this.model);
+    }
+
+    getQueryConfig () {
+        return {
+            controller: this.model.controller,
+            dependency: this.model.getValues(),
+            model: this.model,
+            module: this.model.module,
+            user: this.model.user
+        };
     }
 
     resolveRelationAttr (name) {
@@ -102,11 +102,6 @@ module.exports = class ModelRelated extends Base {
             throw new Error(`Not relation attribute: ${attr.id}`);
         }
         return attr;
-    }
-
-    getRelationQuery (attr) {
-        const query = attr.eagerView.createQuery(this.getQueryConfig());
-        return attr.relation.setQueryByModel(query, this.model);
     }
 
     async resolveEagers () {
