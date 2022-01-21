@@ -19,7 +19,7 @@ module.exports = class ConditionValidator extends Base {
     }
 
     getMessage () {
-        return this.createMessage(this.message, 'Data does not match condition');
+        return this.createMessage(this.message, 'Value does not match condition');
     }
 
     async validateAttr (name, model) {

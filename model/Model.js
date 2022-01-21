@@ -273,8 +273,9 @@ module.exports = class Model extends Base {
     }
 
     async resolveCalcValue (name) {
-        this.set(name, await this.view.getAttr(name).calc.resolve(this));
-        return this.get(name);
+        const value = await this.view.getAttr(name).calc.resolve(this);
+        this.set(name, value);
+        return value;
     }
 
     async resolveCalcValues () {

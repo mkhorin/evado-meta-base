@@ -75,6 +75,9 @@ module.exports = class Relation extends Base {
         if (model.isRelationSorted(this.attr)) {
             query.order({[model.related.getOrderKey(this.attr)]: 1});
         }
+        if (!this.multiple) {
+            query.limit(1);
+        }
         return this.filter
             ? this.filter.apply(query, model)
             : this.setQueryByDoc(query, model.getValues());

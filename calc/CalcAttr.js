@@ -104,13 +104,11 @@ module.exports = class CalcAttr extends Base {
     }
 
     async resolveBackRefAttr ({model}) {
-        const query = await model.related.getRelationQuery(this._attr);
-        return query.id();
+        return (await model.related.createQuery(this._attr)).id();
     }
 
     async resolveMultipleBackRefAttr ({model}) {
-        const query = await model.related.getRelationQuery(this._attr);
-        return query.ids();
+        return (await model.related.createQuery(this._attr)).ids();
     }
 
     resolveCalcAttr ({model}) {

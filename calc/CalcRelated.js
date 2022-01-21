@@ -86,19 +86,19 @@ module.exports = class CalcRelated extends Base {
     }
 
     async createQuery (params) {
-        const query = await params.model.related.getRelation(this._attr, this._view);
+        const query = await params.model.related.createQuery(this._attr, this._view);
         this.setQueryParams(query);
-        return query;
+        return query.withReadData();
     }
 
     async getRelatedModels (items, models) {
         const result = [];
         for (const model of models) {
-            const query = await model.related.getRelation(items[0].attr, items[0].view);
+            const query = await model.related.createQuery(items[0].attr, items[0].view);
             if (this._unique && result.length) {
                 query.exceptId(result.map(model => model.getId()));
             }
-            result.push(...await query.all());
+            result.push(...await query.withReadData().all());
         }
         return items.length > 1
             ? this.getRelatedModels(items.slice(1), result)
