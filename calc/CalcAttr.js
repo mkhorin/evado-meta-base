@@ -54,8 +54,12 @@ module.exports = class CalcAttr extends Base {
                 break;
             }
             const attr = cls.getAttr(name);
-            if (!attr || !attr.relation) {
+            if (!attr) {
                 chain.push(name);
+                break;
+            }
+            if (!attr.relation) {
+                chain.push(attr);
                 break;
             }
             cls = attr.relation.refClass;
@@ -72,19 +76,25 @@ module.exports = class CalcAttr extends Base {
     }
 
     getQueryData () {
-        const attr = this._chain[1];
-        if (!attr) {
+        const parent = this._chain[1];
+        if (!parent) {
             return null;
         }
-        const name = this._chain[0];
-        const title = name === '$title';
-        const rel = attr.relation;
-        const method = title
-            ? (rel.multiple ? 'titles' : 'title')
-            : (rel.multiple ? 'column' : 'scalar');
-        const select = title ? null : {key: name};
+        const rel = parent.relation;
+        const [operation, params] = this.getQueryParams(this._chain[0], rel.multiple);
         const value = this.getNestedQueryData(1) || `.${rel.linkAttrName}`;
-        return ['$query', method, rel.refClass.id, select, {[rel.refAttrName]: value}];
+        return ['$query', operation, rel.refClass.id, params, {[rel.refAttrName]: value}];
+    }
+
+    getQueryParams (attr, multiple) {
+        if (attr === '$title') {
+            return [multiple ? 'titles' : 'title', null];
+        }
+        const name = attr.name || attr;
+        if (attr.isCalc?.()) {
+            return [multiple ? 'calcAttrs' : 'calcAttr', {attr: name}];
+        }
+        return [multiple ? 'column' : 'scalar', {key: name}];
     }
 
     getNestedQueryData (index) {
@@ -121,3 +131,5 @@ module.exports = class CalcAttr extends Base {
         return this._token.resolve(...arguments);
     }
 };
+
+const ViewAttr = require('../attr/ViewAttr');

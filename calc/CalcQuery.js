@@ -15,15 +15,21 @@
  * ["$query", "models", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
  * ["$query", "title", "className", null, [condition]] - Model title
  * ["$query", "titles", "className", {order:{"$key": -1}, limit: 10, offset: 10}, [condition]]
+ * ["$query", "calcAttr", "className", {"attr": "attrName"}, [condition]]
  */
 'use strict';
 
+const PREPARATION_MAP = {
+    'calcAttr': 'prepareAttr',
+    'calcAttrs': 'prepareAttr'
+};
 const Base = require('./CalcToken');
 
 module.exports = class CalcQuery extends Base {
 
     prepareResolvingMethod () {
-        this._operation = this.getOperation(this.data[1]);
+        const operation = this.data[1];
+        this._operation = this.getOperation(operation);
         if (!this._operation) {
             return this.resolveNull;
         }
@@ -32,6 +38,9 @@ module.exports = class CalcQuery extends Base {
             return this.resolveNull;
         }
         this.prepareParams();
+        if (PREPARATION_MAP.hasOwnProperty(operation)) {
+            this[PREPARATION_MAP[operation]]();
+        }
         return this.resolveOperation;
     }
 
@@ -40,6 +49,10 @@ module.exports = class CalcQuery extends Base {
         this._condition = this.createCondition(this.data[4]);
         this._column = this.createColumnName();
         this._order = this.createOrder();
+    }
+
+    prepareAttr () {
+        this._attr = this._view.getAttr(this._params.attr);
     }
 
     getOperation (name) {
@@ -141,6 +154,16 @@ module.exports = class CalcQuery extends Base {
     async resolveTitles (query) {
         const models = await query.withTitle().all();
         return models.map(model => model.getTitle());
+    }
+
+    async resolveCalcAttr (query) {
+        const model = await query.one();
+        return this._attr.calc.resolve(model);
+    }
+
+    async resolveCalcAttrs (query) {
+        const models = await query.all();
+        return models.map(model => this._attr.calc.resolve(model));
     }
 };
 
