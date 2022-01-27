@@ -12,11 +12,26 @@ module.exports = class UniqueValidator extends Base {
     }
 
     async validateAttr (name, model) {
-        const query = await this.createQuery(name, model);
+        const attr = model.view.getAttr(name);
+        const ancestor = attr.parent
+            ? this.getFirstUniqueAncestorAttr(attr)
+            : null;
+        const query = await this.createQuery(name, model, ancestor?.class);
         const ids = await query.limit(2).ids();
         if (this.checkExists(ids, model)) {
             this.addError(model, name, this.getMessage());
         }
+    }
+
+    getFirstUniqueAncestorAttr (attr) {
+        let result = null;
+        for (let ancestor of attr.getAncestors()) {
+            if (!ancestor.isUnique()) {
+                break;
+            }
+            result = ancestor;
+        }
+        return result;
     }
 
     checkExists (ids, model) {

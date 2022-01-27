@@ -41,7 +41,7 @@ module.exports = class ExistValidator extends Base {
         }
     }
 
-    createQuery (attrName, model) {
+    createQuery (attrName, model, ancestor) {
         const target = this.targetClass
             ? model.class.meta.getClass(this.targetClass)
             : model.class;
@@ -49,6 +49,9 @@ module.exports = class ExistValidator extends Base {
             throw new Error(`Target class not found: ${this.targetClass}`);
         }
         const query = target.createQuery();
+        if (ancestor) {
+            query.where(ancestor.condition.where);
+        }
         let names = this.targetAttr || [attrName];
         if (!Array.isArray(names)) {
             names = [names];
@@ -64,7 +67,9 @@ module.exports = class ExistValidator extends Base {
             }
             query.and(params);
         }
-        return this.filter ? this.resolveFilter(query, attrName, model) : query;
+        return this.filter
+            ? this.resolveFilter(query, attrName, model)
+            : query;
     }
 
     getValue (name, model) {

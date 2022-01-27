@@ -225,14 +225,6 @@ module.exports = class ViewAttr extends Base {
         return this.viewType;
     }
 
-    getFormId (prefix) {
-        return `${prefix}-data-${this.name}`;
-    }
-
-    getFormName () {
-        return `data[${this.name}]`;
-    }
-
     getListView () {
         return this.listView;
     }
@@ -273,6 +265,18 @@ module.exports = class ViewAttr extends Base {
 
     getTemplate () {
         return this.template;
+    }
+
+    getAncestors () {
+        if (!this._ancestors) {
+            this._ancestors = [];
+            let attr = this.parent;
+            while (attr) {
+                this._ancestors.push(attr);
+                attr = attr.parent;
+            }
+        }
+        return this._ancestors;
     }
 
     toString () {
