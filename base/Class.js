@@ -40,6 +40,7 @@ module.exports = class Class extends Base {
         this.options = this.data.options || {};
         this.title = MetaHelper.createLabel(this);
         this.label = this.title;
+        this.data.views = [];
         this.createModelConfig();
     }
 
@@ -309,6 +310,7 @@ module.exports = class Class extends Base {
         }
         this.viewMap[data.name] = new View({class: this, data});
         this.views.push(this.viewMap[data.name]);
+        this.data.views.push(data);
     }
 
     prepareViews () {

@@ -28,6 +28,18 @@ const Base = require('areto/base/Base');
 
 module.exports = class InheritanceHelper extends Base {
 
+    static getClassChain (ancestor, descendant) {
+        const result = [descendant];
+        while (descendant !== ancestor) {
+            if (!descendant.parent) {
+                throw new Error(`Descendant class ${descendant.name} has no ancestor ${ancestor.name}`);
+            }
+            descendant = descendant.parent;
+            result.unshift(descendant);
+        }
+        return result;
+    }
+
     static getNotEmptyArray (...arrays) {
         for (const array of arrays) {
             if (Array.isArray(array) && array.length > 0) {
