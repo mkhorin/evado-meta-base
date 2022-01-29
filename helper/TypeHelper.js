@@ -26,6 +26,7 @@ module.exports = class TypeHelper extends Base {
             },
             VIEW_TYPES: {
                 CLASS: 'class',
+                CLASSES: 'classes',
                 DATE: 'date',
                 DATETIME: 'datetime',
                 LOCAL_DATE: 'localDate',
