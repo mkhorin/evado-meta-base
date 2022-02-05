@@ -79,6 +79,16 @@ module.exports = class BaseMeta extends Base {
         return result;
     }
 
+    getClassTitles (names) {
+        if (Array.isArray(names)) {
+            const result = [];
+            for (const name of names) {
+                result.push(this.getClass(name)?.title || name);
+            }
+            return result;
+        }
+    }
+
     // LOAD
 
     async load () {

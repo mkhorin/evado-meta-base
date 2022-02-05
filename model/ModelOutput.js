@@ -40,7 +40,7 @@ module.exports = class ModelOutput extends Base {
             result[`${attr.name}_title`] = attr.enum.getText(value);
             return value;
         }
-        if (attr.isState()) {
+        if (attr.isStateView()) {
             const value = this.model.get(attr);
             const state = this.model.class.getState(value);
             if (state) {

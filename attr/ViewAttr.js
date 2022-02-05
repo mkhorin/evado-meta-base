@@ -60,7 +60,7 @@ module.exports = class ViewAttr extends Base {
         }
         this.searchDepth = this.resolveSearchDepth();
         this.eagerDepth = this.resolveEagerDepth();
-        this.escaping = this.data.escape && (this.isString() || this.isText() || this.isRelation());
+        this.escaping = this.data.escape && (this.isString() || this.isText() || this.isRelation() || this.isJson());
         this.readOnly = this.data.readOnly === true || this.view.isReadOnly();
         this.required = this.data.required === true;
         this.unique = this.data.unique === true;
@@ -86,6 +86,10 @@ module.exports = class ViewAttr extends Base {
 
     isFile () {
         return this.type === TypeHelper.TYPES.FILE;
+    }
+
+    isJson () {
+        return this.type === TypeHelper.TYPES.JSON;
     }
 
     isGroup () {
@@ -128,11 +132,15 @@ module.exports = class ViewAttr extends Base {
         return this.type === TypeHelper.TYPES.REF || this.type === TypeHelper.TYPES.BACK_REF;
     }
 
-    isClass () {
+    isClassView () {
         return this.viewType === TypeHelper.VIEW_TYPES.CLASS;
     }
 
-    isState () {
+    isClassesView () {
+        return this.viewType === TypeHelper.VIEW_TYPES.CLASSES;
+    }
+
+    isStateView () {
         return this.viewType === TypeHelper.VIEW_TYPES.STATE;
     }
 
@@ -140,15 +148,15 @@ module.exports = class ViewAttr extends Base {
         return this.viewType === TypeHelper.TYPES.STRING;
     }
 
-    isTime () {
+    isTimeView () {
         return this.viewType === TypeHelper.VIEW_TYPES.TIME;
     }
 
-    isThumbnail () {
+    isThumbnailView () {
         return this.viewType === TypeHelper.VIEW_TYPES.THUMBNAIL;
     }
 
-    isUTC () { //
+    isUTC () {
         return this.viewType === TypeHelper.VIEW_TYPES.DATE
             || this.viewType === TypeHelper.VIEW_TYPES.DATETIME;
     }
@@ -413,7 +421,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     setTranslatable () {
-        this.translatable = this.isState() || !!this.enum;
+        this.translatable = this.isStateView() || !!this.enum;
     }
 
     // SEARCH

@@ -9,7 +9,7 @@ module.exports = class State extends Base {
 
     constructor (config) {
         super(config);
-        this.name = this.data.name;        
+        this.name = this.data.name;
         this.view = this.class.getView(this.data.view);
         this.label = MetaHelper.createLabel(this);
         this.title = this.label;

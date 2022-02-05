@@ -178,7 +178,7 @@ module.exports = class Model extends Base {
     }
 
     isValueChanged (attr) {
-        return !CommonHelper.isEqual(this._valueMap[attr.name], this._oldValueMap[attr.name]);
+        return !CommonHelper.isEqual(this._valueMap[attr.name || attr], this._oldValueMap[attr.name || attr]);
     }
 
     setSafeValues (data) {
@@ -192,7 +192,7 @@ module.exports = class Model extends Base {
 
     setSafeValue (attr, data) {
         if (!attr.canLoad()) {
-            return false;
+            return;
         }
         if (Object.prototype.hasOwnProperty.call(data, attr.name)) {
             attr.relation
@@ -200,7 +200,7 @@ module.exports = class Model extends Base {
                 : this.set(attr, data[attr.name]);
         }
         if (!this.has(attr)) {
-            this.set(attr, attr.relation && attr.relation.multiple ? [] : null);
+            this.set(attr, attr.relation?.multiple ? [] : null);
         }
     }
 
@@ -225,7 +225,7 @@ module.exports = class Model extends Base {
             return attr.enum.getText(this.get(attr));
         }
         const value = this.header.get(attr);
-        if (attr.isState()) {
+        if (attr.isStateView()) {
             const state = this.class.getState(value);
             return state ? state.title : value;
         }

@@ -98,7 +98,7 @@ module.exports = class TypeHelper extends Base {
 
             case TypeHelper.TYPES.DATE:
                 value = DateHelper.getDayInterval(value);
-                return value ? ['and', ['>=', attrName, value[0]], ['<', attrName, value[1]]] : null;                
+                return value ? ['and', ['>=', attrName, value[0]], ['<', attrName, value[1]]] : null;
         }
     }
 };

@@ -39,12 +39,16 @@ module.exports = class StringValidator extends Base {
 
     async validateAttr (name, model) {
         if (this.shrinking) {
-            const value = model.get(name);
-            if (typeof value === 'string') {
-                model.set(name, value.replace(/(\s)+/g, '$1'));
-            }
+            this.shrink(...arguments);
         }
         return super.validateAttr(...arguments);
+    }
+
+    shrink (name, model) {
+        const value = model.get(name);
+        if (typeof value === 'string') {
+            model.set(name, value.replace(/(\s)+/g, '$1'));
+        }
     }
 
     validateValue (value) {
