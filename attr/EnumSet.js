@@ -47,10 +47,24 @@ module.exports = class EnumSet extends Base {
         return this.hasItem(value) ? this._indexedItems[value].text : value;
     }
 
+    getIndexedItems () {
+        return this._indexedItems;
+    }
+
+    getQueryableItem (value) {
+        if (this.isQueryable()) {
+            for (const item of this._resolvedItems) {
+                if (item[0] === value || item.value === value) {
+                    return item;
+                }
+            }
+        }
+    }
+
     indexItems () {
         this._indexedItems = {};
-        if (Array.isArray(this.data.items)) {
-            for (const item of this.data.items) {
+        if (Array.isArray(this._resolvedItems)) {
+            for (const item of this._resolvedItems) {
                 if (!(item.hasOwnProperty('text'))) {
                     item.text = item.value;
                 }
@@ -61,12 +75,15 @@ module.exports = class EnumSet extends Base {
 
     async resolve () {
         if (!this._view) {
-            return null;
+            return;
         }
         const query = this._view.find(this.data.queryFilter);
         const values = this._attr
             ? await query.distinct(this._attr.name)
             : await query.ids();
-        this._resolvedItems = values.map(value => ([value, this.getText(value)]));
+        this._resolvedItems = [];
+        for (const value of values) {
+            this._resolvedItems.push([value, this.getText(value)]);
+        }
     }
 };

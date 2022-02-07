@@ -39,6 +39,15 @@ module.exports = class Enum extends Base {
         return result;
     }
 
+    getQueryableItem (value) {
+        for (const set of this.queryableSets) {
+            const item = set.getQueryableItem(value);
+            if (item) {
+                return item;
+            }
+        }
+    }
+
     createSets () {
         this.sets = [];
         for (const data of this.data) {
@@ -50,7 +59,7 @@ module.exports = class Enum extends Base {
     indexItems () {
         this._indexedItems = {};
         for (const item of this.sets) {
-            Object.assign(this._indexedItems, item._indexedItems);
+            Object.assign(this._indexedItems, item.getIndexedItems());
         }
     }
 };

@@ -19,8 +19,9 @@ module.exports = class EnumValidator extends Base {
     }
 
     async validateAttr (name, model) {
+        const value = model.get(name);
         const attr = model.class.getAttr(name);
-        if (attr.enum && !attr.enum.hasItem(model.get(name))) {
+        if (attr.enum && !attr.enum.hasItem(value) && !attr.enum.getQueryableItem(value)) {
             this.addError(model, name, this.getMessage());
         }
     }
