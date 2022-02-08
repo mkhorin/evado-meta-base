@@ -79,11 +79,15 @@ module.exports = class EnumSet extends Base {
         }
         const query = this._view.find(this.data.queryFilter);
         const values = this._attr
-            ? await query.distinct(this._attr.name)
+            ? await query.column(this._attr.name)
             : await query.ids();
         this._resolvedItems = [];
+        const valueMap = {};
         for (const value of values) {
-            this._resolvedItems.push([value, this.getText(value)]);
+            if (valueMap[value] !== true) {
+                this._resolvedItems.push([value, this.getText(value)]);
+                valueMap[value] = true;
+            }
         }
     }
 };
