@@ -7,9 +7,19 @@ const Base = require('./Group');
 
 module.exports = class Grouping extends Base {
 
+    static getConstants () {
+        return {
+            INHERITED_OPTIONS: [
+                'cssLabel',
+                'cssValue'
+            ]
+        };
+    }
+
     init () {
         this.data = {};
         this.id = `_root.${this.view.id}`;
+        this.options = {};
     }
 
     getGroup (name) {
@@ -25,6 +35,7 @@ module.exports = class Grouping extends Base {
             group.prepare();
         }
         this.prepare();
+        this.inheritOptions();
     }
 
     createClassGroups () {
@@ -73,6 +84,12 @@ module.exports = class Grouping extends Base {
         }
     }
 
+    inheritOptions () {
+        for (const group of Object.values(this.groupMap)) {
+            MetaHelper.inheritOptions(this.INHERITED_OPTIONS, group);
+        }
+    }
+
     forceGetAttrs () {
         const list = [];
         for (const attr of this.view.attrs) {
@@ -97,6 +114,7 @@ module.exports = class Grouping extends Base {
         this.actionBinder = new ActionBinder;
     }
 };
+module.exports.init();
 
 const ActionBinder = require('../attr/ActionBinder');
 const AssignHelper = require('areto/helper/AssignHelper');

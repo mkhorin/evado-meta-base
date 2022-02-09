@@ -65,6 +65,7 @@ module.exports = class Group extends Base {
     }
 
     prepare () {
+        this.parent = this.view.grouping.getGroup(this.data.parent);
         this.attrs = this.forceGetAttrs();
         this.groups = this.forceGetGroups();
         this.children = this.attrs.concat(this.groups);

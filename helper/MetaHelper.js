@@ -42,4 +42,26 @@ module.exports = class MetaHelper extends Base {
             }
         }
     }
+
+    static inheritOptions (names, {options, parent}) {
+        if (parent) {
+            for (const name of names) {
+                if (!Object.prototype.hasOwnProperty.call(options, name)) {
+                    const value = this.getOptionFromParent(name, parent);
+                    if (value !== undefined) {
+                        options[name] = value;
+                    }
+                }
+            }
+        }
+    }
+
+    static getOptionFromParent (name, {options, parent}) {
+        if (Object.prototype.hasOwnProperty.call(options, name)) {
+            return options[name];
+        }
+        if (parent) {
+            return this.getOptionFromParent(name, parent);
+        }
+    }
 };
