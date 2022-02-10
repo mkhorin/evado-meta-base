@@ -1,3 +1,23 @@
+## 4.2.0
+
+* attr/EnumSet
+    - fix sorting of enumeration sources    
+* base/Grouping
+    - inherit some options from parents   
+* calc/CalcToken
+    - fix logical calculated expression
+* calc/CalcQuery
+    - add calculated attribute to a chain of nested expression attributes
+* model/ModelRelated
+    - limit single link query
+    - protect a linked object from deletion
+* validator/EnumValidator
+    - fix validation queryable enumerations    
+* validator/JsonValidator
+    - keep parsed JSON
+* validator/UniqueValidator
+    - validate uniqueness on ancestors
+
 ## 4.1.0
 
 * update names of condition operators
@@ -19,11 +39,11 @@
     - refactor behavior component
 * behavior/FileBehavior
     - override raw file model
-    - store file hash     
+    - store file hash
 * behavior/S3Behavior
     - add S3 storage behavior
 * behavior/SignatureBehavior
-    - add digital signature behavior        
+    - add digital signature behavior
 * validator/TotalFileSizeValidator
     - add total file size validation to relation
 * validator/Validator
@@ -34,7 +54,7 @@
 * base/Class
     - add hierarchical class versions
 * source/BaseSource
-    - fix data sources   
+    - fix data sources
 
 ## 2.0.0
 
@@ -49,7 +69,7 @@
 * base/View
     - extract query creation method
 * behavior/Behavior
-    - move event emitting to model    
+    - move event emitting to model
 * calc/CalcToken
     - add master value
 * filter/RelationFilter

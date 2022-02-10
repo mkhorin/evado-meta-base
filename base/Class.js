@@ -36,7 +36,6 @@ module.exports = class Class extends Base {
         this.transiting = {};
         this.templateDir = `_class/${this.class.name}/`;
         this.parentTemplateDir = MetaHelper.addClosingChar(this.data.templateRoot, '/');
-        this.viewModel = `_class/${this.class.name}`;
         this.options = this.data.options || {};
         this.title = MetaHelper.createLabel(this);
         this.label = this.title;
@@ -256,8 +255,8 @@ module.exports = class Class extends Base {
         if (Array.isArray(this.data.transitions)) {
             for (const item of this.data.transitions) {
                 data[item.name] = this.createTransition(item);
-            }    
-        }        
+            }
+        }
         this.transitions = MetaHelper.sortByDataOrderNumber(Object.values(data));
         this.transitionMap = this.transitions.length ? data : null;
         this.startStateTransitionMap = this.indexStateTransitions('startStates', 'nullStartState');

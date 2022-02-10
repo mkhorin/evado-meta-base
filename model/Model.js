@@ -514,7 +514,7 @@ module.exports = class Model extends Base {
         return attrName !== undefined
             ? Object.prototype.hasOwnProperty.call(this._errorMap, attrName)
             : Object.values(this._errorMap).length > 0;
-    }                   
+    }
 
     getErrors (attrName) {
         return !attrName ? this._errorMap : this.hasError(attrName) ? this._errorMap[attrName] : [];

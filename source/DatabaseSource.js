@@ -22,7 +22,7 @@ module.exports = class DatabaseSource extends Base {
         const result = {};
         for (const key of Object.keys(this.tables)) {
             result[key] = await this.db.find(this.tables[key]);
-        }      
+        }
         return result;
     }
 

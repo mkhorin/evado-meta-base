@@ -19,7 +19,6 @@ module.exports = class View extends Base {
         this.viewName = this.name;
         this.templateDir = `_view/${this.class.name}/${this.name}/`;
         this.parentTemplateDir = MetaHelper.addClosingChar(this.data.templateRoot, '/');
-        this.viewModel = `_view/${this.class.name}/${this.name}`;
         this.options = {...this.class.options, ...this.data.options};
         this.translationKey = `${this.class.translationKey}.view.${this.name}`;
         this.meta = this.class.meta;
@@ -367,9 +366,13 @@ module.exports = class View extends Base {
             module: this.meta.module,
             ...params
         };
-        return config
-            ? new config.Class({...config, ...params})
-            : new Model(params);
+        if (config) {
+            return new config.Class({...config, ...params});
+        }
+        if (this.meta.DataModel) {
+            return new this.meta.DataModel.Class({...this.meta.DataModel, ...params});
+        }
+        return new Model(params);
     }
 
     // LOG
