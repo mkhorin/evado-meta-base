@@ -51,7 +51,7 @@ module.exports = class DateValidator extends Base {
         model.set(name, value);
         return super.validateAttr(...arguments);
     }
-    
+
     validateValue (value) {
         if (!DateHelper.isValid(value)) {
             return this.getMessage();

@@ -1,9 +1,9 @@
 ## 4.2.0
 
 * attr/EnumSet
-    - fix sorting of enumeration sources    
+    - fix sorting of enumeration sources
 * base/Grouping
-    - inherit some options from parents   
+    - inherit some options from parents
 * calc/CalcToken
     - fix logical calculated expression
 * calc/CalcQuery
@@ -12,7 +12,7 @@
     - limit single link query
     - protect a linked object from deletion
 * validator/EnumValidator
-    - fix validation queryable enumerations    
+    - fix validation queryable enumerations
 * validator/JsonValidator
     - keep parsed JSON
 * validator/UniqueValidator
@@ -75,7 +75,7 @@
 * filter/RelationFilter
     - fix format of arguments
 * model/Model
-    - clear errors before deleting 
+    - clear errors before deleting
     - add master model getter
 
 ## 1.7.0

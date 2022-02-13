@@ -44,12 +44,12 @@ module.exports = class SortOrderBehavior extends Base {
 
     async update (data, view) {
         const config = {
-            module: this.module,  
-            user: this.user  
+            module: this.module,
+            user: this.user
         };
         for (const id of Object.keys(data)) {
             const model = await view.createQuery(config).byId(id).one();
-            if (model) {                
+            if (model) {
                 model.set(this.attrName, data[id]);
                 await model.forceSave();
             }

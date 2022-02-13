@@ -40,8 +40,8 @@ module.exports = class BaseMeta extends Base {
             return null;
         }
         const index = id.indexOf('.');
-        return index !== -1 
-            ? this.getViewByClass(id.substring(0, index), id.substring(index + 1)) 
+        return index !== -1
+            ? this.getViewByClass(id.substring(0, index), id.substring(index + 1))
             : this.getClass(id);
     }
 

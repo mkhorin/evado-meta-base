@@ -209,8 +209,8 @@ module.exports = class Class extends Base {
         super.prepareEnums();
         this.views.forEach(view => view.prepareEnums());
     }
-    
-    prepareFilter () {        
+
+    prepareFilter () {
         this.views.forEach(view => view.prepareFilter());
     }
 

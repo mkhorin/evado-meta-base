@@ -59,7 +59,7 @@ module.exports = class TypeHelper extends Base {
 
             case this.TYPES.ID:
                 return value instanceof ObjectID ? value : ObjectID.isValid(value) ? ObjectID(value) : null;
-            
+
             case this.TYPES.INTEGER:
                 value = parseInt(value);
                 return isNaN(value) ? null : value;

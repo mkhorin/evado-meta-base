@@ -344,7 +344,7 @@ module.exports = class ViewAttr extends Base {
         return this.relation.refClass.getView(this.data[key] || defaults) || this.relation.refClass;
     }
 
-    assignDataFromClassAttr () {        
+    assignDataFromClassAttr () {
         for (const key of Object.keys(this.classAttr.data)) {
             const classValue = this.classAttr.data[key];
             const skip = this.hasData(key) || this.SKIP_INHERITANCE.includes(key);

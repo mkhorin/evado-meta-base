@@ -63,7 +63,7 @@ module.exports = class CalcQuery extends Base {
             ? this.log('error', `Operation not found: ${name}`)
             : this[name];
     }
-    
+
     getView (id) {
         return this.calc.getView(id)
             || this.calc.getClass(id)
@@ -83,7 +83,7 @@ module.exports = class CalcQuery extends Base {
         ObjectHelper.replaceKeys({'$key': this._view.getKey()}, this._params.order);
         return this._params.order;
     }
-    
+
     createQuery () {
         const query = this._view.createQuery();
         this.setQueryParams(query);
