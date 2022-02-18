@@ -28,7 +28,8 @@ const OPERATION_MAP = {
     '$nextMonth': 'resolveNextMonth',
     '$nextYear': 'resolveNextYear',
     '$previousMonth': 'resolvePreviousMonth',
-    '$previousYear': 'resolvePreviousYear'
+    '$previousYear': 'resolvePreviousYear',
+    '$validate': 'resolveValidate'
 };
 const PREPARATION_MAP = {
     '$duration': 'prepareDuration',
@@ -420,9 +421,13 @@ module.exports = class CalcToken extends Base {
     resolvePreviousYear () {
         return new Date(new Date().getFullYear() - 1, 0, 1);
     }
+
+    resolveValidate (data, {model}) {
+        return model?.validate();
+    }
 };
 
-const moment = require('moment');
 const CommonHelper = require('areto/helper/CommonHelper');
 const MathHelper = require('areto/helper/MathHelper');
 const Model = require('../model/Model');
+const moment = require('moment');
