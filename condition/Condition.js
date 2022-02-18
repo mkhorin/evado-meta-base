@@ -15,7 +15,7 @@ module.exports = class Condition extends Base {
         if (data.Class) {
             return ClassHelper.resolveSpawn(data, module, {module});
         }
-        if (!Array.isArray(data)) {
+        if (!Array.isArray(data) && typeof data !== 'string') {
             data = this.normalizeHashData(data);
         }
         return {Class: this, data, module};

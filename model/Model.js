@@ -181,6 +181,14 @@ module.exports = class Model extends Base {
         return !CommonHelper.isEqual(this._valueMap[attr.name || attr], this._oldValueMap[attr.name || attr]);
     }
 
+    isSafeValuesChanges () {
+        for (const attr of this.view.attrs) {
+            if (attr.canLoad() && this.isValueChanged(attr)) {
+                return true;
+            }
+        }
+    }
+
     setSafeValues (data) {
         if (data) {
             for (const attr of this.view.attrs) {
