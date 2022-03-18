@@ -22,6 +22,7 @@ const OPERATION_MAP = {
     '$state': 'resolveState',
     '$now': 'resolveNow',
     '$null': 'resolveNull',
+    '$number': 'resolveNumber',
     '$master': 'resolveMaster',
     '$currentMonth': 'resolveCurrentMonth',
     '$currentYear': 'resolveCurrentYear',
@@ -29,6 +30,7 @@ const OPERATION_MAP = {
     '$nextYear': 'resolveNextYear',
     '$previousMonth': 'resolvePreviousMonth',
     '$previousYear': 'resolvePreviousYear',
+    '$param': 'resolveParam',
     '$validate': 'resolveValidate'
 };
 const PREPARATION_MAP = {
@@ -395,6 +397,12 @@ module.exports = class CalcToken extends Base {
         return null;
     }
 
+    resolveNumber ([value]) {
+        return typeof value !== 'number'
+            ? parseFloat(typeof value !== 'string' ? String(value) : value)
+            : value;
+    }
+
     resolveCurrentMonth () {
         const now = new Date;
         return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -420,6 +428,10 @@ module.exports = class CalcToken extends Base {
 
     resolvePreviousYear () {
         return new Date(new Date().getFullYear() - 1, 0, 1);
+    }
+
+    resolveParam ([name], {query}) {
+        return query.controller.getQueryParam(name);
     }
 
     resolveValidate (data, {model}) {
