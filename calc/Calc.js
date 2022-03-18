@@ -43,12 +43,11 @@ const Base = require('areto/base/Base');
 
 module.exports = class Calc extends Base {
 
-    static prepareConfig (data, view) {
-        if (!data) {
-            return null;
+    static prepareSpawn (data, view) {
+        if (data) {
+            const module = view.meta.module;
+            return ClassHelper.resolveSpawn(data, module, {module}, {Class: this});
         }
-        const module = view.meta.module;
-        return ClassHelper.resolveSpawn(data, module, {module}, {Class: this});
     }
 
     constructor (config) {

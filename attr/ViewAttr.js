@@ -49,6 +49,7 @@ module.exports = class ViewAttr extends Base {
     initCommon () {
         this.label = MetaHelper.createLabel(this);
         this.title = this.label;
+        this.description = this.data.description;
         this.hint = this.data.hint;
         this.extHint = this.data.extHint;
         this.options = this.data.options || {};

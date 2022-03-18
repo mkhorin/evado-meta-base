@@ -7,7 +7,7 @@ const Base = require('areto/base/Base');
 
 module.exports = class Condition extends Base {
 
-    static prepareConfig (data, view) {
+    static prepareSpawn (data, view) {
         if (!data) {
             return null;
         }

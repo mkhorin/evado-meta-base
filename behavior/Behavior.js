@@ -29,11 +29,11 @@ module.exports = class Behavior extends Base {
         return this.BUILTIN.hasOwnProperty(name) ? require(this.BUILTIN[name]) : null;
     }
 
-    static getDefaultConfig () {
+    static getDefaultSpawn () {
         return null;
     }
 
-    static prepareConfig (data) {
+    static prepareSpawn (data) {
         return data;
     }
 

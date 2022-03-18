@@ -7,17 +7,32 @@ const Base = require('areto/base/Base');
 
 module.exports = class ObjectFilter extends Base {
 
-    static prepareConfig (data, view) {
-        if (!data) {
-            return null;
+    static create (data, view) {
+        if (data) {
+            const module = view.meta.module;
+            const config = this.prepareSpawn(data, view);
+            return ClassHelper.spawn(config, {module, view});
         }
-        const module = view.meta.module;
-        if (data.Class) {
-            return ClassHelper.resolveSpawn(data, module, {module});
-        }
-        data = ['$condition', data];
-        const solver = new Calc({data, view});
-        return {Class: this, module, solver};
+    }
+
+    static prepareSpawn (data, view) {
+        return data.Class
+            ? ClassHelper.resolveSpawn(data, view.meta.module)
+            : this.getDefaultSpawn(data, view);
+    }
+
+    static getDefaultSpawn (data, view) {
+        return {
+            Class: this,
+            solver: this.createSolver(data, view)
+        };
+    }
+
+    static createSolver (data, view) {
+        return new Calc({
+            data: ['$condition', data],
+            view
+        });
     }
 
     async apply (query) {
@@ -27,7 +42,12 @@ module.exports = class ObjectFilter extends Base {
             query
         }));
     }
+
+    log () {
+        CommonHelper.log(this.view, this.constructor.name, ...arguments);
+    }
 };
 
 const ClassHelper = require('areto/helper/ClassHelper');
+const CommonHelper = require('areto/helper/CommonHelper');
 const Calc = require('../calc/Calc');

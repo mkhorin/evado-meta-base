@@ -1,3 +1,10 @@
+## 4.3.0
+
+* calc/CalcToken
+    * add token to cast number
+    * add token to get query params
+    * add token to validate model
+
 ## 4.2.0
 
 * attr/EnumSet

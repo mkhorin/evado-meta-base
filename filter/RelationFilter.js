@@ -3,24 +3,18 @@
  */
 'use strict';
 
-const Base = require('areto/base/Base');
+const Base = require('./ObjectFilter');
 
 module.exports = class RelationFilter extends Base {
 
     static create (data, relation) {
-        if (!data) {
-            return null;
-        }
-        const attr = relation.attr;
-        const view = relation.refClass;
-        const module = view.meta.module;
-        if (data.Class) {
-            const config = ClassHelper.resolveSpawn(data, module);
+        if (data) {
+            const attr = relation.attr;
+            const view = relation.refClass;
+            const module = view.meta.module;
+            const config = this.prepareSpawn(data, view);
             return ClassHelper.spawn(config, {attr, module, relation});
         }
-        data = ['$condition', data];
-        const solver = new Calc({data, view});
-        return new this({solver, attr, module, relation});
     }
 
     async filter (query, model) {
@@ -49,4 +43,3 @@ module.exports = class RelationFilter extends Base {
 };
 
 const ClassHelper = require('areto/helper/ClassHelper');
-const Calc = require('../calc/Calc');

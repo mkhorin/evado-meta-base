@@ -17,7 +17,7 @@ module.exports = class FileBehavior extends Base {
         };
     }
 
-    static prepareConfig (data, view) {
+    static prepareSpawn (data, view) {
         data.fileAttr = view.fileAttrs[0];
         if (!data.fileAttr) {
             return this.log(view, 'error', 'File attribute not found');

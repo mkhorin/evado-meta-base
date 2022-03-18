@@ -7,7 +7,7 @@ const Base = require('./Behavior');
 
 module.exports = class SignatureBehavior extends Base {
 
-    static prepareConfig (data, view) {
+    static prepareSpawn (data, view) {
         if (!view.signedAttrs.length) {
             return null;
         }

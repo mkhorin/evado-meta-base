@@ -59,7 +59,7 @@ module.exports = class Transition extends Base {
 
     createCondition () {
         try {
-            this._condition = Condition.prepareConfig(this.data.condition, this.class);
+            this._condition = Condition.prepareSpawn(this.data.condition, this.class);
         } catch (err) {
             this.log('error', 'Invalid condition configuration', err);
         }

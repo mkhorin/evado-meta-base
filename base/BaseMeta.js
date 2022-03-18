@@ -139,7 +139,7 @@ module.exports = class BaseMeta extends Base {
             'createRelations',
             'prepareEnums',
             'prepareKey',
-            'prepareFilter',
+            'createFilter',
             'createHeader',
             'createStates',
             'createDefaultValues',

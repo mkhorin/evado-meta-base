@@ -7,7 +7,7 @@ const Base = require('./Behavior');
 
 module.exports = class DataHistoryBehavior extends Base {
 
-    static getDefaultConfig (view) {
+    static getDefaultSpawn (view) {
         if (!view.historyAttrs.length) {
             return null;
         }

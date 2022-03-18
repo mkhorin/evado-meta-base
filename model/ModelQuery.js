@@ -301,7 +301,7 @@ module.exports = class ModelQuery extends Base {
         if (this.prepared) {
             return;
         }
-        await this.view.resolveFilter(this);
+        await this.view.applyFilter(this);
         if (Array.isArray(this._afterPrepareHandlers)) {
             for (const handler of this._afterPrepareHandlers) {
                 await handler(this);

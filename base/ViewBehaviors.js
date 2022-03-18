@@ -117,14 +117,14 @@ module.exports = class ViewBehaviors extends Base {
 
     createDefaultItem (Class) {
         if (!this.getByClass(Class)) {
-            return Class.getDefaultConfig(this.owner);
+            return Class.getDefaultSpawn(this.owner);
         }
     }
 
     prepareItems () {
         const result = [];
         for (const item of this.items) {
-            const data = item.Class.prepareConfig(item, this.owner);
+            const data = item.Class.prepareSpawn(item, this.owner);
             if (data) {
                 result.push(data);
             }

@@ -24,6 +24,7 @@ module.exports = class View extends Base {
         this.meta = this.class.meta;
         this.title = this.data.label || this.class.title;
         this.label = MetaHelper.createLabel(this);
+        this.description = this.data.description;
     }
 
     isClass () {
@@ -273,18 +274,16 @@ module.exports = class View extends Base {
 
     // FILTER
 
-    prepareFilter () {
+    createFilter () {
         try {
-            this._filter = ObjectFilter.prepareConfig(this.data.filter, this);
+            this._filter = ObjectFilter.create(this.data.filter, this);
         } catch (err) {
-            this.log('error', 'Invalid filter configuration', err);
+            this.log('error', 'Invalid filter', err);
         }
     }
 
-    resolveFilter (query) {
-        if (this._filter) {
-            return (new this._filter.Class(this._filter)).apply(query);
-        }
+    applyFilter (query) {
+        return this._filter?.apply(query);
     }
 
     // GROUPS

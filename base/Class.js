@@ -39,6 +39,7 @@ module.exports = class Class extends Base {
         this.options = this.data.options || {};
         this.title = MetaHelper.createLabel(this);
         this.label = this.title;
+        this.description = this.data.description;
         this.data.views = [];
         this.createModelConfig();
     }
@@ -210,8 +211,8 @@ module.exports = class Class extends Base {
         this.views.forEach(view => view.prepareEnums());
     }
 
-    prepareFilter () {
-        this.views.forEach(view => view.prepareFilter());
+    createFilter () {
+        this.views.forEach(view => view.createFilter());
     }
 
     createVersion () {
