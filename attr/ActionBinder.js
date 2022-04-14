@@ -9,8 +9,21 @@ module.exports = class ActionBinder extends Base {
 
     constructor (config) {
         super(config);
-        this.stringified = this.data ? JSON.stringify(this.data) : '';
+        this.actionData = this.getActionData();
+        this.stringified = this.actionData ? JSON.stringify(this.actionData) : '';
         this.createActions();
+    }
+
+    getActionData () {
+        if (!this.data) {
+            return null;
+        }
+        return {
+            show: this.data.show,
+            require: this.data.require,
+            enable: this.data.enable,
+            value: this.data.value
+        };
     }
 
     createActions () {
@@ -19,7 +32,7 @@ module.exports = class ActionBinder extends Base {
     }
 
     createAction (name) {
-        if (this.data?.[name]) {
+        if (this.actionData?.[name]) {
             this._actionMap[name] = new Action({
                 name,
                 data: this.data[name],
