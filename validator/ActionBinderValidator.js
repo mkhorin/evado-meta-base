@@ -17,8 +17,10 @@ module.exports = class ActionBinderValidator extends Base {
     }
 
     async validateAttr (name, model) {
-        if (!this.actionBinder.validateAction('require', model)) {
-            this.addError(model, name, this.getRequiredMessage());
+        if (this.isEmptyValue(model.get(name))) {
+            if (this.actionBinder.validateAction('require', model)) {
+                this.addError(model, name, this.getRequiredMessage());
+            }
         }
     }
 };
