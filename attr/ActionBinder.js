@@ -29,13 +29,14 @@ module.exports = class ActionBinder extends Base {
     createActions () {
         this._actionMap = {};
         this.createAction('require');
+        this.createAction('enable');
     }
 
     createAction (name) {
         if (this.actionData?.[name]) {
             this._actionMap[name] = new Action({
                 name,
-                data: this.data[name],
+                data: this.actionData[name],
                 binder: this
             });
         }
