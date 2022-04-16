@@ -75,7 +75,7 @@ module.exports = class Validator extends Base {
             }
         }
         for (const {name, actionBinder, readOnly} of view.attrs) {
-            if (!readOnly && actionBinder.isActions()) {
+            if (!readOnly && actionBinder.hasVerifiableActions()) {
                 validators.push(this.createValidator('actionBinder', name, {actionBinder}));
             }
         }

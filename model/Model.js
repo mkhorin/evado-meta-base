@@ -118,7 +118,13 @@ module.exports = class Model extends Base {
     }
 
     get (attr) {
-        return this.has(attr) ? this._valueMap[attr.name || attr] : undefined;
+        if (this.has(attr)) {
+            return this._valueMap[attr.name || attr];
+        }
+    }
+
+    isEmptyValue (attr) {
+        return CommonHelper.isEmpty(this.get(attr));
     }
 
     async getNestedValue (key) {
@@ -170,7 +176,9 @@ module.exports = class Model extends Base {
 
     getCastedValue (name) {
         const attr = this.view.getAttr(name);
-        return attr ? TypeHelper.cast(this.get(name), attr.getCastType()) : this.get(name);
+        return attr
+            ? TypeHelper.cast(this.get(name), attr.getCastType())
+            : this.get(name);
     }
 
     getValues () {
@@ -252,7 +260,9 @@ module.exports = class Model extends Base {
     }
 
     getOldValue (attr) {
-        return this.hasOldValue(attr) ? this._oldValueMap[attr.name || attr] : undefined;
+        if (this.hasOldValue(attr)) {
+            return this._oldValueMap[attr.name || attr];
+        }
     }
 
     restoreOldValue (attr) {
@@ -274,7 +284,9 @@ module.exports = class Model extends Base {
         this.set(this.class.CLASS_ATTR, this.class.name);
         this.set(this.class.CREATOR_ATTR, this.getUserId());
         for (const attr of this.view.defaultValueAttrs) {
-            this.set(attr, await attr.defaultValue.resolve(this));
+            const value = await attr.defaultValue.resolve(this);
+            this._valueMap[attr.name] = value;
+            this._oldValueMap[attr.name] = value; // for disabled attributes validation
         }
         this.ensureBehaviors();
         return Behavior.execute('afterDefaultValues', this);

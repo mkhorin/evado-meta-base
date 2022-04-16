@@ -72,6 +72,7 @@ module.exports = class Group extends Base {
         this.setReadOnlyAttrs();
         this.setRequiredAttrs();
         this.createActionBinder();
+        this.setActionBinderToAttrs();
         MetaHelper.sortByDataOrderNumber(this.attrs);
         MetaHelper.sortByDataOrderNumber(this.groups);
         MetaHelper.sortByDataOrderNumber(this.children);
@@ -98,6 +99,15 @@ module.exports = class Group extends Base {
             owner: this,
             data: this.data.actionBinder
         });
+    }
+
+    setActionBinderToAttrs () {
+        if (this.actionBinder.hasGroupActions()) {
+            for (const attr of this.getAllAttrs()) {
+                this.actionBinder.addRequireDataTo(attr.data);
+                this.actionBinder.addEnableDataTo(attr.data);
+            }
+        }
     }
 
     forceGetAttrs () {
