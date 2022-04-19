@@ -318,16 +318,6 @@ module.exports = class ViewAttr extends Base {
         }
     }
 
-    createAttrs () {
-        this.attrs = [];
-        for (const data of this.data.children) {
-            const attr = this.view.createAttr(data);
-            if (attr) {
-                this.attrs.push(attr);
-            }
-        }
-    }
-
     createRelation () {
         this.relation = this.classAttr.relation;
         this.setRelationViews();
@@ -354,6 +344,9 @@ module.exports = class ViewAttr extends Base {
                 case 'required':
                 case 'unique':
                     value = classValue || value;
+                    break;
+                case 'actionBinder':
+                    value = classValue || value ? {...classValue, ...value} : null;
                     break;
                 case 'options':
                     value = AssignHelper.deepAssign({}, classValue, value);
