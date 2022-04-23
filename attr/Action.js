@@ -79,7 +79,7 @@ module.exports = class Action extends Base {
         return true;
     }
 
-    validateOr (operator, operands) {
+    validateOr (operator, operands, model) {
         if (operands.length === 0) {
             return this.logDataError(operator, operands);
         }

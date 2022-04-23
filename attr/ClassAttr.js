@@ -22,7 +22,9 @@ module.exports = class ClassAttr extends Base {
 
     createEmbeddedModel () {
         const constructor  = this.getEmbeddedModelConstructor();
-        return constructor ? this.class.meta.spawn(constructor) : null;
+        return constructor
+            ? this.class.meta.spawn(constructor)
+            : null;
     }
 
     getEmbeddedModelConstructor () {
@@ -39,16 +41,6 @@ module.exports = class ClassAttr extends Base {
         if (this.data.refClass) {
             this.relation = new Relation({attr: this});
             this.setRelationViews();
-        }
-    }
-
-    createAttrs () {
-        this.attrs = [];
-        for (const data of this.data.children) {
-            const attr = this.class.createAttr(data);
-            if (attr) {
-                this.attrs.push(attr);
-            }
         }
     }
 
