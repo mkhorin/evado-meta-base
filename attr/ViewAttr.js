@@ -258,10 +258,6 @@ module.exports = class ViewAttr extends Base {
         return this.options.format;
     }
 
-    getFormatParams () {
-        return this.options.formatParams;
-    }
-
     getDefaultFormat () {
         switch (this.viewType) {
             case 'boolean': return 'boolean';
@@ -269,6 +265,12 @@ module.exports = class ViewAttr extends Base {
             case 'datetime': return 'datetime';
             case 'localDate': return 'date';
             case 'localDatetime': return 'datetime';
+        }
+        if (this.options.mask) {
+            return {
+                name: 'mask',
+                params: this.options.mask
+            }
         }
     }
 
