@@ -671,9 +671,9 @@ module.exports = class Model extends Base {
         return Behavior.execute('beforeTransit', this, transit);
     }
 
-    async afterTransit (transition) {
-        await Behavior.execute('afterTransit', this, transition);
-        await this.emit(`transit.${this.class.name}.${transition.name}`, {transition});
+    async afterTransit (data) {
+        await Behavior.execute('afterTransit', this, data);
+        await this.emit(`transit.${this.class.name}.${data.transition.name}`, data);
     }
 
     updateTransiting (value) {

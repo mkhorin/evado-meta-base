@@ -1,3 +1,19 @@
+## 4.4.0
+
+* attr/ActionBinder
+    - check group action binder
+    - filter actual action data
+* attr/ViewAttr
+    - add input mask
+    - extend action binder data
+* model/Model
+    - fix transition name    
+* validator/ActionBinderValidator
+    - fix validation of required action binder
+    - validate enable action        
+* validator/DateValidator
+    - add validation by dynamic date
+
 ## 4.3.0
 
 * calc/CalcToken
