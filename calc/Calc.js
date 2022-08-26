@@ -14,6 +14,7 @@
  * ["$moment", "$now", "format", "MM-DD"]
  * ["$duration", "value", "seconds", "humanize"]
  * ["$now"] - Current datetime
+ * ["$number", "value"] - Cast to number
  * ["$raw", "$user"] - Output as is
  * ["$round", ".attrName", precision]
  * ["$class", "className"] - Class title
