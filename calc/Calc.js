@@ -13,6 +13,7 @@
  * ["$model", "attrName"]
  * ["$moment", "$now", "format", "MM-DD"]
  * ["$duration", "value", "seconds", "humanize"]
+ * ["$id"] - Normalize ID
  * ["$now"] - Current datetime
  * ["$number", "value"] - Cast to number
  * ["$raw", "$user"] - Output as is

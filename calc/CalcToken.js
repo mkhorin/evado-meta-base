@@ -20,6 +20,7 @@ const OPERATION_MAP = {
     '$class': 'resolveClass',
     '$raw': 'resolveRaw',
     '$state': 'resolveState',
+    '$id': 'resolveId',
     '$now': 'resolveNow',
     '$null': 'resolveNull',
     '$number': 'resolveNumber',
@@ -387,6 +388,10 @@ module.exports = class CalcToken extends Base {
     resolveState ([name], {view}) {
         const state = view.class.getState(name);
         return state ? state.title : name;
+    }
+
+    resolveId ([value], {view}) {
+        return view.class.getDb().normalizeId(value);
     }
 
     resolveNow () {
