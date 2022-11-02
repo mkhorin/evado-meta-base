@@ -21,8 +21,8 @@ module.exports = class ClassIndexing extends Base {
     }
 
     async create () {
-        for (const data of this.getIndexList()) {
-            await this.createIndex(data);
+        for (const item of this.getIndexItems()) {
+            await this.createIndex(item);
         }
         this.log('info', 'Indexes created');
     }
@@ -31,15 +31,15 @@ module.exports = class ClassIndexing extends Base {
         try {
             await this.getDb().createIndex(this.getTable(), data);
         } catch (err) {
-            this.log('error', `Create failed: ${err}`);
+            this.log('error', `Creation failed: ${err}`);
         }
     }
 
-    getIndexList () {
-        const indexes = this.getIndexListByClass(this.class);
+    getIndexItems () {
+        const indexes = this.getIndexItemsByClass(this.class);
         const descendants = this.class.getDescendants();
         for (const cls of descendants) {
-            indexes.push(...this.getIndexListByClass(cls));
+            indexes.push(...this.getIndexItemsByClass(cls));
         }
         if (descendants.length) {
             indexes.push([{[this.class.CLASS_ATTR]: 1}]);
@@ -47,23 +47,25 @@ module.exports = class ClassIndexing extends Base {
         return indexes;
     }
 
-    getIndexListByClass (cls) {
-        const indexes = [];
-        if (Array.isArray(cls.data.indexes)) {
-            indexes.push(...cls.data.indexes);
-        }
-        for (const attr of cls.attrs) {
-            const index = this.getAttrIndex(attr);
-            if (index) {
-                indexes.push(index);
-            }
-        }
-        return indexes;
+    getIndexItemsByClass ({data, attrs}) {
+        return[
+            ...this.getIndexItemsByData(data.indexes),
+            ...this.getIndexItemsByAttrs(attrs)
+        ];
     }
 
-    getAttrIndex (attr) {
-        if (attr.data.indexing) {
-            return [{[attr.name]: attr.data.indexing}, {unique: attr.isUnique()}];
+    getIndexItemsByData (indexes) {
+        return indexes?.filter?.(([attrs]) => Object.values(attrs).length) || [];
+    }
+
+    getIndexItemsByAttrs (attrs) {
+        return attrs.map(this.getIndexItemByAttr, this).filter(item => !!item);
+    }
+
+    getIndexItemByAttr (attr) {
+        const indexing = attr.data.indexing;
+        if (indexing) {
+            return [{[attr.name]: indexing}, {unique: attr.isUnique()}];
         }
     }
 
