@@ -25,12 +25,17 @@ module.exports = class TypeHelper extends Base {
                 USER: 'user'
             },
             VIEW_TYPES: {
+                CHECKBOX_LIST: 'checkboxList',
                 CLASS: 'class',
                 CLASSES: 'classes',
                 DATE: 'date',
                 DATETIME: 'datetime',
                 LOCAL_DATE: 'localDate',
                 LOCAL_DATETIME: 'localDatetime',
+                RADIO_LIST: 'radioList',
+                RELATION_CHECKBOX_LIST: 'relationCheckboxList',
+                RELATION_RADIO_LIST: 'relationRadioList',
+                RELATION_SELECT: 'relationSelect',
                 STATE: 'state',
                 STRING: 'string',
                 THUMBNAIL: 'thumbnail',
@@ -54,51 +59,62 @@ module.exports = class TypeHelper extends Base {
             return value.map(item => this.cast(item, type));
         }
         switch (type) {
-            case this.TYPES.STRING:
-                return typeof value !== 'string' ? value.toString() : value;
-
-            case this.TYPES.ID:
-                return value instanceof ObjectID ? value : ObjectID.isValid(value) ? ObjectID(value) : null;
-
-            case this.TYPES.INTEGER:
+            case this.TYPES.STRING: {
+                return typeof value !== 'string'
+                    ? value.toString()
+                    : value;
+            }
+            case this.TYPES.ID: {
+                if (value instanceof ObjectID) {
+                    return value;
+                }
+                return ObjectID.isValid(value)
+                    ? ObjectID(value)
+                    : null;
+            }
+            case this.TYPES.INTEGER: {
                 value = parseInt(value);
                 return isNaN(value) ? null : value;
-
-            case this.TYPES.FLOAT:
+            }
+            case this.TYPES.FLOAT: {
                 value = parseFloat(value);
                 return isNaN(value) ? null : value;
-
-            case this.TYPES.DATE:
+            }
+            case this.TYPES.DATE: {
                 if (!(value instanceof Date)) {
                     value = new Date(value);
                 }
                 return isNaN(value.getTime()) ? null : value;
-
-            case this.TYPES.BOOLEAN:
+            }
+            case this.TYPES.BOOLEAN: {
                 return !!value;
+            }
         }
         return value;
     }
 
-    static getSearchCondition (value, type, attrName, db) {
+    static getSearchCondition (value, type, attr, db) {
         switch (type) {
             case this.TYPES.STRING:
-            case this.TYPES.TEXT:
-                return {[attrName]: new RegExp(EscapeHelper.escapeRegex(value), 'i')};
-
+            case this.TYPES.TEXT: {
+                return {[attr]: new RegExp(EscapeHelper.escapeRegex(value), 'i')};
+            }
             case this.TYPES.INTEGER:
-            case this.TYPES.FLOAT:
+            case this.TYPES.FLOAT: {
                 value = Number(value);
-                return isNaN(value) ? null : {[attrName]: value};
-
+                return isNaN(value) ? null : {[attr]: value};
+            }
             case TypeHelper.TYPES.ID:
-            case TypeHelper.TYPES.USER:
+            case TypeHelper.TYPES.USER: {
                 value = db.normalizeId(value);
-                return value ? {[attrName]: value} : null;
-
-            case TypeHelper.TYPES.DATE:
+                return value ? {[attr]: value} : null;
+            }
+            case TypeHelper.TYPES.DATE: {
                 value = DateHelper.getDayInterval(value);
-                return value ? ['and', ['>=', attrName, value[0]], ['<', attrName, value[1]]] : null;
+                return value
+                    ? ['and', ['>=', attr, value[0]], ['<', attr, value[1]]]
+                    : null;
+            }
         }
     }
 };
