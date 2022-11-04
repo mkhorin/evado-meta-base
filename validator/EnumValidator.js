@@ -18,11 +18,27 @@ module.exports = class EnumValidator extends Base {
         return this.createMessage(this.message, 'Invalid enum value');
     }
 
-    async validateAttr (name, model) {
-        const value = model.get(name);
+    validateAttr (name, model) {
         const attr = model.class.getAttr(name);
-        if (attr.enum && !attr.enum.hasItem(value) && !attr.enum.getQueryableItem(value)) {
-            this.addError(model, name, this.getMessage());
+        if (!attr.enum) {
+            return;
+        }
+        let values = model.get(name);
+        if (typeof values === 'string' && values) {
+            values = values.split(',');
+        }
+        if (Array.isArray(values)) {
+            for (const value of values) {
+                this.validateValue(value, attr, model);
+            }
+        } else {
+            this.validateValue(values, attr, model);
+        }
+    }
+
+    validateValue (value, attr, model) {
+        if (!attr.enum.hasItem(value) && !attr.enum.getQueryableItem(value)) {
+            this.addError(model, attr.name, this.getMessage());
         }
     }
 };
