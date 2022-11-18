@@ -26,15 +26,21 @@ module.exports = class StringValidator extends Base {
     }
 
     getTooShortMessage () {
-        return this.createMessage(this.tooShort, 'Value should contain at least {min} chr.', {min: this.min});
+        return this.createMessage(this.tooShort, 'Value should contain at least {min} chr.', {
+            min: this.min
+        });
     }
 
     getTooLongMessage () {
-        return this.createMessage(this.tooLong, 'Value should contain at most {max} chr.', {max: this.max});
+        return this.createMessage(this.tooLong, 'Value should contain at most {max} chr.', {
+            max: this.max
+        });
     }
 
     getNotEqualMessage () {
-        return this.createMessage(this.notEqual, 'Value should contain {length} chr.', {length: this.length});
+        return this.createMessage(this.notEqual, 'Value should contain {length} chr.', {
+            length: this.length
+        });
     }
 
     async validateAttr (name, model) {

@@ -69,7 +69,8 @@ module.exports = class SignatureBehavior extends Base {
         const condition = {
             [this.params.targetAttr]: this.owner.getId()
         };
-        const query = this.signatureClass.createQuery(this.getSpawnConfig()).and(condition);
+        const config = this.getSpawnConfig();
+        const query = this.signatureClass.createQuery(config).and(condition);
         const models = await query.all();
         await this.owner.constructor.delete(models);
     }
@@ -107,7 +108,8 @@ module.exports = class SignatureBehavior extends Base {
     }
 
     async createSignature (data) {
-        const model = this.signatureCreationView.createModel(this.getSpawnConfig());
+        const config = this.getSpawnConfig();
+        const model = this.signatureCreationView.createModel(config);
         await model.setDefaultValues();
         model.set(this.params.targetAttr, this.owner.getId());
         model.set(this.params.dataAttr, data.data);

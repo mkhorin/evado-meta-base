@@ -103,7 +103,9 @@ module.exports = class Validator extends Base {
                 validators.push(this.createValidator('enum', attr.name));
             }
             if (attr.unique) {
-                validators.push(this.createValidator('unique', attr.name, {ignoreCase: attr.isString()}));
+                validators.push(this.createValidator('unique', attr.name, {
+                    ignoreCase: attr.isString()
+                }));
             }
         }
         return validators;
@@ -118,13 +120,27 @@ module.exports = class Validator extends Base {
             return this.createRelationValidator(...arguments);
         }
         switch (type) {
-            case TypeHelper.TYPES.STRING: return this.createValidator('string', name);
-            case TypeHelper.TYPES.INTEGER: return this.createValidator('number', name, {integerOnly: true});
-            case TypeHelper.TYPES.BOOLEAN: return this.createValidator('boolean', name);
-            case TypeHelper.TYPES.DATE: return this.createValidator('date', name);
-            case TypeHelper.TYPES.FLOAT: return this.createValidator('number', name);
-            case TypeHelper.TYPES.JSON: return this.createValidator('json', name);
-            case TypeHelper.TYPES.USER: return this.createValidator('user', name);
+            case TypeHelper.TYPES.STRING:  {
+                return this.createValidator('string', name);
+            }
+            case TypeHelper.TYPES.INTEGER: {
+                return this.createValidator('number', name, {integerOnly: true});
+            }
+            case TypeHelper.TYPES.BOOLEAN: {
+                return this.createValidator('boolean', name);
+            }
+            case TypeHelper.TYPES.DATE: {
+                return this.createValidator('date', name);
+            }
+            case TypeHelper.TYPES.FLOAT: {
+                return this.createValidator('number', name);
+            }
+            case TypeHelper.TYPES.JSON: {
+                return this.createValidator('json', name);
+            }
+            case TypeHelper.TYPES.USER: {
+                return this.createValidator('user', name);
+            }
         }
         return null;
     }

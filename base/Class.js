@@ -83,7 +83,9 @@ module.exports = class Class extends Base {
     }
 
     getState (name) {
-        return this.stateMap[name] instanceof State ? this.stateMap[name] : null;
+        return this.stateMap[name] instanceof State
+            ? this.stateMap[name]
+            : null;
     }
 
     getStateAttr () {
@@ -91,7 +93,7 @@ module.exports = class Class extends Base {
     }
 
     getTransition (name) {
-        return this.transitionMap && this.transitionMap[name] instanceof Transition
+        return this.transitionMap?.[name] instanceof Transition
             ? this.transitionMap[name]
             : null;
     }
@@ -137,11 +139,12 @@ module.exports = class Class extends Base {
     }
 
     setTable () {
-        this.table = this.parent ? this.parent.table : `${this.meta.dataTablePrefix}${this.name}`;
+        this.table = this.parent?.table || `${this.meta.dataTablePrefix}${this.name}`;
     }
 
     setTranslationKey () {
-        this.translationKey = `${this.parent ? this.parent.translationKey : 'class'}.${this.name}`;
+        const prefix = this.parent?.translationKey || 'class';
+        this.translationKey = `${prefix}.${this.name}`;
     }
 
     setChildren () {
@@ -297,7 +300,9 @@ module.exports = class Class extends Base {
     // VIEW
 
     getView (name) {
-        return this.viewMap[name] instanceof View ? this.viewMap[name] : null;
+        return this.viewMap[name] instanceof View
+            ? this.viewMap[name]
+            : null;
     }
 
     getViewWithPrefix (prefix, name) {
@@ -357,7 +362,9 @@ module.exports = class Class extends Base {
     }
 
     filterValue (name) {
-        return this.hasAttr(name) ? this.attrMap[name].canSave() : MetaHelper.isSystemName(name);
+        return this.hasAttr(name)
+            ? this.attrMap[name].canSave()
+            : MetaHelper.isSystemName(name);
     }
 
     insert (data) {
@@ -414,8 +421,9 @@ module.exports = class Class extends Base {
         const nulls = [], cascades = [], locks = [];
         for (const cls of this.meta.classes) {
             for (const attr of cls.attrs) {
-                if (attr.relation && (attr.relation.refClass === this || this.hasAncestor(attr.relation.refClass))) {
-                    switch (attr.relation[action]) {
+                const rel = attr.relation;
+                if (rel && (rel.refClass === this || this.hasAncestor(rel.refClass))) {
+                    switch (rel[action]) {
                         case 'null': nulls.push(attr); break;
                         case 'cascade': cascades.push(attr); break;
                         case 'lock': locks.push(attr); break;
@@ -466,9 +474,12 @@ module.exports = class Class extends Base {
     }
 
     getInheritedData (key) {
-        return Object.prototype.hasOwnProperty.call(this.data, key)
-            ? this.data[key]
-            : this.getParent() ? this.getParent().getInheritedData(key) : undefined;
+        if (Object.prototype.hasOwnProperty.call(this.data, key)) {
+            return this.data[key];
+        }
+        if (this.getParent()) {
+            return this.getParent().getInheritedData(key);
+        }
     }
 };
 module.exports.init();

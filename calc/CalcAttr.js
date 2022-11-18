@@ -24,7 +24,9 @@ module.exports = class CalcAttr extends Base {
 
     prepareAttr () {
         let name = this.data[1];
-        name = name === '$key' ? this.calc.view.class.getKey() : name;
+        if (name === '$key') {
+            name = this.calc.view.class.getKey();
+        }
         this._attrName = name;
         let attr = this.calc.view.getAttr(name);
         this._attr = attr;
@@ -83,7 +85,8 @@ module.exports = class CalcAttr extends Base {
         const rel = parent.relation;
         const [operation, params] = this.getQueryParams(this._chain[0], rel.multiple);
         const value = this.getNestedQueryData(1) || `.${rel.linkAttrName}`;
-        return ['$query', operation, rel.refClass.id, params, {[rel.refAttrName]: value}];
+        const condition = {[rel.refAttrName]: value};
+        return ['$query', operation, rel.refClass.id, params, condition];
     }
 
     getQueryParams (attr, multiple) {
@@ -106,7 +109,8 @@ module.exports = class CalcAttr extends Base {
         const method = rel.multiple ? 'column' : 'scalar';
         const key = this._chain[index].relation.linkAttrName;
         const value = this.getNestedQueryData(index + 1) || `.${rel.linkAttrName}`;
-        return ['$query', method, rel.refClass.id, {key}, {[rel.refAttrName]: value}];
+        const condition = {[rel.refAttrName]: value};
+        return ['$query', method, rel.refClass.id, {key}, condition];
     }
 
     resolveAttr ({model}) {
@@ -114,11 +118,13 @@ module.exports = class CalcAttr extends Base {
     }
 
     async resolveBackRefAttr ({model}) {
-        return (await model.related.createQuery(this._attr)).id();
+        const query = await model.related.createQuery(this._attr);
+        return query.id();
     }
 
     async resolveMultipleBackRefAttr ({model}) {
-        return (await model.related.createQuery(this._attr)).ids();
+        const query = await model.related.createQuery(this._attr);
+        return query.ids();
     }
 
     resolveCalcAttr ({model}) {
@@ -131,5 +137,3 @@ module.exports = class CalcAttr extends Base {
         return this._token.resolve(...arguments);
     }
 };
-
-const ViewAttr = require('../attr/ViewAttr');

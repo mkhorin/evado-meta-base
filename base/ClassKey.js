@@ -56,10 +56,14 @@ module.exports = class ClassKey extends Base {
                 return this.class.getDb().normalizeId(value);
             }
             case TypeHelper.TYPES.STRING: {
-                return Array.isArray(value) ? value.map(v => String(v)) : String(value);
+                return Array.isArray(value)
+                    ? value.map(v => String(v))
+                    : String(value);
             }
             case TypeHelper.TYPES.INTEGER: {
-                return Array.isArray(value) ? value.map(v => parseInt(v)) : parseInt(v);
+                return Array.isArray(value)
+                    ? value.map(v => parseInt(v))
+                    : parseInt(v);
             }
         }
         this.class.log('error', `Invalid key type: ${this.type}`);

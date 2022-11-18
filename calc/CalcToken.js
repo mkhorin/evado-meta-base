@@ -90,7 +90,7 @@ module.exports = class CalcToken extends Base {
     }
 
     createOperands (data) {
-        return data.map(this.createOperand, this).filter(operand => operand);
+        return data.map(this.createOperand, this).filter(v => !!v);
     }
 
     createOperand () {
@@ -98,7 +98,7 @@ module.exports = class CalcToken extends Base {
     }
 
     executeMethod (name, value) {
-        return value && typeof value[name] === 'function' ? value[name]() : value;
+        return typeof value?.[name] === 'function' ? value[name]() : value;
     }
 
     log (type, message, data = this.data) {
@@ -203,26 +203,46 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveAddition (values) {
-        let result = Array.isArray(values[0]) ? this.resolveAddition(values[0]) : values[0];
+        let result = Array.isArray(values[0])
+            ? this.resolveAddition(values[0])
+            : values[0];
         for (let i = 1; i < values.length; ++i) {
-            result += (Array.isArray(values[i]) ? this.resolveAddition(values[i]) : values[i]) || 0;
+            let num = Array.isArray(values[i])
+                ? this.resolveAddition(values[i])
+                : values[i];
+            if (num) {
+                result += num;
+            }
         }
         return result;
     }
 
     resolveSubtraction (values) {
-        let result = Array.isArray(values[0]) ? this.resolveSubtraction(values[0]) : values[0];
+        let result = Array.isArray(values[0])
+            ? this.resolveSubtraction(values[0])
+            : values[0];
         for (let i = 1; i < values.length; ++i) {
-            result -= (Array.isArray(values[i]) ? this.resolveSubtraction(values[i]) : values[i]) || 0;
+            let num = Array.isArray(values[i])
+                ? this.resolveSubtraction(values[i])
+                : values[i];
+            if (num) {
+                result -= num;
+            }
         }
         return result;
     }
 
     resolveMultiplication (values) {
-        let result = Array.isArray(values[0]) ? this.resolveMultiplication(values[0]) : values[0];
+        let result = Array.isArray(values[0])
+            ? this.resolveMultiplication(values[0])
+            : values[0];
         for (let i = 1; i < values.length; ++i) {
-            let value = Array.isArray(values[i]) ? this.resolveMultiplication(values[i]) : values[i];
-            result *= value !== undefined ? value : 1;
+            let num = Array.isArray(values[i])
+                ? this.resolveMultiplication(values[i])
+                : values[i];
+            if (num !== undefined) {
+                result *= num;
+            }
         }
         return result;
     }
@@ -237,8 +257,10 @@ module.exports = class CalcToken extends Base {
 
     resolveEmpty (values) {
         for (const value of values) {
-            if (value !== null && value !== undefined && value !== '' && (!Array.isArray(value) || value.length)) {
-                return false;
+            if (value !== null && value !== undefined && value !== '') {
+                if (!Array.isArray(value) || value.length) {
+                    return false;
+                }
             }
         }
         return true;
@@ -302,9 +324,8 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveJoin (values) {
-        return values.map(value => {
-            return Array.isArray(value) ? value.join(this._separator) : value;
-        }).join(this._separator);
+        const join = value => Array.isArray(value) ? value.join(this._separator) : value;
+        return values.map(join).join(this._separator);
     }
 
     resolveMap (values) {
@@ -324,7 +345,7 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveMethod ([value]) {
-        return value && typeof value[this._method] === 'function'
+        return typeof value?.[this._method] === 'function'
             ? value[this._method](...this._arguments)
             : value;
     }
@@ -366,7 +387,9 @@ module.exports = class CalcToken extends Base {
     }
 
     resolvePlaceholder ([value]) {
-        return value === undefined || value === null || value === '' ? this._placeholder : value;
+        return value === undefined || value === null || value === ''
+            ? this._placeholder
+            : value;
     }
 
     resolveReplace ([value]) {
@@ -382,7 +405,9 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveRound ([value]) {
-        return Number.isFinite(value) ? MathHelper.round(value, this._precision) : value;
+        return Number.isFinite(value)
+            ? MathHelper.round(value, this._precision)
+            : value;
     }
 
     resolveState ([name], {view}) {

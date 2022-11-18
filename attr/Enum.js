@@ -18,8 +18,12 @@ module.exports = class Enum extends Base {
     }
 
     getItem (value) {
-        value = value === null || value === undefined ? '' : value;
-        return this.hasItem(value) ? this._indexedItems[value] : null;
+        if (value === null || value === undefined) {
+            value = '';
+        }
+        return this.hasItem(value)
+            ? this._indexedItems[value]
+            : null;
     }
 
     getItems () {
@@ -27,8 +31,7 @@ module.exports = class Enum extends Base {
     }
 
     getText (value) {
-        value = value === null || value === undefined ? '' : value;
-        return this.hasItem(value) ? this._indexedItems[value].text : value;
+        return this.getItem(value)?.text || '';
     }
 
     getSets () {
@@ -51,9 +54,16 @@ module.exports = class Enum extends Base {
     createSets () {
         this.sets = [];
         for (const data of this.data) {
-            this.sets.push(new EnumSet({owner: this, data}));
+            this.sets.push(this.createSet(data));
         }
         this.queryableSets = this.sets.filter(set => set.isQueryable());
+    }
+
+    createSet (data) {
+        return new EnumSet({
+            owner: this,
+            data
+        });
     }
 
     indexItems () {

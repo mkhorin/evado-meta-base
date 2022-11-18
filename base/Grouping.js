@@ -18,12 +18,15 @@ module.exports = class Grouping extends Base {
 
     init () {
         this.data = {};
-        this.id = `_root.${this.view.id}`;
+        this.name = '_root';
+        this.id = `${this.name}.${this.view.id}`;
         this.options = {};
     }
 
     getGroup (name) {
-        return this.groupMap[name] instanceof Group ? this.groupMap[name] : null;
+        return this.groupMap[name] instanceof Group
+            ? this.groupMap[name]
+            : null;
     }
 
     createGroups () {

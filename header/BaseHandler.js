@@ -24,7 +24,7 @@ module.exports = class BaseHandler extends Base {
     }
 
     createTokens () {
-        return this.data.map(this.createToken, this).filter(token => !!token);
+        return this.data.map(this.createToken, this).filter(v => !!v);
     }
 
     createToken (data) {

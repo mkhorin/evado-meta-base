@@ -63,7 +63,7 @@ module.exports = class Token extends Base {
     }
 
     parseAttrs (text, refClass) {
-        if (typeof text !== 'string' || text.charAt(0) !== '.') {
+        if (typeof text !== 'string' || text[0] !== '.') {
             return false;
         }
         const attrs = [];
@@ -74,7 +74,9 @@ module.exports = class Token extends Base {
                 attrs.push(name);
                 break;
             }
-            name = name === '$key' ? refClass.getKey() : name;
+            if (name === '$key') {
+                name = refClass.getKey();
+            }
             const attr = refClass.getAttr(name);
             if (!attr) {
                 attrs.push(name);
@@ -160,7 +162,11 @@ module.exports = class Token extends Base {
     }
 
     formatValue (model, attr) {
-        const value = attr === '$title' ? model.getTitle() : attr === '$key' ? model.getId() : model.get(attr);
+        const value = attr === '$title'
+            ? model.getTitle()
+            : attr === '$key'
+                ? model.getId()
+                : model.get(attr);
         return value === null || value === undefined ? '' : value;
     }
 

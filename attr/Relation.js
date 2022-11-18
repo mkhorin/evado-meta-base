@@ -42,11 +42,15 @@ module.exports = class Relation extends Base {
     }
 
     getRefAttrType () {
-        return this.refAttr ? this.refAttr.getType() : this.refClass.key.type;
+        return this.refAttr
+            ? this.refAttr?.getType()
+            : this.refClass.key.type;
     }
 
     getLinkAttrType () {
-        return this.linkAttr ? this.linkAttr.getType() : this.attr.class.key.type;
+        return this.linkAttr
+            ? this.linkAttr?.getType()
+            : this.attr.class.key.type;
     }
 
     createFilter () {
@@ -84,8 +88,11 @@ module.exports = class Relation extends Base {
     }
 
     async setQueryByDoc (query, doc) {
+        if (!doc.hasOwnProperty(this.linkAttrName)) {
+            return query.and(['false']);
+        }
         let value = doc[this.linkAttrName];
-        if (!doc.hasOwnProperty(this.linkAttrName) || value === undefined || value === null || value.length === 0) {
+        if (value === undefined || value === null || value.length === 0) {
             return query.and(['false']);
         }
         if (this.via) {
@@ -98,8 +105,11 @@ module.exports = class Relation extends Base {
         const viaClass = this.refClass.meta.getClass(via.refClass);
         const viaAttrName = via.refAttr || viaClass.getKey();
         const viaLinkAttrName = via.linkAttr || viaClass.getKey();
-        const values = await viaClass.find({[viaAttrName]: value}).column(viaLinkAttrName);
-        return via.via ? this.resolveVia(via.via, values) : values;
+        const query = viaClass.find({[viaAttrName]: value});
+        const values = await query.column(viaLinkAttrName);
+        return via.via
+            ? this.resolveVia(via.via, values)
+            : values;
     }
 
     // MANY DOCS
@@ -122,19 +132,24 @@ module.exports = class Relation extends Base {
 
     createBuckets (models) {
         const buckets = MetaHelper.createBuckets(models, this.linkAttrName);
-        return this.via ? this.resolveViaBuckets(this.via, buckets) : buckets;
+        return this.via
+            ? this.resolveViaBuckets(this.via, buckets)
+            : buckets;
     }
 
     async resolveViaBuckets (via, buckets) {
         const viaClass = this.refClass.meta.getClass(via.refClass);
         const viaAttrName = via.refAttr || viaClass.getKey();
         const viaLinkAttrName = via.linkAttr || viaClass.getKey();
-        const docs = await viaClass.find({[viaAttrName]: buckets.values}).select({
+        const query = viaClass.find({[viaAttrName]: buckets.values}).select({
             [viaAttrName]: 1,
             [viaLinkAttrName]: 1
-        }).raw().all();
+        });
+        const docs = await query.raw().all();
         MetaHelper.rebuildBuckets(buckets, docs, viaLinkAttrName, viaAttrName);
-        return via.via ? this.resolveViaBuckets(via.via, buckets) : buckets;
+        return via.via
+            ? this.resolveViaBuckets(via.via, buckets)
+            : buckets;
     }
 
     assignRelatedModels (models, relatives, buckets) {

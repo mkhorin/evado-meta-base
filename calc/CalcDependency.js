@@ -79,7 +79,9 @@ module.exports = class CalcDependency extends Base {
             const result = [];
             for (const model of models) {
                 const value = await model.related.resolve(attr);
-                Array.isArray(value) ? result.push(...value) : value ? result.push(value) : null;
+                Array.isArray(value)
+                    ? result.push(...value)
+                    : value ? result.push(value) : null;
             }
             multiple = attr.relation.multiple ? true : multiple;
             view = attr.eagerView;
@@ -92,7 +94,9 @@ module.exports = class CalcDependency extends Base {
         const result = [];
         for (const model of models) {
             const value = model.get(key);
-            Array.isArray(value) ? result.push(...value) : result.push(value);
+            Array.isArray(value)
+                ? result.push(...value)
+                : result.push(value);
         }
         return result;
     }

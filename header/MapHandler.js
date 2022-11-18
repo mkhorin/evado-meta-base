@@ -12,7 +12,8 @@ module.exports = class MapHandler extends Base {
         if (!handlerClass) {
             return super.init();
         }
-        this._handler = this.owner.createHandler(handlerClass, this.data.slice(1), {each: true});
+        const data = this.data.slice(1);
+        this._handler = this.owner.createHandler(handlerClass, data, {each: true});
         this.resolve = this.resolveHandler;
     }
 
@@ -30,7 +31,9 @@ module.exports = class MapHandler extends Base {
                 prefix += data;
             }
         }
-        return targets ? targets.map(target => prefix + target + suffix) : [];
+        return targets
+            ? targets.map(target => prefix + target + suffix)
+            : [];
     }
 
     resolveHandler (model) {

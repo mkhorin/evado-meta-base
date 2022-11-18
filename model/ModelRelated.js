@@ -21,7 +21,9 @@ module.exports = class ModelRelated extends Base {
     }
 
     get (attr) {
-        return this.has(attr) ? this._data[attr.name || attr] : undefined;
+        if (this.has(attr)) {
+            return this._data[attr.name || attr];
+        }
     }
 
     set (attr, value) {
@@ -49,16 +51,23 @@ module.exports = class ModelRelated extends Base {
         const result = [];
         for (const model of data) {
             const value = await model.related.getNestedData(key);
-            Array.isArray(value) ? result.push(...value) : value ? result.push(value) : false;
+            if (Array.isArray(value)) {
+                result.push(...value);
+            } else if (value) {
+                result.push(value);
+            }
         }
         return result;
     }
 
     getTitle (attr) {
         const value = this.get(attr);
-        return Array.isArray(value)
-            ? value.map(model => model.getTitle())
-            : value ? value.getTitle() : this.model.get(attr);
+        if (Array.isArray(value)) {
+            return value.map(model => model.getTitle());
+        }
+        return value
+            ? value.getTitle()
+            : this.model.get(attr);
     }
 
     resolve (attr) {
@@ -114,7 +123,8 @@ module.exports = class ModelRelated extends Base {
         for (const attrs of this.model.view.eagerEmbeddedModels) {
             const values = MetaHelper.getModelValues(this.model, attrs);
             if (values.length) {
-                const data = await attrs[0].embeddedModel.findById(values).indexByKey().all();
+                const query = attrs[0].embeddedModel.findById(values);
+                const data = await query.indexByKey().all();
                 MetaHelper.setModelRelated(data, this.model, attrs);
             }
         }
@@ -196,7 +206,9 @@ module.exports = class ModelRelated extends Base {
 
     getChanges (attr) {
         attr = attr.name || attr;
-        return this._changes.hasOwnProperty(attr) ? this._changes[attr] : null;
+        return this._changes.hasOwnProperty(attr)
+            ? this._changes[attr]
+            : null;
     }
 
     serializeChanges (attr) {
@@ -207,7 +219,9 @@ module.exports = class ModelRelated extends Base {
         const result = {};
         for (const key of Object.keys(changes)) {
             if (changes[key].length) {
-                result[key] = changes[key].map(item => item instanceof Model ? item.getId() : item);
+                result[key] = changes[key].map(item => {
+                    return item instanceof Model ? item.getId() : item;
+                });
             }
         }
         return result;
@@ -256,15 +270,18 @@ module.exports = class ModelRelated extends Base {
         }
     }
 
-    async resolveSingleBackRefUnlink (attr, data) {
-        if (attr.relation.multiple || attr.isRef() || !data.links.length || data.unlinks.length || data.deletes.length) {
+    async resolveSingleBackRefUnlink (attr, {links, unlinks, deletes}) {
+        if (attr.relation.multiple || attr.isRef()) {
+            return false;
+        }
+        if (!links.length || unlinks.length || deletes.length) {
             return false;
         }
         const model = await this.resolve(attr);
         if (model) {
             attr.commandMap.delete && !attr.commandMap.remove
-                ? data.deletes.push(model)
-                : data.unlinks.push(model);
+                ? deletes.push(model)
+                : unlinks.push(model);
         }
     }
 
@@ -278,7 +295,8 @@ module.exports = class ModelRelated extends Base {
 
     async resolveLinks (changes, view) {
         if (changes.links.length) {
-            changes.links = await view.createQuery(this.getQueryConfig()).byId(changes.links).all();
+            const query = view.createQuery(this.getQueryConfig()).byId(changes.links);
+            changes.links = await query.all();
         }
     }
 
@@ -290,29 +308,31 @@ module.exports = class ModelRelated extends Base {
         }
     }
 
-    getSingleRef (attr, data) {
-        if (data.links.length) {
-            return data.links[0].get(attr.relation.refAttrName);
+    getSingleRef (attr, {links, unlinks, deletes}) {
+        if (links.length) {
+            return links[0].get(attr.relation.refAttrName);
         }
-        if (data.unlinks.length > 0 || data.deletes.length > 0) {
+        if (unlinks.length > 0 || deletes.length > 0) {
             return null;
         }
         return this.model.get(attr);
     }
 
-    getMultipleRef (attr, data) {
+    getMultipleRef (attr, {links, unlinks, deletes}) {
         let key = attr.relation.refAttrName;
         let value = this.model.get(attr);
         value = Array.isArray(value) ? value : [];
-        if (data.unlinks.length) {
-            value = MongoHelper.exclude(data.unlinks.map(model => model.get(key)), value);
+        if (unlinks.length) {
+            value = MongoHelper.exclude(unlinks.map(model => model.get(key)), value);
         }
-        if (data.deletes.length) {
-            value = MongoHelper.exclude(data.deletes.map(model => model.get(key)), value);
+        if (deletes.length) {
+            value = MongoHelper.exclude(deletes.map(model => model.get(key)), value);
         }
-        if (data.links.length) {
-            let links = data.links.map(model => model.get(key));
-            links = value.length ? MongoHelper.exclude(value, links) : links;
+        if (links.length) {
+            links = links.map(model => model.get(key));
+            if (value.length) {
+                links = MongoHelper.exclude(value, links);
+            }
             if (links.length) {
                 value = value.concat(links); // concat to update value array
             }
@@ -331,32 +351,38 @@ module.exports = class ModelRelated extends Base {
         }
     }
 
-    async changeRelationBackRef (attr, data) {
+    async changeRelationBackRef ({relation}, data) {
         for (const model of data.links) {
-            model.related.setResolvedChanges(attr.relation.refAttr, {links: [this.model]});
+            model.related.setResolvedChanges(relation.refAttr, {links: [this.model]});
             await model.update();
         }
         for (const model of data.unlinks) {
-            model.related.setResolvedChanges(attr.relation.refAttr, {unlinks: [this.model]});
+            model.related.setResolvedChanges(relation.refAttr, {unlinks: [this.model]});
             await model.update();
         }
     }
 
-    async changeBackRef (attr, data) {
+    async changeBackRef ({relation}, data) {
         for (const model of data.links) {
-            model.set(attr.relation.refAttrName, this.model.get(attr.relation.linkAttrName));
+            model.set(relation.refAttrName, this.model.get(relation.linkAttrName));
             await model.update();
         }
         for (const model of data.unlinks) {
-            model.set(attr.relation.refAttrName, null);
+            model.set(relation.refAttrName, null);
             await model.update();
         }
     }
 
     setResolvedChanges (attr, data) {
-        data.links = data.links || [];
-        data.unlinks = data.unlinks || [];
-        data.deletes = data.deletes || [];
+        if (!data.links) {
+            data.links = [];
+        }
+        if (!data.unlinks) {
+            data.unlinks = [];
+        }
+        if (!data.deletes) {
+            data.deletes = [];
+        }
         this._changes[attr.name] = data;
         this.resolveRefAttr(attr, data);
         this._resolved = true;
@@ -391,24 +417,24 @@ module.exports = class ModelRelated extends Base {
             : this.checkRefExist(attr.relation, docs[0]);
     }
 
-    async checkRefExist (relation, doc) {
-        const query = this.model.class.find({
-            [relation.linkAttrName]: doc[relation.refAttrName]
-        });
-        const ids = await query.limit(2).column(this.model.class.getKey());
+    async checkRefExist ({linkAttrName, refAttrName}, doc) {
+        const query = this.model.class.find({[linkAttrName]: doc[refAttrName]});
+        const key = this.model.class.getKey();
+        const ids = await query.limit(2).column(key);
         return this.isExistingId(this.model.getId(), ids);
     }
 
-    checkBackRefExist (relation, item) {
-        const query = relation.refClass.find({
-            [relation.refAttrName]: this.model.get(relation.linkAttrName)
-        });
-        const ids = query.limit(2).column(relation.refClass.getKey());
-        return this.isExistingId(item[relation.refAttrName], ids);
+    checkBackRefExist ({linkAttrName, refAttrName, refClass}, item) {
+        const link = this.model.get(linkAttrName);
+        const query = refClass.find({[refAttrName]: link});
+        const ids = query.limit(2).column(refClass.getKey());
+        return this.isExistingId(item[refAttrName], ids);
     }
 
     isExistingId (id, ids) {
-        return ids.length === 1 ? !CommonHelper.isEqual(id, ids[0]) : ids.length > 1;
+        return ids.length === 1
+            ? !CommonHelper.isEqual(id, ids[0])
+            : ids.length > 1;
     }
 
     assignToModelValues () {
@@ -430,16 +456,16 @@ module.exports = class ModelRelated extends Base {
         }
     }
 
-    async getLinkedDocs (attr) {
-        if (this._linkedMap.hasOwnProperty(attr.name)) {
-            return this._linkedMap[attr.name];
+    async getLinkedDocs ({name, relation}) {
+        if (this._linkedMap.hasOwnProperty(name)) {
+            return this._linkedMap[name];
         }
-        const query = attr.relation.refClass.createQuery(this.getQueryConfig());
-        await attr.relation.setQueryByModel(query, this.model);
+        const query = relation.refClass.createQuery(this.getQueryConfig());
+        await relation.setQueryByModel(query, this.model);
         const items = await query.raw().all();
-        const data = this._changes[attr.name];
+        const data = this._changes[name];
         const result = {};
-        const refKey = attr.relation.refClass.getKey();
+        const refKey = relation.refClass.getKey();
         for (const item of items) {
             result[item[refKey]] = item;
         }
@@ -451,7 +477,7 @@ module.exports = class ModelRelated extends Base {
                 delete result[model.getId()];
             }
         }
-        return this._linkedMap[attr.name] = Object.values(result);
+        return this._linkedMap[name] = Object.values(result);
     }
 
     // ORDER
@@ -464,13 +490,15 @@ module.exports = class ModelRelated extends Base {
         const refClass = attr.relation.refClass;
         const refKey = refClass.getKey();
         const query = refClass.createQuery();
+        const db = query.getDb();
+        const table = query.getTable();
         await attr.relation.setQueryByDoc(query, this.model.getValues());
         const orderKey = this.getOrderKey(attr);
         const items = await query.select([refKey, orderKey]).raw().all();
         for (const item of items) {
             const pos = data.indexOf(String(item[refKey]));
             if (pos !== item[orderKey]) {
-                await query.getDb().update(query.getTable(), {[refKey]: item[refKey]}, {[orderKey]: pos});
+                await db.update(table, {[refKey]: item[refKey]}, {[orderKey]: pos});
             }
         }
         let names = this.model.getSortedRelationNames();

@@ -39,7 +39,12 @@ module.exports = class CalcCondition extends Base {
             return this.prepareChildren;
         }
         const length = this.data.length;
-        return length < 2 ? this.prepareStatic : length === 4 ? this.preparePairValue : this.prepareValue;
+        if (length < 2) {
+            return this.prepareStatic;
+        }
+        return length === 4
+            ? this.preparePairValue
+            : this.prepareValue;
     }
 
     prepareStatic () {
@@ -47,10 +52,8 @@ module.exports = class CalcCondition extends Base {
     }
 
     prepareChildren (items) {
-        this._children = items
-            .map(data => this.createCondition(data))
-            .filter(item => !!item);
-        return this._children.filter(item => !item.isStatic()).length
+        this._children = items.map(data => this.createCondition(data)).filter(v => !!v);
+        return this._children.find(item => !item.isStatic())
             ? this.resolveChildren
             : this.resolveStatic;
     }
@@ -59,7 +62,9 @@ module.exports = class CalcCondition extends Base {
         const field = this.normalizeFieldItem(0, data);
         this._field = field;
         this._value = this.createToken(data[1], {field});
-        return this._value.isStatic() ? this.resolveStatic : this.resolveValue;
+        return this._value.isStatic()
+            ? this.resolveStatic
+            : this.resolveValue;
     }
 
     preparePairValue (data) {

@@ -47,34 +47,35 @@ module.exports = class ViewAttr extends Base {
     }
 
     initCommon () {
+        const data = this.data;
         this.label = MetaHelper.createLabel(this);
         this.title = this.label;
-        this.description = this.data.description;
-        this.hint = this.data.hint;
-        this.extHint = this.data.extHint;
-        this.options = this.data.options || {};
+        this.description = data.description;
+        this.hint = data.hint;
+        this.extHint = data.extHint;
+        this.options = data.options || {};
         if (this.options.format === undefined) {
             this.options.format = this.getDefaultFormat();
         }
         if (MetaHelper.isSystemName(this.name) || this.isCalc()) {
-            this.data.readOnly = true;
+            data.readOnly = true;
         }
         this.searchDepth = this.resolveSearchDepth();
         this.eagerDepth = this.resolveEagerDepth();
-        this.escaping = this.data.escape && (this.isString() || this.isText() || this.isRelation() || this.isJson());
-        this.readOnly = this.data.readOnly === true || this.view.isReadOnly();
-        this.required = this.data.required === true;
-        this.unique = this.data.unique === true;
-        this.sortable = this.data.sortable === true;
+        this.escaping = data.escape && this.isTypeEscaping();
+        this.readOnly = data.readOnly === true || this.view.isReadOnly();
+        this.required = data.required === true;
+        this.unique = data.unique === true;
+        this.sortable = data.sortable === true;
         this.template = this.options.template || this.viewType;
     }
 
     isBoolean () {
-        return this.type === TypeHelper.TYPES.BOOLEAN;
+        return this.type === TYPES.BOOLEAN;
     }
 
     isCalc () {
-        return this.type === TypeHelper.TYPES.CALC;
+        return this.type === TYPES.CALC;
     }
 
     isClassAttr () {
@@ -82,15 +83,15 @@ module.exports = class ViewAttr extends Base {
     }
 
     isDate () {
-        return this.type === TypeHelper.TYPES.DATE;
+        return this.type === TYPES.DATE;
     }
 
     isFile () {
-        return this.type === TypeHelper.TYPES.FILE;
+        return this.type === TYPES.FILE;
     }
 
     isJson () {
-        return this.type === TypeHelper.TYPES.JSON;
+        return this.type === TYPES.JSON;
     }
 
     isGroup () {
@@ -110,56 +111,58 @@ module.exports = class ViewAttr extends Base {
     }
 
     isNumber () {
-        return this.type === TypeHelper.TYPES.INTEGER || this.type === TypeHelper.TYPES.FLOAT;
+        return this.type === TYPES.INTEGER
+            || this.type === TYPES.FLOAT;
     }
 
     isString () {
-        return this.type === TypeHelper.TYPES.STRING;
+        return this.type === TYPES.STRING;
     }
 
     isText () {
-        return this.type === TypeHelper.TYPES.TEXT;
+        return this.type === TYPES.TEXT;
     }
 
     isRef () {
-        return this.type === TypeHelper.TYPES.REF;
+        return this.type === TYPES.REF;
     }
 
     isBackRef () {
-        return this.type === TypeHelper.TYPES.BACK_REF;
+        return this.type === TYPES.BACK_REF;
     }
 
     isRelation () {
-        return this.type === TypeHelper.TYPES.REF || this.type === TypeHelper.TYPES.BACK_REF;
+        return this.type === TYPES.REF
+            || this.type === TYPES.BACK_REF;
     }
 
     isClassView () {
-        return this.viewType === TypeHelper.VIEW_TYPES.CLASS;
+        return this.viewType === VIEW_TYPES.CLASS;
     }
 
     isClassesView () {
-        return this.viewType === TypeHelper.VIEW_TYPES.CLASSES;
+        return this.viewType === VIEW_TYPES.CLASSES;
     }
 
     isStateView () {
-        return this.viewType === TypeHelper.VIEW_TYPES.STATE;
+        return this.viewType === VIEW_TYPES.STATE;
     }
 
     isStringView () {
-        return this.viewType === TypeHelper.TYPES.STRING;
+        return this.viewType === TYPES.STRING;
     }
 
     isTimeView () {
-        return this.viewType === TypeHelper.VIEW_TYPES.TIME;
+        return this.viewType === VIEW_TYPES.TIME;
     }
 
     isThumbnailView () {
-        return this.viewType === TypeHelper.VIEW_TYPES.THUMBNAIL;
+        return this.viewType === VIEW_TYPES.THUMBNAIL;
     }
 
     isUTC () {
-        return this.viewType === TypeHelper.VIEW_TYPES.DATE
-            || this.viewType === TypeHelper.VIEW_TYPES.DATETIME;
+        return this.viewType === VIEW_TYPES.DATE
+            || this.viewType === VIEW_TYPES.DATETIME;
     }
 
     isEagerLoading () {
@@ -171,7 +174,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     isUser () {
-        return this.type === TypeHelper.TYPES.USER;
+        return this.type === TYPES.USER;
     }
 
     isReadOnly () {
@@ -194,8 +197,16 @@ module.exports = class ViewAttr extends Base {
         return this.sortable;
     }
 
+    isTypeEscaping () {
+        return this.isString()
+            || this.isText()
+            || this.isRelation()
+            || this.isJson();
+    }
+
     hasData (key) {
-        return Object.prototype.hasOwnProperty.call(this.data, key) && this.data[key] !== undefined;
+        return Object.prototype.hasOwnProperty.call(this.data, key)
+            && this.data[key] !== undefined;
     }
 
     canLoad () {
@@ -227,7 +238,9 @@ module.exports = class ViewAttr extends Base {
     }
 
     getCastType () {
-        return this.isRef() ? this.relation.getRefAttrType() : this.type;
+        return this.isRef()
+            ? this.relation.getRefAttrType()
+            : this.type;
     }
 
     getViewType () {
@@ -328,13 +341,15 @@ module.exports = class ViewAttr extends Base {
     setRelationViews () {
         if (this.relation?.refClass) {
             this.listView = this.getRefView('listView', 'list');
-            this.selectListView = this.relation.refClass.getView(this.data.selectListView) || this.listView;
+            const view = this.relation.refClass.getView(this.data.selectListView);
+            this.selectListView = view || this.listView;
             this.eagerView = this.getRefView('eagerView', 'eager');
         }
     }
 
     getRefView (key, defaults) {
-        return this.relation.refClass.getView(this.data[key] || defaults) || this.relation.refClass;
+        return this.relation.refClass.getView(this.data[key] || defaults)
+            || this.relation.refClass;
     }
 
     assignDataFromClassAttr () {
@@ -344,15 +359,20 @@ module.exports = class ViewAttr extends Base {
             let value = skip ? this.data[key] : classValue;
             switch (key) {
                 case 'required':
-                case 'unique':
+                case 'unique': {
                     value = classValue || value;
                     break;
-                case 'actionBinder':
-                    value = classValue || value ? {...classValue, ...value} : null;
+                }
+                case 'actionBinder': {
+                    value = classValue || value
+                        ? {...classValue, ...value}
+                        : null;
                     break;
-                case 'options':
+                }
+                case 'options': {
                     value = AssignHelper.deepAssign({}, classValue, value);
                     break;
+                }
             }
             this.data[key] = value;
         }
@@ -423,7 +443,8 @@ module.exports = class ViewAttr extends Base {
     // SEARCH
 
     getSearchCondition (value) {
-        const condition = TypeHelper.getSearchCondition(value, this.type, this.name, this.class.getDb());
+        const db = this.class.getDb();
+        const condition = TypeHelper.getSearchCondition(value, this.type, this.name, db);
         if (condition === undefined) {
             this.log('error', 'Invalid search condition');
         }
@@ -452,3 +473,4 @@ const Enum = require('./Enum');
 const AttrCalc = require('../calc/AttrCalc');
 const TypeHelper = require('../helper/TypeHelper');
 const Validator = require('../validator/Validator');
+const {VIEW_TYPES, TYPES} = TypeHelper;

@@ -59,7 +59,7 @@ module.exports = class ClassIndexing extends Base {
     }
 
     getIndexItemsByAttrs (attrs) {
-        return attrs.map(this.getIndexItemByAttr, this).filter(item => !!item);
+        return attrs.map(this.getIndexItemByAttr, this).filter(v => !!v);
     }
 
     getIndexItemByAttr (attr) {

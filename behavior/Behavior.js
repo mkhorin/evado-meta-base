@@ -26,7 +26,9 @@ module.exports = class Behavior extends Base {
     }
 
     static getBuiltIn (name) {
-        return this.BUILTIN.hasOwnProperty(name) ? require(this.BUILTIN[name]) : null;
+        return this.BUILTIN.hasOwnProperty(name)
+            ? require(this.BUILTIN[name])
+            : null;
     }
 
     static getDefaultSpawn () {

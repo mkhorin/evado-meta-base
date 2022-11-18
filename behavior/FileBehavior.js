@@ -35,7 +35,8 @@ module.exports = class FileBehavior extends Base {
 
     static createValidatorParams (data) {
         const params = {};
-        for (const key of ['imageOnly', 'maxSize', 'minSize', 'types', 'extensions']) {
+        const keys = ['imageOnly', 'maxSize', 'minSize', 'types', 'extensions'];
+        for (const key of keys) {
             if (data[key]) {
                 params[key] = data[key];
             }
@@ -123,7 +124,9 @@ module.exports = class FileBehavior extends Base {
     }
 
     updateRawOwner () {
-        return this.rawFile.directUpdate({owner: this.getId()});
+        return this.rawFile.directUpdate({
+            owner: this.getId()
+        });
     }
 
     setNameOnEmpty () {
@@ -157,7 +160,10 @@ module.exports = class FileBehavior extends Base {
 
     async deleteRawFile () {
         const RawClass = this.getRawClass();
-        const models = await this.spawn(RawClass).find({owner: this.getId()}).all();
+        const query = this.spawn(RawClass).find({
+            owner: this.getId()
+        });
+        const models = await query.all();
         return RawClass.delete(models);
     }
 };

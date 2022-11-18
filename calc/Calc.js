@@ -85,7 +85,7 @@ module.exports = class Calc extends Base {
         if (typeof data !== 'string') {
             return data;
         }
-        const first = data.charAt(0);
+        const first = data[0];
         if (first === '$') {
             return data.split('.');
         }

@@ -186,7 +186,8 @@ module.exports = class Model extends Base {
     }
 
     isValueChanged (attr) {
-        return !CommonHelper.isEqual(this._valueMap[attr.name || attr], this._oldValueMap[attr.name || attr]);
+        attr = attr.name || attr;
+        return !CommonHelper.isEqual(this._valueMap[attr], this._oldValueMap[attr]);
     }
 
     isSafeValuesChanges () {
@@ -537,7 +538,10 @@ module.exports = class Model extends Base {
     }
 
     getErrors (attrName) {
-        return !attrName ? this._errorMap : this.hasError(attrName) ? this._errorMap[attrName] : [];
+        if (!attrName) {
+            return this._errorMap;
+        }
+        return this.hasError(attrName) ? this._errorMap[attrName] : [];
     }
 
     getFirstError (attrName) {
@@ -582,7 +586,11 @@ module.exports = class Model extends Base {
     }
 
     clearErrors (attrName) {
-        attrName ? delete this._errorMap[attrName] : this._errorMap = {};
+        if (attrName) {
+            delete this._errorMap[attrName];
+        } else {
+            this._errorMap = {};
+        }
     }
 
     // WORKFLOW

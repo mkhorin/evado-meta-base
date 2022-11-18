@@ -53,8 +53,11 @@ module.exports = class Transition extends Base {
     }
 
     resolveStates (names) {
-        const states = Array.isArray(names) ? names.map(name => this.class.getState(name)) : [];
-        return states.filter(state => state);
+        if (!Array.isArray(names)) {
+            return [];
+        }
+        const states = names.map(name => this.class.getState(name));
+        return states.filter(v => !!v);
     }
 
     createCondition () {

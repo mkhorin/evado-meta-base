@@ -11,7 +11,9 @@ module.exports = class ExpressionValidator extends Base {
         if (typeof value !== 'string') {
             value = JSON.stringify(value);
         }
-        return this.createMessage(this.message, 'Value must be "{requiredValue}"', {requiredValue: value});
+        return this.createMessage(this.message, 'Value must be "{requiredValue}"', {
+            requiredValue: value
+        });
     }
 
     async validateAttr (name, model) {

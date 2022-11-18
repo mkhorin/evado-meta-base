@@ -21,6 +21,8 @@ module.exports = class AttrHeader extends Base {
     }
 
     replaceSelfAttr (text) {
-        return typeof text === 'string' ? text.replace('$self', this.name) : text;
+        return typeof text === 'string'
+            ? text.replace('$self', this.name)
+            : text;
     }
 };

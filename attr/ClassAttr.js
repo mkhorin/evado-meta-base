@@ -29,7 +29,9 @@ module.exports = class ClassAttr extends Base {
 
     getEmbeddedModelConstructor () {
         switch (this.type) {
-            case TypeHelper.TYPES.USER: return this.class.meta.hub.User;
+            case TypeHelper.TYPES.USER: {
+                return this.class.meta.hub.User;
+            }
         }
     }
 

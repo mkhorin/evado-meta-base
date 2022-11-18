@@ -30,7 +30,10 @@ module.exports = class Action extends Base {
     }
 
     hasValue (value) {
-        return value !== undefined && value !== null && value !== '' && value !== false;
+        return value !== undefined
+            && value !== null
+            && value !== ''
+            && value !== false;
     }
 
     validate (model) {
@@ -124,9 +127,11 @@ module.exports = class Action extends Base {
     }
 
     validateRegex (operator, operands, model) {
-        return operands.length < 2
-            ? this.logDataError(operator, operands)
-            : (new RegExp(operands[1], operands[2])).test(model.get(operands[0]));
+        if (operands.length < 2) {
+            return this.logDataError(operator, operands);
+        }
+        const regex = new RegExp(operands[1], operands[2]);
+        return regex.test(model.get(operands[0]));
     }
 
     validateEqual (operator, operands, model) {
@@ -164,7 +169,7 @@ module.exports = class Action extends Base {
     }
 
     logDataError (operator, operands) {
-        return this.log('error', `${operator}: operands invalid: ${JSON.stringify(operands)}`);
+        this.log('error', `${operator}: operands invalid: ${JSON.stringify(operands)}`);
     }
 
     log () {

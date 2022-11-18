@@ -1,3 +1,16 @@
+## 4.5.0
+
+* base/ClassIndexing
+    - skip indexes without attributes
+* base/Group
+    - add hidden group option
+* calc/CalcToken
+    - add database record ID as calculated token
+* helper/TypeHelper    
+    - add checkbox list and radio list view types
+* validator/EnumValidator
+    - check multiple enumeration values    
+
 ## 4.4.0
 
 * attr/ActionBinder

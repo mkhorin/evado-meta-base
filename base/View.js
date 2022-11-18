@@ -79,8 +79,16 @@ module.exports = class View extends Base {
         return this.attrs;
     }
 
+    getAttrsByViewType (type) {
+        return Array.isArray(this.viewTypeAttrMap[type])
+            ? this.viewTypeAttrMap[type]
+            : null;
+    }
+
     resolveAttr (name) {
-        return typeof name === 'string' ? this.getAttr(name) || this.class.getAttr(name) : name;
+        return typeof name === 'string'
+            ? this.getAttr(name) || this.class.getAttr(name)
+            : name;
     }
 
     prepare () {
@@ -96,7 +104,9 @@ module.exports = class View extends Base {
 
     createHeader () {
         const data = this.data.header;
-        this.header = data ? new ClassHeader({owner: this, data}) : this.class.header;
+        this.header = data
+            ? new ClassHeader({owner: this, data})
+            : this.class.header;
         this.createAttrHeader();
     }
 
@@ -117,6 +127,7 @@ module.exports = class View extends Base {
         this.backRefAttrs = [];
         this.eagerAttrs = [];
         this.eagerEmbeddedModels = {};
+        this.viewTypeAttrMap = {};
         for (const data of attrs) {
             this.appendAttr(this.createAttr(data));
         }
@@ -189,6 +200,7 @@ module.exports = class View extends Base {
         if (attr.data.signed) {
             this.signedAttrs.push(attr);
         }
+        ObjectHelper.push(attr, attr.viewType, this.viewTypeAttrMap);
     }
 
     createAttrHeader () {
@@ -369,7 +381,10 @@ module.exports = class View extends Base {
             return new config.Class({...config, ...params});
         }
         if (this.meta.DataModel) {
-            return new this.meta.DataModel.Class({...this.meta.DataModel, ...params});
+            return new this.meta.DataModel.Class({
+                ...this.meta.DataModel,
+                ...params
+            });
         }
         return new Model(params);
     }
