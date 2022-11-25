@@ -45,10 +45,13 @@ module.exports = class Validator extends Base {
         }
     }
 
-    static prepareRule ({type, config}, meta) {
+    static prepareRule (rule, meta) {
         try {
-            if (type === this.CUSTOM_VALIDATOR_TYPE) {
-                ClassHelper.resolveSpawn(config, meta.module);
+            if (rule.type === this.CUSTOM_VALIDATOR_TYPE) {
+                rule.config = ClassHelper.resolveSpawn(rule.config, meta.module);
+            }
+            if (rule.when?.Class) {
+                rule.when = ClassHelper.resolveSpawn(rule.when, meta.module);
             }
         } catch {
             meta.log('error', 'Validator: Invalid rule configuration:', config);
@@ -120,25 +123,27 @@ module.exports = class Validator extends Base {
             return this.createRelationValidator(...arguments);
         }
         switch (type) {
-            case TypeHelper.TYPES.STRING:  {
+            case TYPES.STRING:  {
                 return this.createValidator('string', name);
             }
-            case TypeHelper.TYPES.INTEGER: {
-                return this.createValidator('number', name, {integerOnly: true});
+            case TYPES.INTEGER: {
+                return this.createValidator('number', name, {
+                    integerOnly: true
+                });
             }
-            case TypeHelper.TYPES.BOOLEAN: {
+            case TYPES.BOOLEAN: {
                 return this.createValidator('boolean', name);
             }
-            case TypeHelper.TYPES.DATE: {
+            case TYPES.DATE: {
                 return this.createValidator('date', name);
             }
-            case TypeHelper.TYPES.FLOAT: {
+            case TYPES.FLOAT: {
                 return this.createValidator('number', name);
             }
-            case TypeHelper.TYPES.JSON: {
+            case TYPES.JSON: {
                 return this.createValidator('json', name);
             }
-            case TypeHelper.TYPES.USER: {
+            case TYPES.USER: {
                 return this.createValidator('user', name);
             }
         }
@@ -186,6 +191,7 @@ module.exports = class Validator extends Base {
      * @param {boolean} config.skipOnAnyError - Skip validation if model already contains error
      * @param {string} config.messageSource - Source of translations of custom error messages
      * @param {string} config.defaultMessageSource - Source of translations of default error messages
+     * @param {Object} config.when - Check need for validation (spawn condition/Condition)
      */
     constructor (config) {
         super({
@@ -194,6 +200,7 @@ module.exports = class Validator extends Base {
             skipOnAnyError: false,
             messageSource: 'app',
             defaultMessageSource: 'areto',
+            when: null,
             ...config
         });
     }
@@ -214,12 +221,12 @@ module.exports = class Validator extends Base {
     async execute (model) {
         if (Array.isArray(this.attrs)) {
             for (const name of this.attrs) {
-                if (!this.isSkippedAttr(name, model)) {
+                if (!await this.isSkippedAttr(name, model)) {
                     await this.validateAttr(name, model);
                 }
             }
         } else if (this.attrs) {
-            if (!this.isSkippedAttr(this.attrs, model)) {
+            if (!await this.isSkippedAttr(this.attrs, model)) {
                 await this.validateAttr(this.attrs, model);
             }
         } else if (!this.skipOnAnyError || !model.hasError()) {
@@ -230,7 +237,28 @@ module.exports = class Validator extends Base {
     isSkippedAttr (name, model) {
         return (this.skipOnAnyError && model.hasError())
             || (this.skipOnError && model.hasError(name))
-            || (this.skipOnEmpty && this.isEmptyValue(model.get(name)));
+            || (this.skipOnEmpty && this.isEmptyValue(model.get(name)))
+            || (this.when && this.resolveSkippingCondition(name, model));
+    }
+
+    resolveSkippingCondition () {
+        return this.when.Class
+            ? this.resolveCustomSkippingCondition(...arguments)
+            : this.resolveCalcSkippingCondition(...arguments);
+    }
+
+    async resolveCustomSkippingCondition (name, model) {
+        const attr = model.class.getAttr(name);
+        const condition = model.spawn(this.when, {attr});
+        const result = await condition.resolve(model);
+        return !result;
+    }
+
+    async resolveCalcSkippingCondition (name, model) {
+        const attr = model.class.getAttr(name);
+        const calc = attr.spawnCalc(this.when);
+        const result = await calc.resolve(model);
+        return !result;
     }
 
     hasAttr (name) {
@@ -270,5 +298,5 @@ module.exports.init();
 
 const ClassHelper = require('areto/helper/ClassHelper');
 const PromiseHelper = require('areto/helper/PromiseHelper');
-const TypeHelper = require('../helper/TypeHelper');
+const {TYPES} = require('../helper/TypeHelper');
 const Message = require('areto/i18n/Message');
