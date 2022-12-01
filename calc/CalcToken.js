@@ -460,8 +460,8 @@ module.exports = class CalcToken extends Base {
         return new Date(new Date().getFullYear() - 1, 0, 1);
     }
 
-    resolveParam ([name], {query}) {
-        return query.controller.getQueryParam(name);
+    resolveParam ([name], {model}) {
+        return model?.controller.getQueryParam(name);
     }
 
     resolveValidate (data, {model}) {
