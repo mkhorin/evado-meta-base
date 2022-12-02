@@ -105,7 +105,7 @@ module.exports = class View extends Base {
     createHeader () {
         const data = this.data.header;
         this.header = data
-            ? new ClassHeader({owner: this, data})
+            ? ClassHelper.spawn(this.meta.ClassHeader, {owner: this, data})
             : this.class.header;
         this.createAttrHeader();
     }
@@ -211,15 +211,15 @@ module.exports = class View extends Base {
                 owner: attr
             };
             if (config.data) {
-                attr.header = new AttrHeader(config);
+                attr.header = ClassHelper.spawn(this.meta.AttrHeader, config);
             } else if (attr.classAttr?.header) {
                 attr.header = attr.classAttr.header;
             } else if (attr.relation) {
                 config.data = '.$self';
-                attr.header = new AttrHeader(config);
+                attr.header = ClassHelper.spawn(this.meta.AttrHeader, config);
             } else if (attr.enum) {
                 config.data = ['$enum', '.$self'];
-                attr.header = new AttrHeader(config);
+                attr.header = ClassHelper.spawn(this.meta.AttrHeader, config);
             }
             if (attr.header) {
                 this.headerAttrs.push(attr);
@@ -397,18 +397,17 @@ module.exports = class View extends Base {
 };
 module.exports.init();
 
+const ClassHelper = require('areto/helper/ClassHelper');
 const CommonHelper = require('areto/helper/CommonHelper');
 const NestedHelper = require('areto/helper/NestedHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
-const AttrHeader = require('../header/AttrHeader');
 const ViewAttr = require('../attr/ViewAttr');
 const ObjectFilter = require('../filter/ObjectFilter');
 const Model = require('../model/Model');
 const ModelQuery = require('../model/ModelQuery');
 const Grouping = require('./Grouping');
-const ClassHeader = require('../header/ClassHeader');
 const Validator = require('../validator/Validator');
 const ViewBehaviors = require('./ViewBehaviors');
 const TreeView = require('./TreeView');

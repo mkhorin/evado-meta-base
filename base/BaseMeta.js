@@ -17,6 +17,12 @@ module.exports = class BaseMeta extends Base {
             AutoIncrementModel: {
                 Class: require('evado/model/AutoIncrement')
             },
+            AttrHeader: {
+                Class: require('../header/AttrHeader')
+            },
+            ClassHeader: {
+                Class: require('../header/ClassHeader')
+            },
             DataHistoryModel: {
                 Class: require('evado/model/DataHistory')
             },

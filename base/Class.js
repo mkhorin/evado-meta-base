@@ -99,7 +99,8 @@ module.exports = class Class extends Base {
     }
 
     getStartStateTransitions (state) {
-        state = this.startStateTransitionMap[state instanceof State ? state.name : state];
+        state = state instanceof State ? state.name : state;
+        state = this.startStateTransitionMap[state];
         return Array.isArray(state) ? state : null;
     }
 
@@ -183,7 +184,9 @@ module.exports = class Class extends Base {
     }
 
     createIndexing () {
-        return this.parent ? null : new ClassIndexing({class: this});
+        if (!this.parent) {
+            return new ClassIndexing({class: this});
+        }
     }
 
     createIndexes () {
@@ -193,7 +196,7 @@ module.exports = class Class extends Base {
     createHeader () {
         const data = this.data.header;
         if (data) {
-            this.header = new ClassHeader({owner: this, data});
+            this.header = ClassHelper.spawn(this.meta.ClassHeader, {owner: this, data});
         }
         this.createAttrHeader();
         this.views.forEach(view => view.createHeader());
@@ -405,22 +408,22 @@ module.exports = class Class extends Base {
 
     getRelationAttrsOnUpdate () {
         if (!this._relationAttrsOnUpdate) {
-            this._relationAttrsOnUpdate = this.resolveRelationAttrsOnAction('onUpdate');
+            this._relationAttrsOnUpdate = this.resolveRelationAttrsByAction('onUpdate');
         }
         return this._relationAttrsOnUpdate;
     }
 
     getRelationAttrsOnDelete () {
         if (!this._relationAttrsOnDelete) {
-            this._relationAttrsOnDelete = this.resolveRelationAttrsOnAction('onDelete');
+            this._relationAttrsOnDelete = this.resolveRelationAttrsByAction('onDelete');
         }
         return this._relationAttrsOnDelete;
     }
 
-    resolveRelationAttrsOnAction (action) {
+    resolveRelationAttrsByAction (action) {
         const nulls = [], cascades = [], locks = [];
-        for (const cls of this.meta.classes) {
-            for (const attr of cls.attrs) {
+        for (const {attrs} of this.meta.classes) {
+            for (const attr of attrs) {
                 const rel = attr.relation;
                 if (rel && (rel.refClass === this || this.hasAncestor(rel.refClass))) {
                     switch (rel[action]) {
@@ -484,13 +487,13 @@ module.exports = class Class extends Base {
 };
 module.exports.init();
 
+const ClassHelper = require('areto/helper/ClassHelper');
 const ObjectHelper = require('areto/helper/ObjectHelper');
 const InheritanceHelper = require('../helper/InheritanceHelper');
 const MetaHelper = require('../helper/MetaHelper');
 const ClassAttr = require('../attr/ClassAttr');
 const ClassBehaviors = require('./ClassBehaviors');
 const ClassCondition = require('./ClassCondition');
-const ClassHeader = require('../header/ClassHeader');
 const ClassKey = require('./ClassKey');
 const ClassIndexing = require('./ClassIndexing');
 const ClassVersion = require('./ClassVersion');
