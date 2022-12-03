@@ -319,14 +319,18 @@ module.exports = class ModelRelated extends Base {
     }
 
     getMultipleRef (attr, {links, unlinks, deletes}) {
-        let key = attr.relation.refAttrName;
         let value = this.model.get(attr);
-        value = Array.isArray(value) ? value : [];
+        if (!Array.isArray(value)) {
+            value = [];
+        }
+        const key = attr.relation.refAttrName;
         if (unlinks.length) {
-            value = MongoHelper.exclude(unlinks.map(model => model.get(key)), value);
+            unlinks = unlinks.map(model => model.get(key));
+            value = MongoHelper.exclude(unlinks, value);
         }
         if (deletes.length) {
-            value = MongoHelper.exclude(deletes.map(model => model.get(key)), value);
+            deletes = deletes.map(model => model.get(key));
+            value = MongoHelper.exclude(deletes, value);
         }
         if (links.length) {
             links = links.map(model => model.get(key));
@@ -353,18 +357,23 @@ module.exports = class ModelRelated extends Base {
 
     async changeRelationBackRef ({relation}, data) {
         for (const model of data.links) {
-            model.related.setResolvedChanges(relation.refAttr, {links: [this.model]});
+            model.related.setResolvedChanges(relation.refAttr, {
+                links: [this.model]
+            });
             await model.update();
         }
         for (const model of data.unlinks) {
-            model.related.setResolvedChanges(relation.refAttr, {unlinks: [this.model]});
+            model.related.setResolvedChanges(relation.refAttr, {
+                unlinks: [this.model]
+            });
             await model.update();
         }
     }
 
     async changeBackRef ({relation}, data) {
         for (const model of data.links) {
-            model.set(relation.refAttrName, this.model.get(relation.linkAttrName));
+            const value = this.model.get(relation.linkAttrName);
+            model.set(relation.refAttrName, value);
             await model.update();
         }
         for (const model of data.unlinks) {
@@ -427,7 +436,8 @@ module.exports = class ModelRelated extends Base {
     checkBackRefExist ({linkAttrName, refAttrName, refClass}, item) {
         const link = this.model.get(linkAttrName);
         const query = refClass.find({[refAttrName]: link});
-        const ids = query.limit(2).column(refClass.getKey());
+        const key = refClass.getKey();
+        const ids = query.limit(2).column(key);
         return this.isExistingId(item[refAttrName], ids);
     }
 
@@ -502,7 +512,9 @@ module.exports = class ModelRelated extends Base {
             }
         }
         let names = this.model.getSortedRelationNames();
-        names = Array.isArray(names) ? names : [];
+        if (!Array.isArray(names)) {
+            names = [];
+        }
         if (!names.includes(attr.name)) {
             names.push(attr.name);
             await this.model.class.update(this.model.getId(), {
@@ -514,7 +526,7 @@ module.exports = class ModelRelated extends Base {
     async deleteOrder (attr) {
         await this.unsetOrderField(attr.relation.refClass, attr);
         const names = this.model.getSortedRelationNames();
-        if (names) {
+        if (Array.isArray(names)) {
             ArrayHelper.remove(attr.name, names);
             await this.model.class.update(this.model.getId(), {
                 [this.model.class.RELATION_SORTED_ATTR]: names
@@ -535,8 +547,9 @@ module.exports = class ModelRelated extends Base {
     }
 
     unsetOrderField (refClass, attr) {
+        const table = refClass.getTable();
         const key = this.getOrderKey(attr);
-        return refClass.getDb().unsetAll(refClass.getTable(), {}, {[key]: true});
+        return refClass.getDb().unsetAll(table, {}, {[key]: true});
     }
 };
 

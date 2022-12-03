@@ -93,9 +93,12 @@ module.exports = class ExistValidator extends Base {
         const names = this.filter.split(',');
         for (let name of names) {
             name = name.trim();
-            model.class.hasAttr(name)
-                ? query.and({[name]: this.getValue(name, model)})
-                : this.addError(model, attrName, this.getInvalidFilterAttrMessage(name));
+            if (model.class.hasAttr(name)) {
+                const value = this.getValue(name, model);
+                query.and({[name]: value});
+            } else {
+                this.addError(model, attrName, this.getInvalidFilterAttrMessage(name));
+            }
         }
         return query;
     }

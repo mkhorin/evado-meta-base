@@ -29,16 +29,14 @@ module.exports = class FileSource extends Base {
 
     async loadClasses () {
         const dir = this.getPath(this.classDirectory);
-        const files = await FileHelper.readDirectory(dir);
+        const names = await FileHelper.readDirectory(dir);
         const items = [];
-        for (const file of FileHelper.filterJsonFiles(files)) {
-            try {
-                const baseName = FileHelper.getBasename(file);
-                const data = await FileHelper.readJsonFile(path.join(dir, file));
-                data.name = baseName;
+        for (const name of FileHelper.filterJsonFiles(names)) {
+            const file = path.join(dir, name);
+            const data = await this.readJsonFile(file);
+            if (data) {
+                data.name = FileHelper.getBasename(name);
                 items.push(data);
-            } catch (err) {
-                this.meta.log('error', `Invalid JSON: ${path.join(dir, file)}`, err);
             }
         }
         return items;
@@ -47,26 +45,39 @@ module.exports = class FileSource extends Base {
     async loadViews () {
         const items = [];
         const dir = this.getPath(this.viewDirectory);
-        for (const file of await FileHelper.readDirectory(dir)) {
-            const classDirectory = path.join(dir, file);
+        const names = await FileHelper.readDirectory(dir);
+        for (const name of names) {
+            const classDirectory = path.join(dir, name);
             const stat = await fs.promises.stat(classDirectory);
             if (stat.isDirectory()) {
-                items.push(...await this.loadClassViews(file, classDirectory));
+                const views = await this.loadViewsByClass(name, classDirectory);
+                items.push(...views);
             }
         }
         return items;
     }
 
-    async loadClassViews (className, dir) {
+    async loadViewsByClass (className, dir) {
         const items = [];
-        const files = await FileHelper.readDirectory(dir);
-        for (const file of FileHelper.filterJsonFiles(files)) {
-            const data = await FileHelper.readJsonFile(path.join(dir, file));
-            data.class = className;
-            data.name = FileHelper.getBasename(file);
-            items.push(data);
+        const names = await FileHelper.readDirectory(dir);
+        for (const name of FileHelper.filterJsonFiles(names)) {
+            const file = path.join(dir, name);
+            const data = await this.readJsonFile(file);
+            if (data) {
+                data.class = className;
+                data.name = FileHelper.getBasename(name);
+                items.push(data);
+            }
         }
         return items;
+    }
+
+    async readJsonFile (file) {
+        try {
+            return await FileHelper.readJsonFile(file);
+        } catch (err) {
+            this.meta.log('error', `Invalid JSON: ${file}`, err);
+        }
     }
 };
 

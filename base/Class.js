@@ -313,11 +313,13 @@ module.exports = class Class extends Base {
     }
 
     createView (data) {
-        if (this.getView(data.name)) {
-            return this.log('error', `View already exists: ${data.name}`);
+        const name = data.name;
+        if (this.getView(name)) {
+            return this.log('error', `View already exists: ${name}`);
         }
-        this.viewMap[data.name] = new View({class: this, data});
-        this.views.push(this.viewMap[data.name]);
+        const view = new View({class: this, data});
+        this.views.push(view);
+        this.viewMap[name] = view;
         this.data.views.push(data);
     }
 

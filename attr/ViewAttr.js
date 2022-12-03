@@ -440,8 +440,6 @@ module.exports = class ViewAttr extends Base {
         this.translatable = this.isStateView() || !!this.enum;
     }
 
-    // SEARCH
-
     getSearchCondition (value) {
         const db = this.class.getDb();
         const condition = TypeHelper.getSearchCondition(value, this.type, this.name, db);
@@ -454,8 +452,6 @@ module.exports = class ViewAttr extends Base {
     resolveEagerDepth () {
         return MetaHelper.resolveInteger(this.data.eagerDepth, this.DEFAULT_EAGER_DEPTH, this.MAX_EAGER_DEPTH);
     }
-
-    // LOG
 
     log () {
         CommonHelper.log(this.getMeta(), `${this.constructor.name}: ${this.id}`, ...arguments);

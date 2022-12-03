@@ -24,10 +24,12 @@ module.exports = class TotalFileSizeValidator extends Base {
     async validateAttr (name, model) {
         const attr = model.view.getAttr(name);
         if (!attr.relation) {
-            return this.addError(model, name, this.createMessage('Relation not defined'));
+            const message = this.createMessage('Relation not defined');
+            return this.addError(model, name, message);
         }
         if (!attr.relation.refClass.behaviors.fileItem) {
-            return this.addError(model, name, this.createMessage('Reference class has no file behavior'));
+            const message = this.createMessage('Reference class has no file behavior');
+            return this.addError(model, name, message);
         }
         const size = await this.getTotalSize(attr, model);
         this.checkTotalSize(size, ...arguments);

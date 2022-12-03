@@ -28,7 +28,8 @@ module.exports = class AutoIncrementBehavior extends Base {
     async afterDefaultValues () {
         const query = this.getQueryByName();
         const current = await query.scalar('value');
-        this.owner.set(this.attrName, this.getNextValue(current));
+        const value = this.getNextValue(current);
+        this.owner.set(this.attrName, value);
     }
 
     async beforeInsert () {
@@ -46,13 +47,16 @@ module.exports = class AutoIncrementBehavior extends Base {
     }
 
     getExtremeValue () {
-        return this.owner.class.createQuery().order({
-            [this.attrName]: this.step > 0 ? -1 : 1
-        }).scalar(this.attrName);
+        const query = this.owner.class.createQuery();
+        const direction = this.step > 0 ? -1 : 1;
+        query.order({[this.attrName]: direction});
+        return query.scalar(this.attrName);
     }
 
     getNextValue (value) {
-        return Number.isSafeInteger(value) ? (value + this.step) : this.start;
+        return Number.isSafeInteger(value)
+            ? value + this.step
+            : this.start;
     }
 
     getQueryByName () {

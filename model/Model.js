@@ -418,7 +418,9 @@ module.exports = class Model extends Base {
         for (const attr of this.view.getAttrs()) {
             const classAttr = this.class.getAttr(attr.name);
             if (classAttr && !attr.isReadOnly() && !classAttr.isReadOnly()) {
-                this.set(attr, TypeHelper.cast(this.get(attr), attr.getCastType()));
+                const type = attr.getCastType();
+                const value = TypeHelper.cast(this.get(attr), type);
+                this.set(attr, value);
             }
         }
     }
@@ -426,8 +428,10 @@ module.exports = class Model extends Base {
     getValidators (attrName, type) {
         const validators = [];
         for (const validator of this.ensureValidators()) {
-            if ((!attrName || validator.hasAttr(attrName)) && (!type || validator.type === type)) {
-                validators.push(validator);
+            if (!attrName || validator.hasAttr(attrName)) {
+                if (!type || validator.type === type) {
+                    validators.push(validator);
+                }
             }
         }
         return validators;
@@ -700,7 +704,11 @@ module.exports = class Model extends Base {
     // OUTPUT
 
     output (config) {
-        return (new ModelOutput({model: this, ...config})).output();
+        const instance = new ModelOutput({
+            model: this,
+            ...config
+        });
+        return instance.output();
     }
 };
 

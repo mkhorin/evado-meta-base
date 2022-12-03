@@ -72,11 +72,11 @@ module.exports = class ModelQuery extends Base {
 
     with (...relations) {
         this._with = this._with || {};
-        for (const data of relations) {
-            if (typeof data === 'string') {
-                this._with[data] = {view: true};
+        for (const relation of relations) {
+            if (typeof relation === 'string') {
+                this._with[relation] = {view: true};
             } else {
-                Object.assign(this._with, data);
+                Object.assign(this._with, relation);
             }
         }
         return this;
@@ -263,7 +263,8 @@ module.exports = class ModelQuery extends Base {
         for (const attrs of this.view.eagerEmbeddedModels) {
             const values = MetaHelper.getModelsValues(models, attrs);
             if (values.length) {
-                const data = await attrs[0].embeddedModel.findById(values).indexByKey().all();
+                const query = attrs[0].embeddedModel.findById(values);
+                const data = await query.indexByKey().all();
                 for (const model of models) {
                     MetaHelper.setModelRelated(data, model, attrs);
                 }

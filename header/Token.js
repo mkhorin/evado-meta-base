@@ -37,7 +37,9 @@ module.exports = class Token extends Base {
     getHandlerClass (name) {
         switch (name) {
             case '$class': return ClassHandler;
+            case '$empty': return EmptyHandler;
             case '$enum': return EnumHandler;
+            case '$join': return JoinHandler;
             case '$map': return MapHandler;
             case '$method': return MethodHandler;
             case '$moment': return MomentHandler;
@@ -177,7 +179,9 @@ module.exports = class Token extends Base {
 
 const BaseHandler = require('./BaseHandler');
 const ClassHandler = require('./ClassHandler');
+const EmptyHandler = require('./EmptyHandler');
 const EnumHandler = require('./EnumHandler');
+const JoinHandler = require('./JoinHandler');
 const MapHandler = require('./MapHandler');
 const MethodHandler = require('./MethodHandler');
 const MomentHandler = require('./MomentHandler');

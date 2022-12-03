@@ -70,7 +70,11 @@ module.exports = class Transition extends Base {
 
     resolveCondition (model) {
         const config = this._condition;
-        return config ? (new config.Class(config)).resolve(model) : true;
+        if (!config) {
+            return true;
+        }
+        const condition = new config.Class(config);
+        return condition.resolve(model);
     }
 
     createTransitConfig () {

@@ -14,7 +14,9 @@ module.exports = class S3Behavior extends Base {
     }
 
     getSignedDownloadUrl () {
-        return this.getStorage().getSignedDownloadUrl(this.getFilename(), this.getName());
+        const file = this.getFilename();
+        const name = this.getName();
+        return this.getStorage().getSignedDownloadUrl(file, name);
     }
 
     async beforeValidate () {
