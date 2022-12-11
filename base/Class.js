@@ -196,7 +196,10 @@ module.exports = class Class extends Base {
     createHeader () {
         const data = this.data.header;
         if (data) {
-            this.header = ClassHelper.spawn(this.meta.ClassHeader, {owner: this, data});
+            this.header = ClassHelper.spawn(this.meta.ClassHeader, {
+                owner: this,
+                data
+            });
         }
         this.createAttrHeader();
         this.views.forEach(view => view.createHeader());
@@ -452,16 +455,17 @@ module.exports = class Class extends Base {
     }
 
     resolveActiveDescendants () {
-        const descendants = this.getRealDescendants();
+        const classes = this.getRealDescendants();
         if (!this.isAbstract()) {
-            descendants.push(this);
+            classes.push(this);
         }
-        return descendants;
+        return classes;
     }
 
     getRealDescendants () {
         if (!this._realDescendants) {
-            this._realDescendants = this.getDescendants().filter(cls => !cls.isAbstract());
+            const classes = this.getDescendants();
+            this._realDescendants = classes.filter(cls => !cls.isAbstract());
         }
         return this._realDescendants;
     }

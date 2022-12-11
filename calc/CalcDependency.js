@@ -26,9 +26,13 @@ module.exports = class CalcDependency extends Base {
         const view = this.calc.view;
         const attr = view.resolveAttr(name);
         if (attr) {
-            return attr.relation ? attr.relation.getRefAttrType() : attr.type;
+            return attr.relation
+                ? attr.relation.getRefAttrType()
+                : attr.type;
         }
-        return name === view.getKey() ? view.class.key.type : null;
+        return name === view.getKey()
+            ? view.class.key.type
+            : null;
     }
 
     getDependencyValue ({dependency}) {
@@ -42,7 +46,9 @@ module.exports = class CalcDependency extends Base {
 
     resolveDependency (data) {
         const value = this.getDependencyValue(data.query);
-        return this._type && value ? TypeHelper.cast(value, this._type) : value;
+        return value && this._type
+            ? TypeHelper.cast(value, this._type)
+            : value;
     }
 
     async resolveDependencyRelation (data) {

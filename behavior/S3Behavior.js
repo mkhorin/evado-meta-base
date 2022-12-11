@@ -25,8 +25,10 @@ module.exports = class S3Behavior extends Base {
     }
 
     async checkFileStat () {
-        if (this.rawFile && !await this.rawFile.isEqualStat()) {
-            this.owner.addError(this.fileAttr.name, 'File stat is not matched');
+        if (this.rawFile) {
+            if (!await this.rawFile.isEqualStat()) {
+                this.owner.addError(this.fileAttr.name, 'File stat is not matched');
+            }
         }
     }
 };

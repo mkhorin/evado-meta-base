@@ -37,8 +37,10 @@ module.exports = class EnumValidator extends Base {
     }
 
     validateValue (value, attr, model) {
-        if (!attr.enum.hasItem(value) && !attr.enum.getQueryableItem(value)) {
-            this.addError(model, attr.name, this.getMessage());
+        if (!attr.enum.hasItem(value)) {
+            if (!attr.enum.getQueryableItem(value)) {
+                this.addError(model, attr.name, this.getMessage());
+            }
         }
     }
 };

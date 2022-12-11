@@ -16,8 +16,12 @@ module.exports = class ClassBehaviors extends Base {
 
     getAttrItemBehaviors (attr) {
         const items = super.getAttrItemBehaviors(attr);
-        if (attr.data.trim && !attr.isReadOnly() && (attr.isString() || attr.isText())) {
-            items.push(this.getAttrBehaviorData(attr, {type: 'trim'}));
+        if (attr.data.trim && !attr.isReadOnly()) {
+            if (attr.isString() || attr.isText()) {
+                items.push(this.getAttrBehaviorData(attr, {
+                    type: 'trim'
+                }));
+            }
         }
         return items;
     }

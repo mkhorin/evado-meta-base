@@ -60,7 +60,9 @@ module.exports = class AutoIncrementBehavior extends Base {
     }
 
     getQueryByName () {
-        return this.getQuery().and({name: this.getName()});
+        return this.getQuery().and({
+            name: this.getName()
+        });
     }
 
     getQuery () {
@@ -71,8 +73,10 @@ module.exports = class AutoIncrementBehavior extends Base {
         const query = this.getQueryByName();
         const currentValue = await query.scalar('value');
         const value = await this.getExtremeValue();
-        if (value !== undefined && (currentValue === undefined || value > currentValue)) {
-            await query.upsert({value});
+        if (value !== undefined) {
+            if (currentValue === undefined || value > currentValue) {
+                await query.upsert({value});
+            }
         }
     }
 

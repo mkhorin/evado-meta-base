@@ -78,7 +78,8 @@ module.exports = class ModelRelated extends Base {
 
     async forceResolve (attr) {
         attr = this.resolveRelationAttr(attr);
-        const query = (await this.createQuery(attr)).withReadData();
+        const query = await this.createQuery(attr);
+        query.withReadData();
         const result = attr.relation.multiple
             ? await query.all()
             : await query.one();

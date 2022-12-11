@@ -35,15 +35,22 @@ module.exports = class FileBehavior extends Base {
 
     static createValidatorParams (data) {
         const params = {};
-        const keys = ['imageOnly', 'maxSize', 'minSize', 'types', 'extensions'];
+        const keys = [
+            'imageOnly',
+            'maxSize',
+            'minSize',
+            'types',
+            'extensions'
+        ];
         for (const key of keys) {
             if (data[key]) {
                 params[key] = data[key];
             }
         }
-        return Object.values(params).length ? params : null;
+        if (Object.values(params).length) {
+            return params;
+        }
     }
-
 
     isImage () {
         return this.getMediaType()?.indexOf('image') === 0;
@@ -131,13 +138,15 @@ module.exports = class FileBehavior extends Base {
 
     setNameOnEmpty () {
         if (this.rawFile && this.nameAttr && !this.getName()) {
-            this.set(this.nameAttr, this.rawFile.getName());
+            const name = this.rawFile.getName();
+            this.set(this.nameAttr, name);
         }
     }
 
     async setRawFile () {
         const id = this.get(this.fileAttr);
-        this.rawFile = await this.findPending(id).one();
+        const query = this.findPending(id);
+        this.rawFile = await query.one();
         if (!this.rawFile) {
             this.owner.addError(this.fileAttr.name, 'File not found');
         }
@@ -149,7 +158,8 @@ module.exports = class FileBehavior extends Base {
             this.set(this.SIZE_ATTR, this.rawFile.getSize());
             this.set(this.TYPE_ATTR, this.rawFile.getMediaType());
             if (this.hashing) {
-                this.set(this.HASH_ATTR, await this.calculateHash());
+                const hash = await this.calculateHash();
+                this.set(this.HASH_ATTR, hash);
             }
         }
     }
@@ -164,7 +174,7 @@ module.exports = class FileBehavior extends Base {
             owner: this.getId()
         });
         const models = await query.all();
-        return RawClass.delete(models);
+        await RawClass.delete(models);
     }
 };
 module.exports.init();

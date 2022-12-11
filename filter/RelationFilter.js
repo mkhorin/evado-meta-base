@@ -18,7 +18,8 @@ module.exports = class RelationFilter extends Base {
     }
 
     async filter (query, model) {
-        return query.and(await this.solver.resolve({query, model}));
+        const condition = await this.solver.resolve({query, model});
+        return query.and(condition);
     }
 
     async apply (query, model) {

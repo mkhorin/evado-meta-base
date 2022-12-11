@@ -77,7 +77,8 @@ module.exports = class Relation extends Base {
 
     setQueryByModel (query, model) {
         if (model.isRelationSorted(this.attr)) {
-            query.order({[model.related.getOrderKey(this.attr)]: 1});
+            const key = model.related.getOrderKey(this.attr);
+            query.order({[key]: 1});
         }
         if (!this.multiple) {
             query.limit(1);
@@ -173,9 +174,10 @@ module.exports = class Relation extends Base {
 
     sortRelatedModels (models) {
         if (this.multiple && this.isSortable()) {
-            for (const model of models) {
-                const key = model.related.getOrderKey(this.attr);
-                model.related.get(this.attr).sort((a, b) => a.get(key) - b.get(key));
+            for (const {related} of models) {
+                const key = related.getOrderKey(this.attr);
+                const relatives = related.get(this.attr);
+                relatives.sort((a, b) => a.get(key) - b.get(key));
             }
         }
     }

@@ -20,7 +20,8 @@ module.exports = class SignatureDataCollector extends Base {
         }
         const result = [];
         for (const attr of model.view.signedAttrs) {
-            result.push(await this.getAttrData(attr, model, depth));
+            const data = await this.getAttrData(attr, model, depth);
+            result.push(data);
         }
         return result;
     }
@@ -42,7 +43,8 @@ module.exports = class SignatureDataCollector extends Base {
         }
         const result = [];
         for (const model of models) {
-            result.push(await this.getModelData(model, depth + 1));
+            const data = await this.getModelData(model, depth + 1);
+            result.push(data);
         }
         return result;
     }

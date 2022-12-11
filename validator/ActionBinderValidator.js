@@ -37,8 +37,10 @@ module.exports = class ActionBinderValidator extends Base {
         if (!this.actionBinder.validateAction('enable', model)) {
             const empty = this.isEmptyValue(model.get(name));
             const oldEmpty = this.isEmptyValue(model.getOldValue(name));
-            if ((!empty || !oldEmpty) && model.isValueChanged(name)) {
-                this.addError(model, name, this.getDisabledMessage());
+            if (!empty || !oldEmpty) {
+                if (model.isValueChanged(name)) {
+                    this.addError(model, name, this.getDisabledMessage());
+                }
             }
         }
     }

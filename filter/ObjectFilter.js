@@ -36,11 +36,12 @@ module.exports = class ObjectFilter extends Base {
     }
 
     async apply (query) {
-        query.and(await this.solver.resolve({
+        const condition = await this.solver.resolve({
             view: query.view,
             user: query.user,
             query
-        }));
+        });
+        query.and(condition);
     }
 
     log () {
