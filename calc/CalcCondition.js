@@ -52,7 +52,9 @@ module.exports = class CalcCondition extends Base {
     }
 
     prepareChildren (items) {
-        this._children = items.map(data => this.createCondition(data)).filter(v => !!v);
+        this._children = items
+            .map(data => this.createCondition(data))
+            .filter(v => !!v);
         return this._children.find(item => !item.isStatic())
             ? this.resolveChildren
             : this.resolveStatic;

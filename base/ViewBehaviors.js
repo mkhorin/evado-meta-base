@@ -106,7 +106,8 @@ module.exports = class ViewBehaviors extends Base {
 
     createDefaultItems () {
         const result = [];
-        for (const Class of this.constructor.getDefaultBehaviorClasses()) {
+        const Classes = this.constructor.getDefaultBehaviorClasses();
+        for (const Class of Classes) {
             const item = this.createDefaultItem(Class);
             if (item) {
                 result.push(item);

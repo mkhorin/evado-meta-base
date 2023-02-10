@@ -70,6 +70,7 @@ module.exports = class ModelOutput extends Base {
     }
 
     outputRelatedModel (model) {
-        return (new this.constructor({model})).output();
+        const instance = new this.constructor({model});
+        return instance.output();
     }
 };

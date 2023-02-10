@@ -324,14 +324,19 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveJoin (values) {
-        const join = value => Array.isArray(value) ? value.join(this._separator) : value;
+        const join = value => Array.isArray(value)
+            ? value.join(this._separator)
+            : value;
         return values.map(join).join(this._separator);
     }
 
     resolveMap (values) {
-        return [].concat(...values.map(value => {
-            return Array.isArray(value) ? value.map(this._method) : this._method(value);
-        }));
+        const results = values.map(value => {
+            return Array.isArray(value)
+                ? value.map(this._method)
+                : this._method(value);
+        });
+        return [].concat(...results);
     }
 
     resolveMaster ({model}) {
@@ -362,28 +367,28 @@ module.exports = class CalcToken extends Base {
         if (!value && value !== 0) {
             return value;
         }
-        value = moment.duration(value, this._units).locale(this.calc.language);
-        return typeof value[this._method] === 'function'
-            ? value[this._method](...this._arguments)
-            : value;
+        const date = moment.duration(value, this._units).locale(this.calc.language);
+        return typeof date[this._method] === 'function'
+            ? date[this._method](...this._arguments)
+            : date;
     }
 
     resolveDurationTime ([value]) {
         if (!value && value !== 0) {
             return value;
         }
-        value = moment.duration(value, this._units).asMilliseconds();
-        return moment.utc(value).format(this._format);
+        const ms = moment.duration(value, this._units).asMilliseconds();
+        return moment.utc(ms).format(this._format);
     }
 
     resolveMoment ([value]) {
         if (!value) {
             return value;
         }
-        value = moment(value).locale(this.calc.language);
-        return typeof value[this._method] === 'function'
-            ? value[this._method](...this._arguments)
-            : value;
+        const date = moment(value).locale(this.calc.language);
+        return typeof date[this._method] === 'function'
+            ? date[this._method](...this._arguments)
+            : date;
     }
 
     resolvePlaceholder ([value]) {
@@ -428,9 +433,10 @@ module.exports = class CalcToken extends Base {
     }
 
     resolveNumber ([value]) {
-        return typeof value !== 'number'
-            ? parseFloat(typeof value !== 'string' ? String(value) : value)
-            : value;
+        if (typeof value === 'number') {
+            return value;
+        }
+        return parseFloat(typeof value !== 'string' ? String(value) : value);
     }
 
     resolveCurrentMonth () {

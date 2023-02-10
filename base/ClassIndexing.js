@@ -21,7 +21,8 @@ module.exports = class ClassIndexing extends Base {
     }
 
     async create () {
-        for (const item of this.getIndexItems()) {
+        const items = this.getIndexItems();
+        for (const item of items) {
             await this.createIndex(item);
         }
         this.log('info', 'Indexes created');
@@ -39,7 +40,8 @@ module.exports = class ClassIndexing extends Base {
         const indexes = this.getIndexItemsByClass(this.class);
         const descendants = this.class.getDescendants();
         for (const cls of descendants) {
-            indexes.push(...this.getIndexItemsByClass(cls));
+            const items = this.getIndexItemsByClass(cls);
+            indexes.push(...items);
         }
         if (descendants.length) {
             indexes.push([{[this.class.CLASS_ATTR]: 1}]);
@@ -65,7 +67,8 @@ module.exports = class ClassIndexing extends Base {
     getIndexItemByAttr (attr) {
         const indexing = attr.data.indexing;
         if (indexing) {
-            return [{[attr.name]: indexing}, {unique: attr.isUnique()}];
+            const unique = attr.isUnique();
+            return [{[attr.name]: indexing}, {unique}];
         }
     }
 

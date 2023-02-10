@@ -65,11 +65,11 @@ module.exports = class TypeHelper extends Base {
                     : value;
             }
             case this.TYPES.ID: {
-                if (value instanceof ObjectID) {
+                if (value instanceof ObjectId) {
                     return value;
                 }
-                return ObjectID.isValid(value)
-                    ? ObjectID(value)
+                return ObjectId.isValid(value)
+                    ? new ObjectId(value)
                     : null;
             }
             case this.TYPES.INTEGER: {
@@ -122,4 +122,4 @@ module.exports.init();
 
 const DateHelper = require('areto/helper/DateHelper');
 const EscapeHelper = require('areto/helper/EscapeHelper');
-const {ObjectID} = require('mongodb');
+const {ObjectId} = require('mongodb');

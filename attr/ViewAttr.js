@@ -433,7 +433,11 @@ module.exports = class ViewAttr extends Base {
     }
 
     resolveSearchDepth () {
-        return MetaHelper.resolveInteger(this.data.searchDepth, this.DEFAULT_SEARCH_DEPTH, this.MAX_SEARCH_DEPTH);
+        return MetaHelper.resolveInteger(
+            this.data.searchDepth,
+            this.DEFAULT_SEARCH_DEPTH,
+            this.MAX_SEARCH_DEPTH
+        );
     }
 
     setTranslatable () {
@@ -450,7 +454,11 @@ module.exports = class ViewAttr extends Base {
     }
 
     resolveEagerDepth () {
-        return MetaHelper.resolveInteger(this.data.eagerDepth, this.DEFAULT_EAGER_DEPTH, this.MAX_EAGER_DEPTH);
+        return MetaHelper.resolveInteger(
+            this.data.eagerDepth,
+            this.DEFAULT_EAGER_DEPTH,
+            this.MAX_EAGER_DEPTH
+        );
     }
 
     log () {

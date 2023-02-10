@@ -503,7 +503,8 @@ module.exports = class ModelRelated extends Base {
         const query = refClass.createQuery();
         const db = query.getDb();
         const table = query.getTable();
-        await attr.relation.setQueryByDoc(query, this.model.getValues());
+        const values = this.model.getValues();
+        await attr.relation.setQueryByDoc(query, values);
         const orderKey = this.getOrderKey(attr);
         const items = await query.select([refKey, orderKey]).raw().all();
         for (const item of items) {

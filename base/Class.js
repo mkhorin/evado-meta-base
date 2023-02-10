@@ -430,11 +430,26 @@ module.exports = class Class extends Base {
         for (const {attrs} of this.meta.classes) {
             for (const attr of attrs) {
                 const rel = attr.relation;
-                if (rel && (rel.refClass === this || this.hasAncestor(rel.refClass))) {
-                    switch (rel[action]) {
-                        case 'null': nulls.push(attr); break;
-                        case 'cascade': cascades.push(attr); break;
-                        case 'lock': locks.push(attr); break;
+                if (!rel) {
+                    continue;
+                }
+                if (rel.refClass !== this) {
+                    if (!this.hasAncestor(rel.refClass)) {
+                        continue;
+                    }
+                }
+                switch (rel[action]) {
+                    case 'null': {
+                        nulls.push(attr);
+                        break;
+                    }
+                    case 'cascade': {
+                        cascades.push(attr);
+                        break;
+                    }
+                    case 'lock': {
+                        locks.push(attr);
+                        break;
                     }
                 }
             }

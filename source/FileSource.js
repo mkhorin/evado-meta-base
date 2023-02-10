@@ -31,7 +31,8 @@ module.exports = class FileSource extends Base {
         const dir = this.getPath(this.classDirectory);
         const names = await FileHelper.readDirectory(dir);
         const items = [];
-        for (const name of FileHelper.filterJsonFiles(names)) {
+        const jsonNames= FileHelper.filterJsonFiles(names);
+        for (const name of jsonNames) {
             const file = path.join(dir, name);
             const data = await this.readJsonFile(file);
             if (data) {
@@ -59,8 +60,9 @@ module.exports = class FileSource extends Base {
 
     async loadViewsByClass (className, dir) {
         const items = [];
-        const names = await FileHelper.readDirectory(dir);
-        for (const name of FileHelper.filterJsonFiles(names)) {
+        const files = await FileHelper.readDirectory(dir);
+        const jsonFiles = FileHelper.filterJsonFiles(files);
+        for (const name of jsonFiles) {
             const file = path.join(dir, name);
             const data = await this.readJsonFile(file);
             if (data) {

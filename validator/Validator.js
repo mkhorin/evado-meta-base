@@ -59,7 +59,8 @@ module.exports = class Validator extends Base {
     }
 
     static async validateModel (model) {
-        for (const validator of model.ensureValidators()) {
+        const validators = model.ensureValidators();
+        for (const validator of validators) {
             await validator.execute(model);
         }
         return PromiseHelper.setImmediate();
@@ -67,14 +68,18 @@ module.exports = class Validator extends Base {
 
     static createValidators (view) {
         const validators = this.createBaseValidators(view);
-        validators.push(...this.createRuleValidators(view.class.data.rules, view));
+        const ruleValidators = this.createRuleValidators(view.class.data.rules, view);
+        validators.push(...ruleValidators);
         for (const attr of view.attrs) {
-            validators.push(...this.createAttrValidators(attr.classAttr));
+            const attrValidators = this.createAttrValidators(attr.classAttr);
+            validators.push(...attrValidators);
         }
         if (view !== view.class) {
-            validators.push(...this.createRuleValidators(view.data.rules, view));
+            const ruleValidators = this.createRuleValidators(view.data.rules, view);
+            validators.push(...ruleValidators);
             for (const attr of view.attrs) {
-                validators.push(...this.createAttrValidators(attr));
+                const attrValidators = this.createAttrValidators(attr);
+                validators.push(...attrValidators);
             }
         }
         for (const {name, actionBinder, readOnly} of view.attrs) {

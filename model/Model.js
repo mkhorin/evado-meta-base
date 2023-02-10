@@ -192,8 +192,10 @@ module.exports = class Model extends Base {
 
     isSafeValuesChanges () {
         for (const attr of this.view.attrs) {
-            if (attr.canLoad() && this.isValueChanged(attr)) {
-                return true;
+            if (attr.canLoad()) {
+                if (this.isValueChanged(attr)) {
+                    return true;
+                }
             }
         }
     }

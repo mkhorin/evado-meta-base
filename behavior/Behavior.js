@@ -47,7 +47,8 @@ module.exports = class Behavior extends Base {
         model.behaviors = [];
         for (const config of model.view.behaviors) {
             config.owner = model;
-            model.behaviors.push(new config.Class(config));
+            const behavior = new config.Class(config);
+            model.behaviors.push(behavior);
         }
     }
 

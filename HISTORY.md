@@ -1,3 +1,13 @@
+## 4.6.0
+
+* base/BaseMeta
+    - add header classes to module configuration
+* calc/CalcToken
+    - fix params resolving    
+* validator/Validator
+    - check need for validation
+* upgrade dependencies
+
 ## 4.5.0
 
 * base/ClassIndexing
