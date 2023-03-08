@@ -122,7 +122,8 @@ module.exports = class FileBehavior extends Base {
         if (this.rawFile) {
             await this.deleteRawFile(); // delete current raw file
             await this.updateRawOwner(); // bind a new raw file
-            await this.getStorage().deleteFile(this.getOldValue(this.fileAttr));
+            const file = this.getOldValue(this.fileAttr);
+            await this.getStorage().deleteFile(file);
         }
     }
 

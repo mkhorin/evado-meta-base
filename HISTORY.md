@@ -3,7 +3,7 @@
 * base/BaseMeta
     - add header classes to module configuration
 * calc/CalcToken
-    - fix params resolving    
+    - fix params resolving
 * validator/Validator
     - check need for validation
 * upgrade dependencies
@@ -16,10 +16,10 @@
     - add hidden group option
 * calc/CalcToken
     - add database record ID as calculated token
-* helper/TypeHelper    
+* helper/TypeHelper
     - add checkbox list and radio list view types
 * validator/EnumValidator
-    - check multiple enumeration values    
+    - check multiple enumeration values
 
 ## 4.4.0
 
@@ -30,10 +30,10 @@
     - add input mask
     - extend action binder data
 * model/Model
-    - fix transition name    
+    - fix transition name
 * validator/ActionBinderValidator
     - fix validation of required action binder
-    - validate enable action        
+    - validate enable action
 * validator/DateValidator
     - add validation by dynamic date
 

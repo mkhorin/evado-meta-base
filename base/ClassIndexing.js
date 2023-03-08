@@ -50,7 +50,7 @@ module.exports = class ClassIndexing extends Base {
     }
 
     getIndexItemsByClass ({data, attrs}) {
-        return[
+        return [
             ...this.getIndexItemsByData(data.indexes),
             ...this.getIndexItemsByAttrs(attrs)
         ];

@@ -21,7 +21,7 @@ module.exports = class ClassAttr extends Base {
     }
 
     createEmbeddedModel () {
-        const constructor  = this.getEmbeddedModelConstructor();
+        const constructor = this.getEmbeddedModelConstructor();
         return constructor
             ? this.class.meta.spawn(constructor)
             : null;

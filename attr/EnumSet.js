@@ -69,7 +69,7 @@ module.exports = class EnumSet extends Base {
         this._indexedItems = {};
         if (Array.isArray(this._resolvedItems)) {
             for (const item of this._resolvedItems) {
-                if (!(item.hasOwnProperty('text'))) {
+                if (!item.hasOwnProperty('text')) {
                     item.text = item.value;
                 }
                 this._indexedItems[item.value] = item;
@@ -89,7 +89,8 @@ module.exports = class EnumSet extends Base {
         const valueMap = {};
         for (const value of values) {
             if (valueMap[value] !== true) {
-                this._resolvedItems.push([value, this.getText(value)]);
+                const text = this.getText(value);
+                this._resolvedItems.push([value, text]);
                 valueMap[value] = true;
             }
         }

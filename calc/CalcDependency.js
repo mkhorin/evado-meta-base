@@ -39,7 +39,7 @@ module.exports = class CalcDependency extends Base {
         if (!dependency) {
             return this.log('error', 'Dependency undefined');
         }
-        if (dependency.hasOwnProperty(this._name)) {
+        if (Object.prototype.hasOwnProperty.call(dependency, this._name)) {
             return dependency[this._name];
         }
     }

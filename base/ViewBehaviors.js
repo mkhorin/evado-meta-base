@@ -40,7 +40,8 @@ module.exports = class ViewBehaviors extends Base {
 
     getAllByClassAndAttr (Class, attrName) {
         const result = [];
-        for (const item of this.getAllByClass(Class)) {
+        const items = this.getAllByClass(Class);
+        for (const item of items) {
             if (item.attrName === attrName) {
                 result.push(item);
             }
@@ -170,7 +171,8 @@ module.exports = class ViewBehaviors extends Base {
         if (this.items.length) {
             const owner = this.owner.createModel();
             for (const item of this.items) {
-                await ClassHelper.spawn(item, {owner}).dropData();
+                const behavior = ClassHelper.spawn(item, {owner});
+                await behavior.dropData();
             }
         }
     }

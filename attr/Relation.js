@@ -89,7 +89,7 @@ module.exports = class Relation extends Base {
     }
 
     async setQueryByDoc (query, doc) {
-        if (!doc.hasOwnProperty(this.linkAttrName)) {
+        if (!Object.prototype.hasOwnProperty.call(doc, this.linkAttrName)) {
             return query.and(['false']);
         }
         let value = doc[this.linkAttrName];

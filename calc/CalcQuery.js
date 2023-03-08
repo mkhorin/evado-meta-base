@@ -38,7 +38,7 @@ module.exports = class CalcQuery extends Base {
             return this.resolveNull;
         }
         this.prepareParams();
-        if (PREPARATION_MAP.hasOwnProperty(operation)) {
+        if (Object.prototype.hasOwnProperty.call(PREPARATION_MAP, operation)) {
             this[PREPARATION_MAP[operation]]();
         }
         return this.resolveOperation;
@@ -80,7 +80,8 @@ module.exports = class CalcQuery extends Base {
     }
 
     createOrder () {
-        ObjectHelper.replaceKeys({'$key': this._view.getKey()}, this._params.order);
+        const key = this._view.getKey();
+        ObjectHelper.replaceKeys({'$key': key}, this._params.order);
         return this._params.order;
     }
 

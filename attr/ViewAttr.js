@@ -283,7 +283,7 @@ module.exports = class ViewAttr extends Base {
             return {
                 name: 'mask',
                 params: this.options.mask
-            }
+            };
         }
     }
 

@@ -315,11 +315,15 @@ module.exports = class View extends Base {
     // TREE VIEW
 
     createTreeView (config) {
+        const data = InheritanceHelper.getNotEmptyArray(
+            this.data.treeView,
+            this.class.data.treeView
+        );
         this.treeView = new TreeView({
             owner: this,
             class: this.class,
-            data: InheritanceHelper.getNotEmptyArray(this.data.treeView, this.class.data.treeView),
             disabled: this.data.disableTreeView,
+            data,
             ...config
         });
     }
@@ -355,7 +359,10 @@ module.exports = class View extends Base {
     }
 
     getModelView (cls) {
-        return this.isClass() ? cls : (cls.getView(this.name) || cls);
+        if (this.isClass()) {
+            return cls;
+        }
+        return cls.getView(this.name) || cls;
     }
 
     createModelByState (data, params) {
