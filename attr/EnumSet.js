@@ -27,7 +27,7 @@ module.exports = class EnumSet extends Base {
     }
 
     hasItem (value) {
-        return Object.prototype.hasOwnProperty.call(this._indexedItems, value);
+        return Object.hasOwn(this._indexedItems, value);
     }
 
     getData () {

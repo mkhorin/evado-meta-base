@@ -38,7 +38,7 @@ module.exports = class CalcQuery extends Base {
             return this.resolveNull;
         }
         this.prepareParams();
-        if (Object.prototype.hasOwnProperty.call(PREPARATION_MAP, operation)) {
+        if (Object.hasOwn(PREPARATION_MAP, operation)) {
             this[PREPARATION_MAP[operation]]();
         }
         return this.resolveOperation;

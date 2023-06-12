@@ -205,8 +205,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     hasData (key) {
-        return Object.prototype.hasOwnProperty.call(this.data, key)
-            && this.data[key] !== undefined;
+        return Object.hasOwn(this.data, key) && this.data[key] !== undefined;
     }
 
     canLoad () {

@@ -50,7 +50,7 @@ module.exports = class Action extends Base {
         } else {
             data = data.slice(1);
         }
-        if (Object.prototype.hasOwnProperty.call(this.OPERATORS, operator)) {
+        if (Object.hasOwn(this.OPERATORS, operator)) {
             return this[this.OPERATORS[operator]](operator, data, model);
         }
         this.log('error', `Operator not found: ${operator}`);

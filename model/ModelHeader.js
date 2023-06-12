@@ -10,12 +10,12 @@ module.exports = class ModelHeader extends Base {
     data = {};
 
     has (attr) {
-        return Object.prototype.hasOwnProperty.call(this.data, attr.name || attr);
+        return Object.hasOwn(this.data, attr.name || attr);
     }
 
     get (attr) {
         attr = attr.name || attr;
-        return Object.prototype.hasOwnProperty.call(this.data, attr)
+        return Object.hasOwn(this.data, attr)
             ? this.data[attr]
             : this.model.get(attr);
     }

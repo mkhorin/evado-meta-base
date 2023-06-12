@@ -114,7 +114,7 @@ module.exports = class Model extends Base {
     // VALUES
 
     has (attr) {
-        return Object.prototype.hasOwnProperty.call(this._valueMap, attr.name || attr);
+        return Object.hasOwn(this._valueMap, attr.name || attr);
     }
 
     get (attr) {
@@ -213,7 +213,7 @@ module.exports = class Model extends Base {
         if (!attr.canLoad()) {
             return;
         }
-        if (Object.prototype.hasOwnProperty.call(data, attr.name)) {
+        if (Object.hasOwn(data, attr.name)) {
             attr.relation
                 ? this.related.setChanges(attr, data[attr.name])
                 : this.set(attr, data[attr.name]);
@@ -224,7 +224,7 @@ module.exports = class Model extends Base {
     }
 
     hasDisplayValue (attr) {
-        return Object.prototype.hasOwnProperty.call(this._displayValueMap, attr.name || attr);
+        return Object.hasOwn(this._displayValueMap, attr.name || attr);
     }
 
     getDisplayValue (attr) {
@@ -259,7 +259,7 @@ module.exports = class Model extends Base {
     }
 
     hasOldValue (attr) {
-        return Object.prototype.hasOwnProperty.call(this._oldValueMap, attr.name || attr);
+        return Object.hasOwn(this._oldValueMap, attr.name || attr);
     }
 
     getOldValue (attr) {
@@ -539,7 +539,7 @@ module.exports = class Model extends Base {
 
     hasError (attrName) {
         return attrName !== undefined
-            ? Object.prototype.hasOwnProperty.call(this._errorMap, attrName)
+            ? Object.hasOwn(this._errorMap, attrName)
             : Object.values(this._errorMap).length > 0;
     }
 

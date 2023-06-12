@@ -58,7 +58,7 @@ module.exports = class InheritanceHelper extends Base {
                 if (CLASS_REPLACEMENT_MAP[key] !== true) {
                     child[key] = parent[key].concat(child[key]);
                 }
-            } else if (Object.prototype.hasOwnProperty.call(child, key)) {
+            } else if (Object.hasOwn(child, key)) {
             } else if (Array.isArray(parent[key])) {
                 child[key] = [].concat(parent[key]);
             } else {
@@ -83,8 +83,8 @@ module.exports = class InheritanceHelper extends Base {
 
     static mergeData (target, source, savedSourceKeys = []) {
         for (const key of Object.keys(source)) {
-            const hasSource = Object.prototype.hasOwnProperty.call(source, key);
-            const hasTarget = Object.prototype.hasOwnProperty.call(target, key);
+            const hasSource = Object.hasOwn(source, key);
+            const hasTarget = Object.hasOwn(target, key);
             if (EXTENSION_MAP[key] === true) {
                 if (!hasTarget) {
                     target[key] = source[key];
@@ -106,7 +106,7 @@ module.exports = class InheritanceHelper extends Base {
     static assignParents (children, map) {
         for (const key of Object.keys(children)) {
             const parent = map[key]?.data.parent;
-            if (parent && !Object.prototype.hasOwnProperty.call(children, parent)) {
+            if (parent && !Object.hasOwn(children, parent)) {
                 const data = this.assignParents({[parent]: true}, map);
                 Object.assign(children, data);
             }

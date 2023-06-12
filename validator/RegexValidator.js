@@ -44,7 +44,7 @@ module.exports = class RegexValidator extends Base {
     }
 
     getRegex () {
-        return Object.prototype.hasOwnProperty.call(this.PATTERNS, this.pattern)
+        return Object.hasOwn(this.PATTERNS, this.pattern)
             ? this.PATTERNS[this.pattern]
             : new RegExp(this.pattern, this.flags);
     }

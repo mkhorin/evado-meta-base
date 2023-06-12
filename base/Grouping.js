@@ -81,7 +81,7 @@ module.exports = class Grouping extends Base {
         }
         InheritanceHelper.assignParents(usedGroupMap, this.groupMap);
         for (const name of Object.keys(this.groupMap)) {
-            if (!Object.prototype.hasOwnProperty.call(usedGroupMap, name)) {
+            if (!Object.hasOwn(usedGroupMap, name)) {
                 delete this.groupMap[name];
             }
         }

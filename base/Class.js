@@ -498,7 +498,7 @@ module.exports = class Class extends Base {
     }
 
     getInheritedData (key) {
-        if (Object.prototype.hasOwnProperty.call(this.data, key)) {
+        if (Object.hasOwn(this.data, key)) {
             return this.data[key];
         }
         if (this.getParent()) {

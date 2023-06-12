@@ -17,7 +17,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     has (attr) {
-        return Object.prototype.hasOwnProperty.call(this._data, attr.name || attr);
+        return Object.hasOwn(this._data, attr.name || attr);
     }
 
     get (attr) {
@@ -207,7 +207,7 @@ module.exports = class ModelRelated extends Base {
 
     getChanges (attr) {
         attr = attr.name || attr;
-        return Object.prototype.hasOwnProperty.call(this._changes, attr)
+        return Object.hasOwn(this._changes, attr)
             ? this._changes[attr]
             : null;
     }
@@ -468,7 +468,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     async getLinkedDocs ({name, relation}) {
-        if (Object.prototype.hasOwnProperty.call(this._linkedMap, name)) {
+        if (Object.hasOwn(this._linkedMap, name)) {
             return this._linkedMap[name];
         }
         const query = relation.refClass.createQuery(this.getQueryConfig());
