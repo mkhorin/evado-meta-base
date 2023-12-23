@@ -162,7 +162,7 @@ module.exports = class View extends Base {
         if (!attr) {
             return false;
         }
-        const classAttr = attr.classAttr;
+        const {classAttr} = attr;
         this.attrs.push(attr);
         if (classAttr.isRelation() && attr.isEagerLoading()) {
             this.eagerAttrs.push(attr);

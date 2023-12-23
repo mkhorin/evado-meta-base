@@ -65,7 +65,7 @@ module.exports = class ClassIndexing extends Base {
     }
 
     getIndexItemByAttr (attr) {
-        const indexing = attr.data.indexing;
+        const {indexing} = attr.data;
         if (indexing) {
             const unique = attr.isUnique();
             return [{[attr.name]: indexing}, {unique}];

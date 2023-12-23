@@ -17,7 +17,7 @@ module.exports = class Token extends Base {
     }
 
     init () {
-        let data = this.data;
+        let {data} = this;
         if (Array.isArray(data)) {
             const handler = this.getHandlerClass(data[0]);
             if (handler) {

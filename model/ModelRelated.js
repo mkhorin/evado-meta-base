@@ -499,7 +499,7 @@ module.exports = class ModelRelated extends Base {
     }
 
     async updateOrder (attr, data) {
-        const refClass = attr.relation.refClass;
+        const {refClass} = attr.relation;
         const refKey = refClass.getKey();
         const query = refClass.createQuery();
         const db = query.getDb();

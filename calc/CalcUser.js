@@ -21,7 +21,7 @@ module.exports = class CalcUser extends Base {
         if (item === 'meta') {
             return this.prepareDataFinder(items);
         }
-        const User = this.calc.view.meta.hub.User;
+        const {User} = this.calc.view.meta.hub;
         if (typeof User.prototype[item] === 'function') {
             this._userMethod = item;
             return this.resolveUserMethod;

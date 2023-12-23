@@ -11,9 +11,9 @@ module.exports = class ModelFileSizeValidator extends Base {
 
     async validateModel (model) {
         let size = 0;
-        for (let attr of model.view.refAttrs) {
-            let file = attr.relation.refClass.behaviors.fileItem;
-            if (file) {
+        for (const attr of model.view.refAttrs) {
+            const {fileItem} = attr.relation.refClass.behaviors;
+            if (fileItem) {
                 size += await this.getTotalSize(attr, model);
             }
         }

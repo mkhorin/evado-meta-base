@@ -38,7 +38,7 @@ module.exports = class CalcCondition extends Base {
         if (['and', 'or', 'not'].includes(this.data[0])) {
             return this.prepareChildren;
         }
-        const length = this.data.length;
+        const {length} = this.data;
         if (length < 2) {
             return this.prepareStatic;
         }

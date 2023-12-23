@@ -9,10 +9,9 @@ module.exports = class RelationFilter extends Base {
 
     static create (data, relation) {
         if (data) {
-            const attr = relation.attr;
-            const view = relation.refClass;
-            const module = view.meta.module;
-            const config = this.prepareSpawn(data, view);
+            const {attr, refClass} = relation;
+            const {module} = refClass.meta;
+            const config = this.prepareSpawn(data, refClass);
             return ClassHelper.spawn(config, {attr, module, relation});
         }
     }

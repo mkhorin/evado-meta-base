@@ -47,7 +47,7 @@ module.exports = class Calc extends Base {
 
     static prepareSpawn (data, view) {
         if (data) {
-            const module = view.meta.module;
+            const {module} = view.meta;
             return ClassHelper.resolveSpawn(data, module, {module}, {Class: this});
         }
     }

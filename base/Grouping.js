@@ -43,7 +43,7 @@ module.exports = class Grouping extends Base {
 
     createClassGroups () {
         this.groupMap = {};
-        const view = this.view;
+        const {view} = this;
         view.data.groups = view.getInheritedData('groups');
         if (Array.isArray(view.data.groups)) {
             MetaHelper.sortByOrderNumber(view.data.groups);
@@ -55,7 +55,7 @@ module.exports = class Grouping extends Base {
 
     createViewGroups () {
         this.groupMap = {};
-        const view = this.view;
+        const {view} = this;
         const viewData = view.data;
         const classGroupData = view.class.data.groups;
         if (viewData.disableGroups || !Array.isArray(classGroupData)) {

@@ -47,7 +47,7 @@ module.exports = class ViewAttr extends Base {
     }
 
     initCommon () {
-        const data = this.data;
+        const {data} = this;
         this.label = MetaHelper.createLabel(this);
         this.title = this.label;
         this.description = data.description;
@@ -323,7 +323,7 @@ module.exports = class ViewAttr extends Base {
             return new AttrCalc({attr: this, data});
         }
         try {
-            const module = this.getMeta().module;
+            const {module} = this.getMeta();
             const config = ClassHelper.resolveSpawn(data, module);
             return ClassHelper.spawn(config, {attr: this, module});
         } catch (err) {

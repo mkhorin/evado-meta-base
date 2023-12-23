@@ -316,7 +316,7 @@ module.exports = class Class extends Base {
     }
 
     createView (data) {
-        const name = data.name;
+        const {name} = data;
         if (this.getView(name)) {
             return this.log('error', `View already exists: ${name}`);
         }
@@ -429,16 +429,16 @@ module.exports = class Class extends Base {
         const nulls = [], cascades = [], locks = [];
         for (const {attrs} of this.meta.classes) {
             for (const attr of attrs) {
-                const rel = attr.relation;
-                if (!rel) {
+                const {relation} = attr;
+                if (!relation) {
                     continue;
                 }
-                if (rel.refClass !== this) {
-                    if (!this.hasAncestor(rel.refClass)) {
+                if (relation.refClass !== this) {
+                    if (!this.hasAncestor(relation.refClass)) {
                         continue;
                     }
                 }
-                switch (rel[action]) {
+                switch (relation[action]) {
                     case 'null': {
                         nulls.push(attr);
                         break;

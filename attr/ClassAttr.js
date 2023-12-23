@@ -47,7 +47,7 @@ module.exports = class ClassAttr extends Base {
     }
 
     createCalc () {
-        const expression = this.data.expression;
+        const {expression} = this.data;
         this.calc = this.parent && this.parent.data.expression === expression
             ? this.parent.calc
             : this.spawnCalc(expression);

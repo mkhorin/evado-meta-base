@@ -116,7 +116,7 @@ module.exports = class BaseMeta extends Base {
     }
 
     createClass (data) {
-        const name = data.name;
+        const {name} = data;
         if (this.getClass(name)) {
             return this.log('error', `Class already exists: ${name}`);
         }

@@ -11,7 +11,7 @@ module.exports = class Condition extends Base {
         if (!data) {
             return null;
         }
-        const module = view.meta.module;
+        const {module} = view.meta;
         if (data.Class) {
             return ClassHelper.resolveSpawn(data, module, {module});
         }

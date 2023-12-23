@@ -23,7 +23,7 @@ module.exports = class CalcDependency extends Base {
     }
 
     getFieldType (name) {
-        const view = this.calc.view;
+        const {view} = this.calc;
         const attr = view.resolveAttr(name);
         if (attr) {
             return attr.relation
@@ -59,7 +59,7 @@ module.exports = class CalcDependency extends Base {
         if (typeof value === 'string') {
             value = value.split(',');
         }
-        let model = data.query.model;
+        const {model} = data.query;
         if (!model) {
             return this.log('error', 'Invalid model');
         }
@@ -70,7 +70,7 @@ module.exports = class CalcDependency extends Base {
         let view = attr.eagerView;
         let config = model.related.getQueryConfig();
         let models = await view.createQuery(config).byId(value).all();
-        let multiple = attr.relation.multiple;
+        let {multiple} = attr.relation;
         for (const name of this._names) {
             if (!models.length) {
                 break;

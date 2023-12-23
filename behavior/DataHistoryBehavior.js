@@ -38,9 +38,11 @@ module.exports = class DataHistoryBehavior extends Base {
     }
 
     getHistoryModel () {
-        const owner = this.owner;
-        const Class = owner.getMeta().DataHistoryModel;
-        return Class ? owner.spawn(Class, {owner}) : null;
+        const {owner} = this;
+        const {DataHistoryModel} = owner.getMeta();
+        return DataHistoryModel
+            ? owner.spawn(DataHistoryModel, {owner})
+            : null;
     }
 
     getSourceData () {
